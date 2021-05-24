@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/qdmidb/simpledb/simpledb.iml" filepath="$PROJECT_DIR$/qdmidb/simpledb/simpledb.iml" />
+      <module fileurl="file://$PROJECT_DIR$/qdmidb/simpledb/src/simpledb1.iml" filepath="$PROJECT_DIR$/qdmidb/simpledb/src/simpledb1.iml" />
+    </modules>
+  </component>
+</project>
