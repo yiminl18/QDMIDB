@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class OuterJoin extends Operator{
+public class SmartJoin extends Operator{
     private static enum Type { NESTED_LOOPS, HASH };
     private static final long serialVersionUID = 1L;
 
@@ -29,7 +29,7 @@ public class OuterJoin extends Operator{
      * @param child2
      *            Iterator for the right(inner) relation to join
      */
-    public OuterJoin(JoinPredicate p, DbIterator child1, DbIterator child2) {
+    public SmartJoin(JoinPredicate p, DbIterator child1, DbIterator child2) {
         pred = p;
         this.child1 = child1;
         this.child2 = child2;

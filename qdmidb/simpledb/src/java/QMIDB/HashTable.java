@@ -6,6 +6,16 @@ import java.util.*;
 public class HashTable {
     Attribute attribute;
     HashMap<Integer, Integer> hashMaps;
+    int meanValue;//maintained for
+
+    public int getMeanValue() {
+        return meanValue;
+    }
+
+    public void setMeanValue(int meanValue) {
+        this.meanValue = meanValue;
+    }
+
 
     public HashTable() {
         hashMaps = new HashMap<>();

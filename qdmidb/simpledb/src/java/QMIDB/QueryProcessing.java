@@ -4,7 +4,6 @@ import java.util.List;
 import simpledb.*;
 
 
-
 public class QueryProcessing {
     public QueryProcessing(List<Attribute> Attributes, List<PredicateUnit> preds) {
         //initialization
