@@ -109,5 +109,10 @@ public class test {
         System.out.println(t1.getTupleDesc().getFieldName(0));
     }
 
-
+    public static void testField(){
+        Field[] fields = new Field[5];
+        fields[0]=new IntField(1);
+        fields[1] = new IntField(2);
+        System.out.println(fields[1]);
+    }
 }

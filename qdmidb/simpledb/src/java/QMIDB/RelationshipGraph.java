@@ -34,7 +34,7 @@ public class RelationshipGraph {
         //initialize non-join-edges
         for(int i=0;i<Attributes.size();i++){
             for(int j = i+1; j<Attributes.size(); j++){
-                if(Attributes.get(i).getRelation().equals(Attributes.get(j).getRelation())){
+                if(Attributes.get(i).equals(Attributes.get(j))){
                     addEdge(new GraphEdge(1, new GraphNode(Attributes.get(i)), new GraphNode(Attributes.get(j))));
                     addEdge(new GraphEdge(1, new GraphNode(Attributes.get(j)), new GraphNode(Attributes.get(i))));
                 }

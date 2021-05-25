@@ -156,12 +156,26 @@ public class SmartJoin extends Operator{
 
                 // Iterate over the outer relation and select matching tuples from the table.
                 // we build hashTable for child 1 for later using if not done before while iterating
+                Attribute fieldName1 = new Attribute(getJoinField1Name());
+                HashTable table1 = new HashTable(fieldName1);
+                boolean isBuild = true;
+                if(HashTables.findHashTable(table1) == -1){isBuild = false;}//not found the hashTable
+
                 while (true) {
                     // If we don't have a working tuple from the outer relation, get one.
                     // If nothing's available, we're done.
                     if (t1 == null) {
                         if (child1.hasNext()) {
                             t1 = child1.next();
+                            //build hashTable for child 1
+                            if(!isBuild){
+                                int joinAttrIdx = pred.getField1();
+                                Field joinAttr = t1.getField(joinAttrIdx);
+                                if (!table1.hashMap.containsKey(joinAttr)) {
+                                    table1.hashMap.put(joinAttr, new ArrayList<Tuple>());
+                                }
+                                table.hashMap.get(joinAttr).add(t1);
+                            }
                         } else {
                             return null;
                         }
@@ -171,10 +185,14 @@ public class SmartJoin extends Operator{
                     if (matches == null) {
                         ArrayList<Tuple> m = table.hashMap.get(t1.getField(pred.getField1()));
                         if (m == null) {
+                            //implement outer join
+                            Tuple t1Temp = t1;
                             t1 = null;
-                            continue;
+                            //ihe: to verify ths logic
+                            return new Tuple(t1Temp, constructNullTuple(child2));
+                        }else{
+                            matches = m.iterator();
                         }
-                        matches = m.iterator();
                     }
 
                     while (true) {
@@ -217,6 +235,15 @@ public class SmartJoin extends Operator{
             default:
                 throw new RuntimeException("Unexpected type.");
         }
+    }
+
+    public Tuple constructNullTuple(DbIterator child){
+        TupleDesc schema = child.getTupleDesc();
+        Field[] fields = new Field[schema.getSize()];
+        for(int i=0;i<schema.getSize();i++){
+            fields[i] = new IntField(simpledb.Type.MISSING_INTEGER);
+        }
+        return new Tuple(schema, fields);
     }
 
     @Override
