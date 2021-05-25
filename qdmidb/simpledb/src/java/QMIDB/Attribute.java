@@ -4,20 +4,11 @@ package QMIDB;
     * this class implements Attribute for relations
  */
 public class Attribute {
-    private String relation;
+    //format should be "tableName.attributeName"
     private String attribute;
 
-    public Attribute(String relation, String attribute) {
-        this.relation = relation;
+    public Attribute(String attribute) {
         this.attribute = attribute;
-    }
-
-    public String getRelation() {
-        return relation;
-    }
-
-    public void setRelation(String relation) {
-        this.relation = relation;
     }
 
     public String getAttribute() {
@@ -29,6 +20,6 @@ public class Attribute {
     }
 
     public int getHashCode(){
-        return this.relation.hashCode() + this.attribute.hashCode();
+        return this.attribute.hashCode();
     }
 }

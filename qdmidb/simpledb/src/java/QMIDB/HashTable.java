@@ -1,12 +1,21 @@
 package QMIDB;
+import simpledb.Field;
+import simpledb.Tuple;
+
 import java.util.*;
 /*
     *this data structure maintains hash table for all joinable attributes
  */
 public class HashTable {
     Attribute attribute;
-    HashMap<Integer, Integer> hashMaps;
-    int meanValue;//maintained for
+    //map from attribute value to its corresponding tuple
+    HashMap<Field, ArrayList<Tuple>> hashMap;
+    int meanValue;//maintained for Mean imputation method
+
+    public HashTable(Attribute attribute) {
+        this.attribute = attribute;
+        hashMap = new HashMap<>();
+    }
 
     public int getMeanValue() {
         return meanValue;
@@ -16,24 +25,17 @@ public class HashTable {
         this.meanValue = meanValue;
     }
 
-
-    public HashTable() {
-        hashMaps = new HashMap<>();
-    }
-
     public Attribute getAttribute() {
         return attribute;
     }
 
-    public void setAttribute(Attribute attribute) {
-        this.attribute = attribute;
+    public HashMap<Field, ArrayList<Tuple>> getHashMaps() {
+        return hashMap;
     }
 
-    public HashMap<Integer, Integer> getHashMaps() {
-        return hashMaps;
+    public void setHashMaps(HashMap<Field, ArrayList<Tuple>> hashmap) {
+        this.hashMap = hashmap;
     }
 
-    public void setHashMaps(HashMap<Integer, Integer> hashMaps) {
-        this.hashMaps = hashMaps;
-    }
+    public void clear(){hashMap.clear();}
 }

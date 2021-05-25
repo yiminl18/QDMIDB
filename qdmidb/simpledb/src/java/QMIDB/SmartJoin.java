@@ -15,7 +15,7 @@ public class SmartJoin extends Operator{
     private Tuple t1 = null;
     private final Type type;
 
-    private HashMap<Field, ArrayList<Tuple>> table;
+    private HashTable table;
     private Iterator<Tuple> matches = null;//similar to list
 
     /**
@@ -96,16 +96,24 @@ public class SmartJoin extends Operator{
         child2.open();
 
         if (type == Type.HASH) {
-            table = new HashMap<>();
-            int joinAttrIdx = pred.getField2();
-            while (child2.hasNext()) {
-                Tuple t = child2.next();
-                Field joinAttr = t.getField(joinAttrIdx);
-                if (!table.containsKey(joinAttr)) {
-                    table.put(joinAttr, new ArrayList<Tuple>());
+            //this implementation can make sure all join-able attributes are AT MOST indexed ONCE
+            //check if hashTable for second child exist
+            Attribute fieldName2 = new Attribute(getJoinField2Name());
+            table = new HashTable(fieldName2);
+            if(HashTables.findHashTable(table) == -1){//not found, build a new one
+                int joinAttrIdx = pred.getField2();
+                while (child2.hasNext()) {
+                    Tuple t = child2.next();
+                    Field joinAttr = t.getField(joinAttrIdx);
+                    if (!table.hashMap.containsKey(joinAttr)) {
+                        table.hashMap.put(joinAttr, new ArrayList<Tuple>());
+                    }
+                    table.hashMap.get(joinAttr).add(t);
                 }
-                table.get(joinAttr).add(t);
+            }else{
+                table = HashTables.getHashTable(fieldName2);
             }
+
         }
     }
 
@@ -144,9 +152,10 @@ public class SmartJoin extends Operator{
     protected Tuple fetchNext() throws TransactionAbortedException, DbException {
         switch (type) {
             case HASH:
-                if (table.size() == 0) { return null; }
+                if (table.hashMap.size() == 0) { return null; }
 
                 // Iterate over the outer relation and select matching tuples from the table.
+                // we build hashTable for child 1 for later using if not done before while iterating
                 while (true) {
                     // If we don't have a working tuple from the outer relation, get one.
                     // If nothing's available, we're done.
@@ -160,7 +169,7 @@ public class SmartJoin extends Operator{
 
                     //find all matching tuples in inner relation,and store in matches
                     if (matches == null) {
-                        ArrayList<Tuple> m = table.get(t1.getField(pred.getField1()));
+                        ArrayList<Tuple> m = table.hashMap.get(t1.getField(pred.getField1()));
                         if (m == null) {
                             t1 = null;
                             continue;

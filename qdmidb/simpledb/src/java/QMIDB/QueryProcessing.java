@@ -8,7 +8,6 @@ public class QueryProcessing {
     public QueryProcessing(List<Attribute> Attributes, List<PredicateUnit> preds) {
         //initialization
         RelationshipGraph RG = new RelationshipGraph(Attributes, preds);
-        HashTables hashTables = new HashTables();
 
     }
 

@@ -106,15 +106,8 @@ public class test {
         Field fields1[] = new Field[]{new IntField(-1),new IntField(-1),new IntField(-1)};
         Tuple t2 = new Tuple(descriptor, fields1);
         Tuple t3 = new Tuple(t1,t2);
-        System.out.println(t3);
+        System.out.println(t1.getTupleDesc().getFieldName(0));
     }
 
-    public void testGlobal1(){
-        HashTables.setId(100);
-    }
-
-    public void testGlobal2(){
-        System.out.println(HashTables.getId());
-    }
 
 }
