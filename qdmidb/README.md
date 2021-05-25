@@ -1,4 +1,4 @@
-# QMIDB
+# QDMIDB
 
-QMIDB implements a query-driven approach to impute missing values in relational database. 
+QDMIDB implements a query-driven approach to impute missing values in relational database. 
 
