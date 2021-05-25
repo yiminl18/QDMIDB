@@ -5,21 +5,21 @@ import simpledb.*;
     * this class is a set of imputation method
  */
 public class ImputeFactory {
-    private String imputationMethod;
+    private static String imputationMethod;
 
-    public void setImputationMethod(String imputationMethod){
-        this.imputationMethod = imputationMethod;
+    public static void setImputationMethod(String ImputationMethod){
+        imputationMethod = ImputationMethod;
     }
 
-    public Field Impute(Field attributeValue){
+    public static Field Impute(Field attributeValue){
         Field imputedValue = new IntField(0);
-        if(this.imputationMethod == "REGRESSION_TREE"){
+        if(imputationMethod == "REGRESSION_TREE"){
             return RegressionTree(attributeValue);
-        }else if(this.imputationMethod == "HOTDECK"){
+        }else if(imputationMethod == "HOTDECK"){
             return HotDeck(attributeValue);
-        }else if(this.imputationMethod == "MEAN"){
+        }else if(imputationMethod == "MEAN"){
             return Mean(attributeValue);
-        }else if(this.imputationMethod == "RANDOM"){
+        }else if(imputationMethod == "RANDOM"){
             return Random(attributeValue);
         }else{
             return imputedValue;
@@ -43,20 +43,20 @@ public class ImputeFactory {
         return time;
     }
 
-    public Field RegressionTree(Field attributeValue){
+    public static Field RegressionTree(Field attributeValue){
         //to do
         return attributeValue;
     }
 
-    public Field HotDeck(Field attributeValue){
+    public static Field HotDeck(Field attributeValue){
         return attributeValue;
     }
 
-    public Field Mean(Field attributeValue){
+    public static Field Mean(Field attributeValue){
         return attributeValue;
     }
 
-    public Field Random(Field attributeValue){
+    public static Field Random(Field attributeValue){
         return attributeValue;
     }
 }

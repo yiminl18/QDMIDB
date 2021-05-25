@@ -2,7 +2,6 @@ package QMIDB;
 
 import simpledb.*;
 
-import java.util.Collection;
 import java.util.NoSuchElementException;
 
 /*
@@ -15,6 +14,8 @@ public class SmartFilter extends Operator{
     private final Predicate pred;
     private DbIterator child;
     private int nullType = -999;
+    private Decision decideNode;
+    private boolean isClean = false;
 
     /**
      * Constructor accepts a predicate to apply and a child operator to read
@@ -28,6 +29,8 @@ public class SmartFilter extends Operator{
     public SmartFilter(Predicate p, DbIterator child) {
         pred = p;
         this.child = child;
+        this.decideNode = new Decision(p);
+        isClean = this.decideNode.Decide();
     }
 
     public Predicate getPredicate() {
@@ -71,12 +74,16 @@ public class SmartFilter extends Operator{
             TransactionAbortedException, DbException {
         while (child.hasNext()) {
             Tuple t = child.next();
-            if (pred.filter(t)) {
+            if(pred.isMissing(t)){
+                //ask decision function if clean now
+                if(isClean){
+                    //clean this tuple
+                    t = pred.updateTuple(t,ImputeFactory.Impute(t.getField(pred.getField())));
+                }
                 return t;
             }
-            else{
-                //add for decision node
-
+            else if (pred.filter(t)) {
+                return t;
             }
         }
         return null;

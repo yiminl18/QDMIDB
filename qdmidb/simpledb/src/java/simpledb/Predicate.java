@@ -103,6 +103,16 @@ public class Predicate implements Serializable {
         return t.getField(field).compare(op, operand);
     }
 
+    public boolean isMissing(Tuple t){
+        //check tuple t on predicate value is NULL or not
+        return t.getField(field).isMissing();
+    }
+
+    public Tuple updateTuple(Tuple t, Field value){
+        t.setField(field, value);
+        return t;
+    }
+
     /**
      * Returns something useful, like "f = field_id op = op_string operand =
      * operand_string

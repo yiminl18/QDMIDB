@@ -217,4 +217,5 @@ public class Tuple implements Serializable {
 			throw new BadErrorException();
 		}
     }
+
 }
