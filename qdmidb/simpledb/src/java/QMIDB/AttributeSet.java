@@ -4,13 +4,13 @@ import java.util.List;
     *it is used to store all attributed in the predicate set
  */
 public class AttributeSet {
-    private List<Attribute> attributes;
+    private static List<Attribute> attributes;
 
-    public List<Attribute> getAttributes() {
+    public static List<Attribute> getAttributes() {
         return attributes;
     }
 
-    public AttributeSet(List<Attribute> attributes) {
-        this.attributes = attributes;
+    public static void AttributeSet(List<Attribute> Attributes) {
+        attributes = Attributes;
     }
 }

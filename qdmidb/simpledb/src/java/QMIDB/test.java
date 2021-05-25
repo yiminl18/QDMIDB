@@ -109,6 +109,12 @@ public class test {
         System.out.println(t3);
     }
 
+    public void testGlobal1(){
+        HashTables.setId(100);
+    }
 
+    public void testGlobal2(){
+        System.out.println(HashTables.getId());
+    }
 
 }

@@ -11,13 +11,13 @@ import java.util.List;
     *It takes input of predicates set of query to initialize the graph
  */
 public class RelationshipGraph {
-    private Map<GraphNode, List<GraphNode>> adjNodes = new HashMap<>();//use the integer index of nodes to construct the graph
-    private Map<Integer, GraphNode> nodeMap = new HashMap<>();//mapping from integer index to graph node
-    private List<GraphNode> NodeSet = new ArrayList<>();
-    private List<PredicateUnit> preds;
+    private static Map<GraphNode, List<GraphNode>> adjNodes = new HashMap<>();//use the integer index of nodes to construct the graph
+    private static Map<Integer, GraphNode> nodeMap = new HashMap<>();//mapping from integer index to graph node
+    private static List<GraphNode> NodeSet = new ArrayList<>();
+    private static List<PredicateUnit> preds;
 
-    public RelationshipGraph(List<Attribute> Attributes, List<PredicateUnit> preds) {
-        this.preds = preds;
+    public RelationshipGraph(List<Attribute> Attributes, List<PredicateUnit> Preds) {
+        preds = Preds;
         //initialize nodes
         for(int i=0;i<Attributes.size();i++){
             GraphNode node = new GraphNode(Attributes.get(i));
@@ -42,7 +42,7 @@ public class RelationshipGraph {
         }
     }
 
-    public void addEdge(GraphEdge edge){
+    public static void addEdge(GraphEdge edge){
         if(adjNodes.get(edge.getStartNode()) == null){
             adjNodes.put(edge.getStartNode(), new ArrayList<>());
         }
