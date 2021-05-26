@@ -12,6 +12,7 @@ public class SmartJoin extends Operator{
 
     private final JoinPredicate pred;
     private DbIterator child1, child2;
+    private boolean CleanNow1, CleanNow2;//ask decision node if we need to clean missing values in this join operator
     private Tuple t1 = null;
     private final Type type;
 
@@ -30,6 +31,9 @@ public class SmartJoin extends Operator{
      *            Iterator for the right(inner) relation to join
      */
     public SmartJoin(JoinPredicate p, DbIterator child1, DbIterator child2) {
+        Decision decide = new Decision(p);
+        CleanNow1 = decide.JoinDecision.getKey();
+        CleanNow2 = decide.JoinDecision.getValue();
         pred = p;
         this.child1 = child1;
         this.child2 = child2;
@@ -104,6 +108,15 @@ public class SmartJoin extends Operator{
                 int joinAttrIdx = pred.getField2();
                 while (child2.hasNext()) {
                     Tuple t = child2.next();
+                    //check cleaning for right relation : child 2
+                    if(pred.isMissingRight(t)){
+                        //ask decision function if clean now
+                        if(CleanNow2){
+                            //clean this tuple
+                            t = pred.updateTupleRight(t,ImputeFactory.Impute(t.getField(pred.getField2())));
+                        }
+                    }
+
                     Field joinAttr = t.getField(joinAttrIdx);
                     if (!table.hashMap.containsKey(joinAttr)) {
                         table.hashMap.put(joinAttr, new ArrayList<Tuple>());
@@ -167,6 +180,14 @@ public class SmartJoin extends Operator{
                     if (t1 == null) {
                         if (child1.hasNext()) {
                             t1 = child1.next();
+                            //check cleaning for left relation : child 1
+                            if(pred.isMissingLeft(t1)){
+                                //ask decision function if clean now
+                                if(CleanNow1){
+                                    //clean this tuple
+                                    t1 = pred.updateTupleLeft(t1,ImputeFactory.Impute(t1.getField(pred.getField1())));
+                                }
+                            }
                             //build hashTable for child 1
                             if(!isBuild){
                                 int joinAttrIdx = pred.getField1();
@@ -185,11 +206,17 @@ public class SmartJoin extends Operator{
                     if (matches == null) {
                         ArrayList<Tuple> m = table.hashMap.get(t1.getField(pred.getField1()));
                         if (m == null) {
-                            //implement outer join
-                            Tuple t1Temp = t1;
-                            t1 = null;
-                            //ihe: to verify ths logic
-                            return new Tuple(t1Temp, constructNullTuple(child2));
+                            //implement outer join only for tuples containing null values
+                            if(t1.hasMissingFields()){
+                                Tuple t1Temp = t1;
+                                t1 = null;
+                                //ihe: to verify this logic
+                                return new Tuple(t1Temp, constructNullTuple(child2));
+                            }
+                            else{
+                                t1 = null;
+                                continue;
+                            }
                         }else{
                             matches = m.iterator();
                         }
@@ -241,7 +268,7 @@ public class SmartJoin extends Operator{
         TupleDesc schema = child.getTupleDesc();
         Field[] fields = new Field[schema.getSize()];
         for(int i=0;i<schema.getSize();i++){
-            fields[i] = new IntField(simpledb.Type.MISSING_INTEGER);
+            fields[i] = new IntField(simpledb.Type.NULL_INTEGER);
         }
         return new Tuple(schema, fields);
     }

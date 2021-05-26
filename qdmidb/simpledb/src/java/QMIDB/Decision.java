@@ -1,5 +1,6 @@
 package QMIDB;
 
+import javafx.util.Pair;
 import simpledb.*;
 /*
     *This class implements the decision function which takes input of attribute or value and returns
@@ -7,13 +8,23 @@ import simpledb.*;
  */
 public class Decision {
     Predicate pred;
+    boolean isJoin = false;
+    JoinPredicate joinpred;
+    Pair<Boolean,Boolean> JoinDecision;
 
     public Decision(Predicate pred) {
         this.pred = pred;
     }
 
-    public boolean Decide(){
+    public Decision(JoinPredicate joinPred) {this.joinpred = joinPred; isJoin = true;}
+
+    public boolean DecideNonJoin(){
         //to do
         return false;
+    }
+
+    public Pair<Boolean,Boolean> DecideJoin(){//cleanNow bit for left and right relation in join predicate
+        //to do
+        return new Pair<>(false,false);
     }
 }

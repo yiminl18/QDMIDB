@@ -83,6 +83,8 @@ public enum Type implements Serializable {
     public abstract Field parse(DataInputStream dis) throws ParseException;
 
     // dummy value for missing integers
+    // NULL_INTEGER is for constructing null values in outer join, while MISSING_INTEGER represents real NULL value in data
+    public static final int NULL_INTEGER = Integer.MIN_VALUE+1;
     public static final int MISSING_INTEGER = Integer.MIN_VALUE;
     // dummy string for missing strings
     public static final String MISSING_STRING = new String(new char[STRING_LEN]).replace('\0', 'Z');
