@@ -35,4 +35,12 @@ public class GraphNode {
     public void setNumOfNullValues(int numOfNullValues) {
         this.numOfNullValues = numOfNullValues;
     }
+
+    public boolean NumOfNullValuesMinusOne(){
+        this.numOfNullValues = this.numOfNullValues -1;
+        if(this.numOfNullValues <= 0){
+            return true;
+        }
+        return false;
+    }
 }

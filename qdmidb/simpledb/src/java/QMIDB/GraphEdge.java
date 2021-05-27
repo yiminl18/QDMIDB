@@ -51,11 +51,11 @@ public class GraphEdge {
         this.edgeType = edgeType;
     }
 
-    public boolean isUsedBit() {
+    public boolean isActive() {
         return active;
     }
 
-    public void setUsedBit(boolean active) {
-        this.active = active;
+    public void setActive() {
+        this.active = true;
     }
 }

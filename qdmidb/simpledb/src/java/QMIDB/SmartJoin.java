@@ -12,6 +12,7 @@ public class SmartJoin extends Operator{
 
     private final JoinPredicate pred;
     private DbIterator child1, child2;
+    private Attribute attribute1, attribute2;
     private boolean CleanNow1, CleanNow2;//ask decision node if we need to clean missing values in this join operator
     private Tuple t1 = null;
     private final Type type;
@@ -34,6 +35,8 @@ public class SmartJoin extends Operator{
         Decision decide = new Decision(p);
         CleanNow1 = decide.JoinDecision.getKey();
         CleanNow2 = decide.JoinDecision.getValue();
+        attribute1 = new Attribute(getJoinField1Name());
+        attribute2 = new Attribute(getJoinField2Name());
         pred = p;
         this.child1 = child1;
         this.child2 = child2;
@@ -114,6 +117,8 @@ public class SmartJoin extends Operator{
                         if(CleanNow2){
                             //clean this tuple
                             t = pred.updateTupleRight(t,ImputeFactory.Impute(t.getField(pred.getField2())));
+                            //update NumOfNullValue for corresponding graph node
+                            RelationshipGraph.getNode(this.attribute2).NumOfNullValuesMinusOne();
                         }
                     }
 
@@ -127,6 +132,12 @@ public class SmartJoin extends Operator{
                 table = HashTables.getHashTable(fieldName2);
             }
 
+        }
+    }
+
+    public void trigger(){
+        if(RelationshipGraph.getNode(attribute1).getNumOfNullValues() == 0 && RelationshipGraph.getNode(attribute2).getNumOfNullValues() == 0){
+            RelationshipGraph.getEdge(attribute1,attribute2).setActive();
         }
     }
 

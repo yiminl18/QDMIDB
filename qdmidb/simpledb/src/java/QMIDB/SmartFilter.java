@@ -13,8 +13,8 @@ public class SmartFilter extends Operator{
 
     private final Predicate pred;
     private DbIterator child;
-    private int nullType = -999;
     private Decision decideNode;
+    private Attribute attribute;
     private boolean isClean = false;
 
     /**
@@ -31,6 +31,7 @@ public class SmartFilter extends Operator{
         this.child = child;
         this.decideNode = new Decision(p);
         isClean = this.decideNode.DecideNonJoin();
+        getAttribute();
     }
 
     public Predicate getPredicate() {
@@ -79,6 +80,8 @@ public class SmartFilter extends Operator{
                 if(isClean){
                     //clean this tuple
                     t = pred.updateTuple(t,ImputeFactory.Impute(t.getField(pred.getField())));
+                    //udpate numofNullValue for corresponding node
+                    RelationshipGraph.getNode(attribute).NumOfNullValuesMinusOne();
                 }
                 return t;
             }
@@ -102,5 +105,9 @@ public class SmartFilter extends Operator{
         child = children[0];
     }
 
-
+    public void getAttribute(){
+        TupleDesc schema = child.getTupleDesc();
+        String fName = schema.getFieldName(pred.getField());
+        this.attribute = new Attribute(fName);
+    }
 }
