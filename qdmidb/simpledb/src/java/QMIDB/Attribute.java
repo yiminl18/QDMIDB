@@ -22,4 +22,8 @@ public class Attribute {
     public int getHashCode(){
         return this.attribute.hashCode();
     }
+
+    public String getRelation(){
+        return attribute.split("\\.")[0];
+    }
 }

@@ -7,15 +7,6 @@ public class GraphNode {
     private int cardinality;
     private int numOfNullValues;
     private Attribute attribute;
-    private int id;//integer index of node, attribute
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
 
     public GraphNode(Attribute attribute) {
         this.attribute = attribute;

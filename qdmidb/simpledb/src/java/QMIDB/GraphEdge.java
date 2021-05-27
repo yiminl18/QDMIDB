@@ -1,17 +1,25 @@
 package QMIDB;
 
+import simpledb.JoinPredicate;
+
 /*
     * this class implements the edge in relationship graph
  */
 public class GraphEdge {
     private int edgeType;//0 - join edge; 1- otherwise
-    private boolean usedBit = false;//if the operator associated with this edge has been applied to trigger self-join imputation
+    private boolean active = false;//if the operator associated with this edge has been applied to trigger self-join imputation
     private GraphNode startNode,endNode;//start node and end node
+    private JoinPredicate joinPredicate;
 
-    public GraphEdge(int edgeType, GraphNode startNode, GraphNode endNode) {
+    public GraphEdge(int edgeType, GraphNode startNode, GraphNode endNode, JoinPredicate joinPredicate) {
         this.edgeType = edgeType;
         this.startNode = startNode;
         this.endNode = endNode;
+        this.joinPredicate = joinPredicate;
+    }
+
+    public JoinPredicate getJoinPredicate(){
+        return this.joinPredicate;
     }
 
     public GraphNode getStartNode() {
@@ -30,11 +38,9 @@ public class GraphEdge {
         this.endNode = endNode;
     }
 
-
-
-    public GraphEdge(int edgeType, boolean usedBit) {
+    public GraphEdge(int edgeType, boolean active) {
         this.edgeType = edgeType;
-        this.usedBit = usedBit;
+        this.active = active;
     }
 
     public int getEdgeType() {
@@ -46,10 +52,10 @@ public class GraphEdge {
     }
 
     public boolean isUsedBit() {
-        return usedBit;
+        return active;
     }
 
-    public void setUsedBit(boolean usedBit) {
-        this.usedBit = usedBit;
+    public void setUsedBit(boolean active) {
+        this.active = active;
     }
 }

@@ -27,16 +27,16 @@ public class RelationshipGraph {
         //initialize join-edges
         for(int i=0;i<preds.size();i++){
             if(preds.get(i).getIsJoin()){
-                addEdge(new GraphEdge(0,new GraphNode(preds.get(i).getLeft()), new GraphNode(preds.get(i).getRight())));
-                addEdge(new GraphEdge(0,new GraphNode(preds.get(i).getRight()), new GraphNode(preds.get(i).getLeft())));
+                addEdge(new GraphEdge(0,new GraphNode(preds.get(i).getLeft()), new GraphNode(preds.get(i).getRight()), preds.get(i).transform()));
+                addEdge(new GraphEdge(0,new GraphNode(preds.get(i).getRight()), new GraphNode(preds.get(i).getLeft()), preds.get(i).transform()));
             }
         }
         //initialize non-join-edges
         for(int i=0;i<Attributes.size();i++){
             for(int j = i+1; j<Attributes.size(); j++){
-                if(Attributes.get(i).equals(Attributes.get(j))){
-                    addEdge(new GraphEdge(1, new GraphNode(Attributes.get(i)), new GraphNode(Attributes.get(j))));
-                    addEdge(new GraphEdge(1, new GraphNode(Attributes.get(j)), new GraphNode(Attributes.get(i))));
+                if(Attributes.get(i).getRelation().equals(Attributes.get(j).getRelation())){//if in same relation
+                    addEdge(new GraphEdge(1, new GraphNode(Attributes.get(i)), new GraphNode(Attributes.get(j)), null));
+                    addEdge(new GraphEdge(1, new GraphNode(Attributes.get(j)), new GraphNode(Attributes.get(i)), null));
                 }
             }
         }
