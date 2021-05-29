@@ -3,6 +3,7 @@ package QMIDB;
 import org.w3c.dom.Attr;
 import simpledb.*;
 
+import javax.annotation.processing.SupportedSourceVersion;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,15 +24,20 @@ public class test {
     }
 
     public static void testComplexQuery(){
+        Type types1[] = new Type[]{ Type.INT_TYPE, Type.INT_TYPE};
+        String names1[] = new String[]{ "a", "d"};
+
+        TupleDesc td1 = new TupleDesc(types1, names1);
+
         Type types2[] = new Type[]{ Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE };
         String names2[] = new String[]{ "a", "b", "c" };
 
         TupleDesc td2 = new TupleDesc(types2, names2);
 
-        Type types1[] = new Type[]{ Type.INT_TYPE, Type.INT_TYPE};
-        String names1[] = new String[]{ "a", "d"};
+        Type types3[] = new Type[]{ Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE };
+        String names3[] = new String[]{ "a", "b", "c" };
 
-        TupleDesc td1 = new TupleDesc(types1, names1);
+        TupleDesc td3 = new TupleDesc(types3, names3);
 
         // create the tables, associate them with the data files
         // and tell the catalog about the schema the tables.
@@ -41,28 +47,39 @@ public class test {
         HeapFile table2 = new HeapFile(new File("simpledb/testdata/table_3_col.dat"), td2);
         Database.getCatalog().addTable(table2, "t2");
 
+        HeapFile table3 = new HeapFile(new File("simpledb/testdata/table_4_col.dat"), td3);
+        Database.getCatalog().addTable(table3, "t3");
+
         // construct the query: we use two SeqScans, which spoonfeed
         // tuples via iterators into join
         TransactionId tid = new TransactionId();
 
         SeqScan ss1 = new SeqScan(tid, table1.getId(), "t1");
         SeqScan ss2 = new SeqScan(tid, table2.getId(), "t2");
+        SeqScan ss3 = new SeqScan(tid, table3.getId(), "t3");
 
         // create a filter for the where condition
         Filter sf1 = new Filter(
                 new Predicate(0, Predicate.Op.GREATER_THAN, new IntField(3)), ss1);
 
         JoinPredicate p = new JoinPredicate(0, Predicate.Op.EQUALS, 0);
+        JoinPredicate p1 = new JoinPredicate(4, Predicate.Op.EQUALS, 2);
         Join j = new Join(p, sf1, ss2);
+        Join j1 = new Join(p1, j, ss3);
+
 
         // and run it
         try {
-            j.open();
-            while (j.hasNext()) {
-                Tuple tup = j.next();
+            j1.open();
+            while (j1.hasNext()) {
+                Tuple tup = j1.next();
+                System.out.println(j1.getTupleDesc());
+                System.out.println(j1.getJoinField1Name());
+                System.out.println(j1.getJoinPredicate().getField2());
+                System.out.println(j1.getJoinField2Name());
                 System.out.println(tup);
             }
-            j.close();
+            j1.close();
             Database.getBufferPool().transactionComplete(tid);
 
         } catch (Exception e) {
@@ -114,5 +131,15 @@ public class test {
         fields[0]=new IntField(1);
         fields[1] = new IntField(2);
         System.out.println(fields[1]);
+    }
+
+    public static void testEquivelenceOfObject(){
+        GraphEdge edge1 = new GraphEdge(new GraphNode(new Attribute("a1")), new GraphNode(new Attribute("a2")));
+        GraphEdge edge2 = new GraphEdge(new GraphNode(new Attribute("a1")), new GraphNode(new Attribute("a2")));
+        if(edge1.hashCode() == edge2.hashCode()){
+            System.out.println("yes");
+        }else{
+            System.out.println("no");
+        }
     }
 }

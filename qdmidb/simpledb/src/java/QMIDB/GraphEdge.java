@@ -18,6 +18,11 @@ public class GraphEdge {
         this.joinPredicate = joinPredicate;
     }
 
+    public GraphEdge(GraphNode startNode, GraphNode endNode){
+        this.startNode = startNode;
+        this.endNode = endNode;
+    }
+
     public JoinPredicate getJoinPredicate(){
         return this.joinPredicate;
     }

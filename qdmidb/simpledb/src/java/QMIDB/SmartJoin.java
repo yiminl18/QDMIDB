@@ -119,6 +119,7 @@ public class SmartJoin extends Operator{
                             t = pred.updateTupleRight(t,ImputeFactory.Impute(t.getField(pred.getField2())));
                             //update NumOfNullValue for corresponding graph node
                             RelationshipGraph.getNode(this.attribute2).NumOfNullValuesMinusOne();
+                            trigger();
                         }
                     }
 
@@ -180,10 +181,10 @@ public class SmartJoin extends Operator{
 
                 // Iterate over the outer relation and select matching tuples from the table.
                 // we build hashTable for child 1 for later using if not done before while iterating
-                Attribute fieldName1 = new Attribute(getJoinField1Name());
+                /*Attribute fieldName1 = new Attribute(getJoinField1Name());
                 HashTable table1 = new HashTable(fieldName1);
                 boolean isBuild = true;
-                if(HashTables.findHashTable(table1) == -1){isBuild = false;}//not found the hashTable
+                if(HashTables.findHashTable(table1) == -1){isBuild = false;}//not found the hashTable*/
 
                 while (true) {
                     // If we don't have a working tuple from the outer relation, get one.
@@ -197,17 +198,20 @@ public class SmartJoin extends Operator{
                                 if(CleanNow1){
                                     //clean this tuple
                                     t1 = pred.updateTupleLeft(t1,ImputeFactory.Impute(t1.getField(pred.getField1())));
+                                    //update NumOfNullValue for corresponding graph node
+                                    RelationshipGraph.getNode(this.attribute1).NumOfNullValuesMinusOne();
+                                    trigger();
                                 }
                             }
                             //build hashTable for child 1
-                            if(!isBuild){
+                            /*if(!isBuild){
                                 int joinAttrIdx = pred.getField1();
                                 Field joinAttr = t1.getField(joinAttrIdx);
                                 if (!table1.hashMap.containsKey(joinAttr)) {
                                     table1.hashMap.put(joinAttr, new ArrayList<Tuple>());
                                 }
                                 table.hashMap.get(joinAttr).add(t1);
-                            }
+                            }*/
                         } else {
                             return null;
                         }

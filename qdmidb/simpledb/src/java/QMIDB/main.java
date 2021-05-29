@@ -6,6 +6,6 @@ import simpledb.*;
 public class main {
     public static void main(String args[]) throws IOException {
         test t = new test();
-        t.testField();
+        t.testComplexQuery();
     }
 }
