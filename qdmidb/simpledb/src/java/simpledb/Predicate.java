@@ -45,16 +45,14 @@ public class Predicate implements Serializable {
 
     }
     
-    private final int field;//this is the index of attribute, not specified the relation
+    private int field;//this is the index of attribute, not specified the relation
     private final Op op;
     private final Field operand;
     private final String attribute;
     
     /**
      * Constructor.
-     * 
-     * @param field
-     *            field number of passed in tuples to compare against.
+     *
      * @param op
      *            operation to use for comparison
      * @param operand
@@ -66,11 +64,10 @@ public class Predicate implements Serializable {
         this.attribute = attribute;
         this.op = op;
         this.operand = operand;
-        this.field = 0;
     }
 
     public void setField(DbIterator dbIterator){
-        this.field = dbIterator.getTupleDesc()
+        this.field = dbIterator.getTupleDesc().fieldNameToIndex(this.attribute);
     }
 
     /**

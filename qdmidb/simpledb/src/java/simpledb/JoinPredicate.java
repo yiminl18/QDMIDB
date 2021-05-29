@@ -10,15 +10,16 @@ public class JoinPredicate implements Serializable {
 
     private static final long serialVersionUID = 1L;
     
-    private final int field1, field2;
+    private int field1, field2;
+    private final String attribute1, attribute2;
     private final Predicate.Op op;
 
     /**
      * Constructor -- create a new predicate over two fields of two tuples.
      * 
-     * @param field1
+     * field1
      *            The field index into the first tuple in the predicate
-     * @param field2
+     * field2
      *            The field index into the second tuple in the predicate
      * @param op
      *            The operation to apply (as defined in Predicate.Op); either
@@ -27,10 +28,15 @@ public class JoinPredicate implements Serializable {
      *            Predicate.Op.LESS_THAN_OR_EQ
      * @see Predicate
      */
-    public JoinPredicate(int field1, Predicate.Op op, int field2) {
-        this.field1 = field1;
-        this.field2 = field2;
+    public JoinPredicate(String attribute1, Predicate.Op op, String attribute2) {
+        this.attribute1 = attribute1;
+        this.attribute2 = attribute2;
         this.op = op;
+    }
+
+    public void setField(DbIterator dbIterator){
+        this.field1 = dbIterator.getTupleDesc().fieldNameToIndex(this.attribute1);
+        this.field2 = dbIterator.getTupleDesc().fieldNameToIndex(this.attribute2);
     }
 
     /**
