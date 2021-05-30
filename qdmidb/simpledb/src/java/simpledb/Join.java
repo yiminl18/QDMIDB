@@ -28,11 +28,12 @@ public class Join extends Operator {
      * @param child2
      *            Iterator for the right(inner) relation to join
      */
-    public Join(JoinPredicate p, DbIterator child1, DbIterator child2) {
+    public Join(JoinPredicate p, DbIterator child1, DbIterator child2) throws Exception{
         pred = p;
         this.child1 = child1;
         this.child2 = child2;
-        
+        pred.setField(this.child1, this.child2);
+
         switch(pred.getOperator()) {
 		case EQUALS:
 		case LIKE:

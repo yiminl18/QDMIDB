@@ -21,9 +21,10 @@ public class Filter extends Operator {
      * @param child
      *            The child operator
      */
-    public Filter(Predicate p, DbIterator child) {
+    public Filter(Predicate p, DbIterator child) throws Exception{
         pred = p;
         this.child = child;
+        pred.setField(this.child);
     }
 
     public Predicate getPredicate() {

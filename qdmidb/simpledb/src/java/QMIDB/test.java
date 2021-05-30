@@ -23,7 +23,7 @@ public class test {
         System.out.println(queriesPath);
     }
 
-    public static void testComplexQuery(){
+    public static void testComplexQuery() throws Exception{
         Type types1[] = new Type[]{ Type.INT_TYPE, Type.INT_TYPE};
         String names1[] = new String[]{ "a", "d"};
 
@@ -60,10 +60,10 @@ public class test {
 
         // create a filter for the where condition
         Filter sf1 = new Filter(
-                new Predicate(0, Predicate.Op.GREATER_THAN, new IntField(3)), ss1);
+                new Predicate("t1.a", Predicate.Op.GREATER_THAN, new IntField(3)), ss1);
 
-        JoinPredicate p = new JoinPredicate(0, Predicate.Op.EQUALS, 0);
-        JoinPredicate p1 = new JoinPredicate(4, Predicate.Op.EQUALS, 2);
+        JoinPredicate p = new JoinPredicate("t1.a", Predicate.Op.EQUALS, "t2.a");
+        JoinPredicate p1 = new JoinPredicate("t2.c", Predicate.Op.EQUALS, "t3.c");
         Join j = new Join(p, sf1, ss2);
         Join j1 = new Join(p1, j, ss3);
 
@@ -75,7 +75,6 @@ public class test {
                 Tuple tup = j1.next();
                 System.out.println(j1.getTupleDesc());
                 System.out.println(j1.getJoinField1Name());
-                System.out.println(j1.getJoinPredicate().getField2());
                 System.out.println(j1.getJoinField2Name());
                 System.out.println(tup);
             }

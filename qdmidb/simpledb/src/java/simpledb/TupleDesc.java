@@ -157,13 +157,15 @@ public class TupleDesc implements Serializable, Iterable<TDItem> {
     		throw new NoSuchElementException();
     	}
         int index = 0;
+    	int flag = -1;
         for (TDItem i : schema) {
         	if (name.equals(i.fieldName)) {
+        	    flag = 0;
         		return index;
         	}
         	index++;
         }
-        throw new NoSuchElementException();
+        return flag;
     }
     
     /**

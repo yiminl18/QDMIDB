@@ -13,22 +13,18 @@ public class PredicateUnit {
     private Predicate.Op op;
     private Attribute right;
     private Field operand;
-    private int fieldNumberLeft;
-    private int fieldNumberRight;
     private boolean isJoin;
 
-    public PredicateUnit(Attribute left, int fieldNumberLeft, Predicate.Op op, Attribute right, int fieldNumberRight, Field operand, boolean isJoin) {
+    public PredicateUnit(Attribute left, Predicate.Op op, Attribute right, Field operand, boolean isJoin) {
         this.left = left;
         this.op = op;
         this.right = right;
         this.operand = operand;
         this.isJoin = isJoin;
-        this.fieldNumberLeft = fieldNumberLeft;
-        this.fieldNumberRight = fieldNumberRight;
     }
 
     public simpledb.JoinPredicate transform(){//transform to predicate that is accepted by simpledb
-        return new JoinPredicate(fieldNumberLeft, op, fieldNumberRight);
+        return new JoinPredicate(left.getAttribute(), op, right.getAttribute());
     }
 
     public Attribute getLeft() {

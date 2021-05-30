@@ -66,8 +66,9 @@ public class Predicate implements Serializable {
         this.operand = operand;
     }
 
-    public void setField(DbIterator dbIterator){
+    public void setField(DbIterator dbIterator) throws Exception {
         this.field = dbIterator.getTupleDesc().fieldNameToIndex(this.attribute);
+        if(this.field == -1) {throw new Exception("attribute cannot found!");}
     }
 
     /**

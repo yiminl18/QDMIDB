@@ -34,9 +34,10 @@ public class JoinPredicate implements Serializable {
         this.op = op;
     }
 
-    public void setField(DbIterator dbIterator){
-        this.field1 = dbIterator.getTupleDesc().fieldNameToIndex(this.attribute1);
-        this.field2 = dbIterator.getTupleDesc().fieldNameToIndex(this.attribute2);
+    public void setField(DbIterator dbIterator1, DbIterator dbIterator2)throws Exception{
+        this.field1 = dbIterator1.getTupleDesc().fieldNameToIndex(this.attribute1);
+        this.field2 = dbIterator2.getTupleDesc().fieldNameToIndex(this.attribute2);
+        if(this.field1 == -1 || this.field2 == -1) {throw new Exception("attribute cannot found!");}
     }
 
     /**
