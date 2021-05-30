@@ -117,9 +117,13 @@ public class SmartJoin extends Operator{
                             RelationshipGraph.getNode(this.attribute2).NumOfNullValuesMinusOne();
                             trigger();
                         }
+                        else{
+                            continue;//do not build hashTable for null values
+                        }
                     }
 
                     Field joinAttr = t.getField(joinAttrIdx);
+                    if(joinAttr == new IntField(simpledb.Type.NULL_INTEGER)){continue;}
                     if (!table.getHashMap().containsKey(joinAttr)) {
                         table.getHashMap().put(joinAttr, new ArrayList<Tuple>());
                     }
