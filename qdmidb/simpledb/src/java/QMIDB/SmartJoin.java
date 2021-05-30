@@ -302,20 +302,22 @@ public class SmartJoin extends Operator{
             }
         }
         //update tuples and construct matching
+        matching.add(t);
         for(int i=0;i<validPredicates.size();i++){
-            String validPred = validPredicates.get(i);
-            if(HashTables.getHashTable(validPred).getHashMap().containsKey(leftValue)){
+            int size = matching.size();
+            for(int j=0;j<size;j++){
+                String validPred = validPredicates.get(i);
                 List<Tuple> temporalMatch = HashTables.getHashTable(validPred).getHashMap().get(leftValue);
                 int tupleSize = temporalMatch.get(0).getTupleDesc().getSize();
                 String firstFieldName = temporalMatch.get(0).getTupleDesc().getFieldName(0);
                 int firstFieldIndex = t.getTupleDesc().fieldNameToIndex(firstFieldName);
                 if(firstFieldIndex == -1){//attributes of right tuple is not included in left tuple
-                    continue;
+                    break;//jump to next predicate
                 }
-                for(int j=0;j<temporalMatch.size();j++){
-                    Tuple tt = t;
-                    for(int k=0;k<tupleSize;k++){
-                        tt.setField(firstFieldIndex+k, temporalMatch.get(j).getField(k));
+                for(int k=0;k<temporalMatch.size();k++){//iterate all the matching tuples
+                    Tuple tt = matching.get(j);
+                    for(int kk=0;kk<tupleSize;kk++){
+                        tt.setField(firstFieldIndex+kk, temporalMatch.get(j).getField(kk));
                     }
                     matching.add(tt);
                 }
