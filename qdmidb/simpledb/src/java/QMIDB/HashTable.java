@@ -7,34 +7,38 @@ import java.util.*;
     *this data structure maintains hash table for all joinable attributes
  */
 public class HashTable {
-    Attribute attribute;
+    private static Attribute attribute;
     //map from attribute value to its corresponding tuple
-    HashMap<Field, ArrayList<Tuple>> hashMap;
-    int meanValue;//maintained for Mean imputation method
+    private static HashMap<Field, List<Tuple>> hashMap;
+    private static int meanValue;//maintained for Mean imputation method
 
-    public HashTable(Attribute attribute) {
-        this.attribute = attribute;
+    public HashTable(Attribute attributeName) {
+        attribute = attributeName;
         hashMap = new HashMap<>();
+    }
+
+    public List<Tuple> getHashTable(Field field){
+        return hashMap.get(field);
     }
 
     public int getMeanValue() {
         return meanValue;
     }
 
-    public void setMeanValue(int meanValue) {
-        this.meanValue = meanValue;
+    public void setMeanValue(int meanvalue) {
+        meanValue = meanvalue;
     }
 
     public Attribute getAttribute() {
         return attribute;
     }
 
-    public HashMap<Field, ArrayList<Tuple>> getHashMaps() {
+    public HashMap<Field, List<Tuple>> getHashMap() {
         return hashMap;
     }
 
-    public void setHashMaps(HashMap<Field, ArrayList<Tuple>> hashmap) {
-        this.hashMap = hashmap;
+    public void setHashMaps(HashMap<Field, List<Tuple>> hashmap) {
+        hashMap = hashmap;
     }
 
     public void clear(){hashMap.clear();}

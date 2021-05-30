@@ -1,10 +1,7 @@
 package QMIDB;
 import simpledb.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 public class SmartJoin extends Operator{
     private static enum Type { NESTED_LOOPS, HASH };
@@ -14,11 +11,11 @@ public class SmartJoin extends Operator{
     private DbIterator child1, child2;
     private Attribute attribute1, attribute2;
     private boolean CleanNow1, CleanNow2;//ask decision node if we need to clean missing values in this join operator
-    private Tuple t1 = null;
+    private Tuple t1 = null, t11 = null;
     private final Type type;
 
     private HashTable table;
-    private Iterator<Tuple> matches = null;//similar to list
+    private Iterator<Tuple> matches, selfJoinResult = null;//similar to list
 
     /**
      * Constructor. Accepts to children to join and the predicate to join them
@@ -31,7 +28,7 @@ public class SmartJoin extends Operator{
      * @param child2
      *            Iterator for the right(inner) relation to join
      */
-    public SmartJoin(JoinPredicate p, DbIterator child1, DbIterator child2) {
+    public SmartJoin(JoinPredicate p, DbIterator child1, DbIterator child2) throws Exception{
         Decision decide = new Decision(p);
         CleanNow1 = decide.JoinDecision.getKey();
         CleanNow2 = decide.JoinDecision.getValue();
@@ -40,6 +37,7 @@ public class SmartJoin extends Operator{
         pred = p;
         this.child1 = child1;
         this.child2 = child2;
+        pred.setField(this.child1, this.child2);
 
         switch(pred.getOperator()) {
             case EQUALS:
@@ -97,7 +95,7 @@ public class SmartJoin extends Operator{
 
     @Override
     public void open() throws DbException, NoSuchElementException,
-            TransactionAbortedException {
+            TransactionAbortedException, Exception {
         super.open();
         child1.open();
         child2.open();
@@ -105,9 +103,7 @@ public class SmartJoin extends Operator{
         if (type == Type.HASH) {
             //this implementation can make sure all join-able attributes are AT MOST indexed ONCE
             //check if hashTable for second child exist
-            Attribute fieldName2 = new Attribute(getJoinField2Name());
-            table = new HashTable(fieldName2);
-            if(HashTables.findHashTable(table) == -1){//not found, build a new one
+            if(!HashTables.ifExistHashTable(getJoinField2Name())){//not found, build a new one
                 int joinAttrIdx = pred.getField2();
                 while (child2.hasNext()) {
                     Tuple t = child2.next();
@@ -124,13 +120,13 @@ public class SmartJoin extends Operator{
                     }
 
                     Field joinAttr = t.getField(joinAttrIdx);
-                    if (!table.hashMap.containsKey(joinAttr)) {
-                        table.hashMap.put(joinAttr, new ArrayList<Tuple>());
+                    if (!table.getHashMap().containsKey(joinAttr)) {
+                        table.getHashMap().put(joinAttr, new ArrayList<Tuple>());
                     }
-                    table.hashMap.get(joinAttr).add(t);
+                    table.getHashMap().get(joinAttr).add(t);
                 }
             }else{
-                table = HashTables.getHashTable(fieldName2);
+                table = HashTables.getHashTable(getJoinField2Name());
             }
 
         }
@@ -174,10 +170,10 @@ public class SmartJoin extends Operator{
      * @see JoinPredicate#filter
      */
     @Override
-    protected Tuple fetchNext() throws TransactionAbortedException, DbException {
+    protected Tuple fetchNext() throws TransactionAbortedException, DbException, Exception {
         switch (type) {
             case HASH:
-                if (table.hashMap.size() == 0) { return null; }
+                if (table.getHashMap().size() == 0) { return null; }
 
                 // Iterate over the outer relation and select matching tuples from the table.
                 // we build hashTable for child 1 for later using if not done before while iterating
@@ -192,59 +188,58 @@ public class SmartJoin extends Operator{
                     if (t1 == null) {
                         if (child1.hasNext()) {
                             t1 = child1.next();
-                            //check cleaning for left relation : child 1
-                            if(pred.isMissingLeft(t1)){
-                                //ask decision function if clean now
-                                if(CleanNow1){
-                                    //clean this tuple
-                                    t1 = pred.updateTupleLeft(t1,ImputeFactory.Impute(t1.getField(pred.getField1())));
-                                    //update NumOfNullValue for corresponding graph node
-                                    RelationshipGraph.getNode(this.attribute1).NumOfNullValuesMinusOne();
-                                    trigger();
-                                }
-                            }
-                            //build hashTable for child 1
-                            /*if(!isBuild){
-                                int joinAttrIdx = pred.getField1();
-                                Field joinAttr = t1.getField(joinAttrIdx);
-                                if (!table1.hashMap.containsKey(joinAttr)) {
-                                    table1.hashMap.put(joinAttr, new ArrayList<Tuple>());
-                                }
-                                table.hashMap.get(joinAttr).add(t1);
-                            }*/
-                        } else {
-                            return null;
-                        }
-                    }
-
-                    //find all matching tuples in inner relation,and store in matches
-                    if (matches == null) {
-                        ArrayList<Tuple> m = table.hashMap.get(t1.getField(pred.getField1()));
-                        if (m == null) {
-                            //implement outer join only for tuples containing null values
-                            if(t1.hasMissingFields()){
-                                Tuple t1Temp = t1;
-                                t1 = null;
-                                //ihe: to verify this logic
-                                return new Tuple(t1Temp, constructNullTuple(child2));
-                            }
-                            else{
-                                t1 = null;
+                            //check if t1 can be applied using self join condition
+                            selfJoinResult = selfJoin(t1).iterator();
+                            if(selfJoinResult == null){
+                                //t1 is filtered away
                                 continue;
                             }
-                        }else{
-                            matches = m.iterator();
-                        }
-                    }
+                            while(selfJoinResult.hasNext()){
+                                t11 = selfJoinResult.next();
+                                //check cleaning for left relation : child 1
+                                if(pred.isMissingLeft(t11)){
+                                    //ask decision function if clean now
+                                    if(CleanNow1){
+                                        //clean this tuple
+                                        t11 = pred.updateTupleLeft(t11,ImputeFactory.Impute(t11.getField(pred.getField1())));
+                                        //update NumOfNullValue for corresponding graph node
+                                        RelationshipGraph.getNode(this.attribute1).NumOfNullValuesMinusOne();
+                                        trigger();
+                                    }
+                                }
 
-                    while (true) {
-                        if (matches.hasNext()) {
-                            Tuple t2 = matches.next();
-                            return new Tuple(t1, t2);
+                                //find all matching tuples in inner relation,and store in matches
+                                if (matches == null) {
+                                    List<Tuple> m = table.getHashMap().get(t11.getField(pred.getField1()));
+                                    if (m == null) {
+                                        //implement outer join only for tuples containing null values
+                                        if(t11.hasMissingFields()){
+                                            t1 = null;
+                                            //ihe: to verify this logic
+                                            return new Tuple(t11, constructNullTuple(child2));
+                                        }
+                                        else{
+                                            t1 = null;
+                                            continue;
+                                        }
+                                    }else{
+                                        matches = m.iterator();
+                                    }
+                                }
+
+                                while (true) {
+                                    if (matches.hasNext()) {
+                                        Tuple t2 = matches.next();
+                                        return new Tuple(t11, t2);
+                                    } else {
+                                        t1 = null;
+                                        matches = null;
+                                        break;
+                                    }
+                                }
+                            }
                         } else {
-                            t1 = null;
-                            matches = null;
-                            break;
+                            return null;
                         }
                     }
                 }
@@ -286,6 +281,43 @@ public class SmartJoin extends Operator{
             fields[i] = new IntField(simpledb.Type.NULL_INTEGER);
         }
         return new Tuple(schema, fields);
+    }
+
+    public List<Tuple> selfJoin(Tuple t) throws Exception{//t must be in the left relation
+        List<Tuple> matching = null;
+        List<String> validPredicates = RelationshipGraph.findActiveEdge(getJoinField1Name());
+        Field leftValue  = t.getField(pred.getField1());
+        boolean flag = false; //fast check first
+        for(int i=0;i<validPredicates.size();i++){
+            String validPred = validPredicates.get(i);
+            if(!HashTables.ifExistHashTable(validPred)){throw new Exception("Hashtable NOT Exist!");}
+            else{
+                if(!HashTables.getHashTable(validPred).getHashMap().containsKey(leftValue)){
+                    return null;
+                }
+            }
+        }
+        //update tuples and construct matching
+        for(int i=0;i<validPredicates.size();i++){
+            String validPred = validPredicates.get(i);
+            if(HashTables.getHashTable(validPred).getHashMap().containsKey(leftValue)){
+                List<Tuple> temporalMatch = HashTables.getHashTable(validPred).getHashMap().get(leftValue);
+                int tupleSize = temporalMatch.get(0).getTupleDesc().getSize();
+                String firstFieldName = temporalMatch.get(0).getTupleDesc().getFieldName(0);
+                int firstFieldIndex = t.getTupleDesc().fieldNameToIndex(firstFieldName);
+                if(firstFieldIndex == -1){//attributes of right tuple is not included in left tuple
+                    continue;
+                }
+                for(int j=0;j<temporalMatch.size();j++){
+                    Tuple tt = t;
+                    for(int k=0;k<tupleSize;k++){
+                        tt.setField(firstFieldIndex+k, temporalMatch.get(j).getField(k));
+                    }
+                    matching.add(tt);
+                }
+            }
+        }
+        return matching;
     }
 
     @Override

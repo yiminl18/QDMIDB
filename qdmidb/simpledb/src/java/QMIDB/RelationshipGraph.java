@@ -17,7 +17,6 @@ public class RelationshipGraph {
     private static List<GraphNode> NodeSet = new ArrayList<>();
     private static List<GraphEdge> EdgeSet = new ArrayList<>();
     private static List<PredicateUnit> preds;
-    private static List<GraphEdge> activeEdge = new ArrayList<>();
 
     public RelationshipGraph(List<Attribute> Attributes, List<PredicateUnit> Preds) {
         preds = Preds;
@@ -97,5 +96,16 @@ public class RelationshipGraph {
         else{
             return null;
         }
+    }
+
+    public static List<String> findActiveEdge(String attribute){//return right (non-left) attribute for each valid predicate
+        //first find the relative edge
+        List<String> edges = new ArrayList<>();
+        for(int i=0;i<EdgeSet.size();i++){
+            if(EdgeSet.get(i).getEdgeType() == 0 && EdgeSet.get(i).getStartNode().getAttribute().equals(attribute) && EdgeSet.get(i).isActive()) {
+                edges.add(EdgeSet.get(i).getEndNode().getAttribute().getAttribute());
+            }
+        }
+        return edges;
     }
 }

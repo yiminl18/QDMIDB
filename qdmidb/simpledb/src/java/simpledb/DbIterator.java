@@ -18,7 +18,7 @@ public interface DbIterator extends Serializable {
 	 * @throws DbException
 	 *             when there are problems opening/accessing the database.
 	 */
-	public void open() throws DbException, TransactionAbortedException;
+	public void open() throws DbException, TransactionAbortedException, Exception;
 
 	/**
 	 * Returns true if the iterator has more tuples.
@@ -27,7 +27,7 @@ public interface DbIterator extends Serializable {
 	 * @throws IllegalStateException
 	 *             If the iterator has not been opened
 	 */
-	public boolean hasNext() throws DbException, TransactionAbortedException;
+	public boolean hasNext() throws DbException, TransactionAbortedException, Exception;
 
 	/**
 	 * Returns the next tuple from the operator (typically implementing by
@@ -39,7 +39,7 @@ public interface DbIterator extends Serializable {
 	 * @throws IllegalStateException
 	 *             If the iterator has not been opened
 	 */
-	public Tuple next() throws DbException, TransactionAbortedException, NoSuchElementException;
+	public Tuple next() throws DbException, TransactionAbortedException, NoSuchElementException, Exception;
 
 	/**
 	 * Resets the iterator to the start.
@@ -66,7 +66,7 @@ public interface DbIterator extends Serializable {
 
 	public DbIterator[] getChildren();
 
-	public default double error(DbIterator other) throws DbException, TransactionAbortedException, BadErrorException {
+	public default double error(DbIterator other) throws DbException, TransactionAbortedException, BadErrorException, Exception {
 		double err = 0.0;
 		int count = 0;
 		while (hasNext()) {
@@ -84,13 +84,13 @@ public interface DbIterator extends Serializable {
 		return Math.sqrt(err / count);
 	}
 	
-	public default void print(PrintStream strm) throws DbException, TransactionAbortedException {
+	public default void print(PrintStream strm) throws DbException, TransactionAbortedException, Exception {
 		while (hasNext()) {
 			strm.println(next());
 		}
 	}
 
-	public default void print() throws DbException, TransactionAbortedException {
+	public default void print() throws DbException, TransactionAbortedException, Exception {
 		print(System.out);
 	}
 

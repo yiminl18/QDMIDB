@@ -26,11 +26,12 @@ public class SmartFilter extends Operator{
      * @param child
      *            The child operator
      */
-    public SmartFilter(Predicate p, DbIterator child) {
+    public SmartFilter(Predicate p, DbIterator child) throws Exception{
         pred = p;
         this.child = child;
         this.decideNode = new Decision(p);
         isClean = this.decideNode.DecideNonJoin();
+        pred.setField(this.child);
         getAttribute();
     }
 
