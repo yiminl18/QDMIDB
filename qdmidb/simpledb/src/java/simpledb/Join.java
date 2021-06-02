@@ -90,7 +90,7 @@ public class Join extends Operator {
 
     @Override
     public void open() throws DbException, NoSuchElementException,
-            TransactionAbortedException {
+            TransactionAbortedException, Exception {
         super.open();
         child1.open();
         child2.open();
@@ -141,7 +141,7 @@ public class Join extends Operator {
      * @see JoinPredicate#filter
      */
     @Override
-    protected Tuple fetchNext() throws TransactionAbortedException, DbException {
+    protected Tuple fetchNext() throws TransactionAbortedException, DbException, Exception {
     	switch (type) {
 		case HASH:
 			if (table.size() == 0) { return null; }

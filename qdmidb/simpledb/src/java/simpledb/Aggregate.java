@@ -105,7 +105,7 @@ public class Aggregate extends Operator {
 
     @Override
     public void open() throws NoSuchElementException, DbException,
-	    TransactionAbortedException {
+	    TransactionAbortedException, Exception {
     	super.open();
     	
     	try {
@@ -129,7 +129,7 @@ public class Aggregate extends Operator {
      * aggregate. Should return null if there are no more tuples.
      */
     @Override
-    protected Tuple fetchNext() throws TransactionAbortedException, DbException {
+    protected Tuple fetchNext() throws TransactionAbortedException, DbException, Exception {
     	if (aggIterator.hasNext()) {
     		return aggIterator.next();
     	}

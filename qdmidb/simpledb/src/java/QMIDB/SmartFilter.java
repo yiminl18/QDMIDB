@@ -46,7 +46,7 @@ public class SmartFilter extends Operator{
 
     @Override
     public void open() throws DbException, NoSuchElementException,
-            TransactionAbortedException {
+            TransactionAbortedException,Exception {
         super.open();
         child.open();
     }
@@ -73,7 +73,7 @@ public class SmartFilter extends Operator{
      */
     @Override
     protected Tuple fetchNext() throws NoSuchElementException,
-            TransactionAbortedException, DbException {
+            TransactionAbortedException, DbException, Exception {
         while (child.hasNext()) {
             Tuple t = child.next();
             if(pred.isMissing(t)){

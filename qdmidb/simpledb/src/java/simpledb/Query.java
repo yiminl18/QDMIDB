@@ -22,14 +22,14 @@ public class Query {
     }
 
     public void start()
-        throws IOException, DbException, TransactionAbortedException {
+        throws IOException, DbException, TransactionAbortedException, Exception {
         op.open();
 
         started = true;
     }
 
     /** @return true if there are more tuples remaining. */
-    public boolean hasNext() throws DbException, TransactionAbortedException {
+    public boolean hasNext() throws DbException, TransactionAbortedException, Exception {
         return op.hasNext();
     }
 
@@ -40,7 +40,7 @@ public class Query {
         @throws NoSuchElementException If the iterator has finished iterating
         @throws TransactionAbortedException If the transaction is aborted (e.g., due to a deadlock)
     */
-    public Tuple next() throws DbException, NoSuchElementException, TransactionAbortedException {
+    public Tuple next() throws DbException, NoSuchElementException, TransactionAbortedException, Exception {
         if (!started) throw new DbException("Database not started.");
 
         return op.next();

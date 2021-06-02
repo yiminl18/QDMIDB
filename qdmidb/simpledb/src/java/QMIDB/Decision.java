@@ -22,9 +22,4 @@ public class Decision {
         //to do
         return false;
     }
-
-    public Pair<Boolean,Boolean> DecideJoin(){//cleanNow bit for left and right relation in join predicate
-        //to do
-        return new Pair<>(false,false);
-    }
 }
