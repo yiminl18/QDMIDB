@@ -1,8 +1,6 @@
 package QMIDB;
 
-import simpledb.Field;
-import simpledb.JoinPredicate;
-import simpledb.Predicate;
+import simpledb.*;
 
 /*
     * a single predicate used in PredicateSet class
@@ -13,14 +11,37 @@ public class PredicateUnit {
     private Predicate.Op op;
     private Attribute right;
     private Field operand;
-    private boolean isJoin;
+    private Attribute aggregateAttribute;
+    private Aggregator.Op Aop;
+    private Attribute orderAttribute;
+    private String orderType; //desc, asc
+    private Attribute filterAttribute;
+    private String type;//Filter, Join, Aggregate, Order
 
-    public PredicateUnit(Attribute left, Predicate.Op op, Attribute right, Field operand, boolean isJoin) {
+    public PredicateUnit(Attribute left, Predicate.Op op, Attribute right) {//read join
         this.left = left;
         this.op = op;
         this.right = right;
+        this.type = "Join";
+    }
+
+    public PredicateUnit(Attribute filterAttribute, Predicate.Op op, Field operand){//read filter
+        this.filterAttribute = filterAttribute;
+        this.op = op;
         this.operand = operand;
-        this.isJoin = isJoin;
+        this.type = "Filter";
+    }
+
+    public PredicateUnit(Attribute aggregateAttribute, Aggregator.Op aop){//read aggregate
+        this.aggregateAttribute = aggregateAttribute;
+        this.Aop = aop;
+        this.type = "Aggregate";
+    }
+
+    public PredicateUnit(Attribute orderAttribute, String orderType){//read order
+        this.orderAttribute = orderAttribute;
+        this.orderType = orderType;
+        this.type = "Order";
     }
 
     public simpledb.JoinPredicate transform(){//transform to predicate that is accepted by simpledb
@@ -29,10 +50,6 @@ public class PredicateUnit {
 
     public Attribute getLeft() {
         return left;
-    }
-
-    public void setLeft(Attribute left) {
-        this.left = left;
     }
 
     public Predicate.Op getOp() {
@@ -47,23 +64,4 @@ public class PredicateUnit {
         return right;
     }
 
-    public void setRight(Attribute right) {
-        this.right = right;
-    }
-
-    public Field getOperand() {
-        return operand;
-    }
-
-    public void setOperand(Field operand) {
-        this.operand = operand;
-    }
-
-    public boolean getIsJoin() {
-        return isJoin;
-    }
-
-    public void setJoin(boolean join) {
-        isJoin = join;
-    }
 }

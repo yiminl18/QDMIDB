@@ -5,8 +5,12 @@ import simpledb.*;
 
 public class main {
     public static void main(String args[]) throws IOException,Exception {
+        init();
         test t = new test();
-        //t.testComplexQuery();
-        System.out.println(Integer.MIN_VALUE);
+        t.testComplexQuery();
+    }
+
+    public static void init(){
+
     }
 }

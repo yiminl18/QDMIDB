@@ -20,6 +20,6 @@ public class Decision {
 
     public boolean DecideNonJoin(){
         //to do
-        return false;
+        return true;
     }
 }

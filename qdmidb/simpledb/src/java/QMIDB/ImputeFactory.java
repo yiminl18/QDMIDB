@@ -12,7 +12,7 @@ public class ImputeFactory {
     }
 
     public static Field Impute(Field attributeValue){
-        Field imputedValue = new IntField(0);
+        Field imputedValue = new IntField(100);
         if(imputationMethod == "REGRESSION_TREE"){
             return RegressionTree(attributeValue);
         }else if(imputationMethod == "HOTDECK"){
