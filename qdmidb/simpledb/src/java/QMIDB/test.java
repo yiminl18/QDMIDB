@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.io.*;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.List;
 
 public class test {
 
@@ -132,5 +133,19 @@ public class test {
         fields[0]=new IntField(1);
         fields[1] = new IntField(2);
         System.out.println(fields[1]);
+    }
+
+    public static void printSchema(){
+        fileHandles fH = new fileHandles();
+        List<Attribute> schema = fH.readSchema();
+        List<PredicateUnit> predicates = fH.readPredicates();
+        System.out.println("printing schema");
+        for(int i=0;i<schema.size();i++){
+            System.out.println(schema.get(i).getAttribute());
+        }
+        System.out.println("printing predicates");
+        for(int i=0;i<predicates.size();i++){
+            predicates.get(i).print();
+        }
     }
 }

@@ -64,4 +64,25 @@ public class PredicateUnit {
         return right;
     }
 
+    public boolean getIsJoin(){
+        if(type.equals("Join")){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    public void print(){
+        switch (type){
+            case "Join":
+                System.out.println(left.getAttribute() + " " + op + " " + right.getAttribute());
+                break;
+            case "Filter":
+                System.out.println(filterAttribute.getAttribute() + " " + op + " " + operand);
+                break;
+            default:
+                System.out.println("Predicate other than join and filter");
+        }
+    }
+
 }

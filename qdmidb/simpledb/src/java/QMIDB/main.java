@@ -7,7 +7,7 @@ public class main {
     public static void main(String args[]) throws IOException,Exception {
         init();
         test t = new test();
-        t.testComplexQuery();
+        t.printSchema();
     }
 
     public static void init(){
