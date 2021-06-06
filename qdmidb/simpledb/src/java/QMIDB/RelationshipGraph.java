@@ -18,7 +18,7 @@ public class RelationshipGraph {
     private static List<GraphEdge> EdgeSet = new ArrayList<>();
     private static List<PredicateUnit> preds;
 
-    public RelationshipGraph(List<Attribute> Attributes, List<PredicateUnit> Preds) {
+    public static void initGraph(List<Attribute> Attributes, List<PredicateUnit> Preds) {
         preds = Preds;
         //initialize nodes
         for(int i=0;i<Attributes.size();i++){

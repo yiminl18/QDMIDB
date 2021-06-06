@@ -38,6 +38,8 @@ public interface Field extends Serializable{
 
     public boolean isMissing();
 
+    public boolean isNull();
+
     public String toString();
 
     static boolean areEqual(Field fo, Field fi) {

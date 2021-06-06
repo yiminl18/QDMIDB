@@ -9,8 +9,9 @@ public class IntField implements Field {
     
 	private static final long serialVersionUID = 1L;
 	
-	private final int value;
-    private final boolean missing;
+	private int value;
+    private boolean missing;
+    private boolean isnull;
 
     public int getValue() {
         if (isMissing()) {
@@ -33,7 +34,12 @@ public class IntField implements Field {
      */
     public IntField(int i) {
         value = i;
-        missing = false;
+        if(i == Type.MISSING_INTEGER){
+            missing = true;
+        }
+        if(i == Type.NULL_INTEGER){
+            isnull = true;
+        }
     }
 
     public IntField() {
@@ -110,5 +116,9 @@ public class IntField implements Field {
 
 	public boolean isMissing() {
         return missing;
+    }
+
+    public boolean isNull(){
+	    return isnull;
     }
 }

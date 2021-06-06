@@ -5,9 +5,12 @@ import simpledb.*;
 
 
 public class QueryProcessing {
-    public QueryProcessing(List<Attribute> Attributes, List<PredicateUnit> preds) {
+    public QueryProcessing() {
         //initialization
-        RelationshipGraph RG = new RelationshipGraph(Attributes, preds);
+        fileHandles fH = new fileHandles();
+        List<Attribute> schema = fH.readSchema();
+        List<PredicateUnit> predicates = fH.readPredicates();
+        RelationshipGraph.initGraph(schema, predicates);
 
     }
 
