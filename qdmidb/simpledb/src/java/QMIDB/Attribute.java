@@ -6,6 +6,15 @@ package QMIDB;
 public class Attribute {
     //format should be "tableName.attributeName"
     private String attribute;
+    private int schemaWidth;
+
+    public int getSchemaWidth() {
+        return schemaWidth;
+    }
+
+    public void setSchemaWidth(int schemaWidth) {
+        this.schemaWidth = schemaWidth;
+    }
 
     public Attribute(String attribute) {
         this.attribute = attribute;

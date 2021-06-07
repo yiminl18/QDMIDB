@@ -167,4 +167,11 @@ public class test {
             predicates.get(i).print();
         }
     }
+
+    public static void testSubDesc(){
+        Type types[] = new Type[]{Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE};
+        String names[] = new String[]{"field0", "field1", "field2"};
+        TupleDesc descriptor = new TupleDesc(types, names);
+        System.out.println(descriptor.SubTupleDesc(2,1));
+    }
 }

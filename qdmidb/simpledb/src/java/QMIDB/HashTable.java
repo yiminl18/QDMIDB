@@ -17,6 +17,11 @@ public class HashTable {
         hashMap = new HashMap<>();
     }
 
+    public HashTable(Attribute attributeName, HashMap<Field, List<Tuple>> table){
+        attribute = attributeName;
+        hashMap = table;
+    }
+
     public List<Tuple> getHashTable(Field field){
         return hashMap.get(field);
     }

@@ -9,7 +9,8 @@ public class main {
     public static void main(String args[]) throws IOException,Exception {
         QueryProcessing QP = new QueryProcessing();
         test t = new test();
-        t.testComplexQuery();
+        //t.testComplexQuery();
+        t.testSubDesc();
     }
 
 }

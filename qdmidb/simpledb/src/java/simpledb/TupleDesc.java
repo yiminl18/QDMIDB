@@ -54,6 +54,11 @@ public class TupleDesc implements Serializable, Iterable<TDItem> {
         size = s;
     }
 
+    public TupleDesc(List<TDItem> schema, int size){
+        this.schema = schema;
+        this.size = size;
+    }
+
     /**
      * Constructor. Create a new tuple desc with typeAr.length fields with
      * fields of the specified types, with anonymous (unnamed) fields.
@@ -88,7 +93,12 @@ public class TupleDesc implements Serializable, Iterable<TDItem> {
         }
         size = s;
     }
-    
+
+    public TupleDesc SubTupleDesc(int start, int size){
+        return new TupleDesc(this.schema.subList(start, start + size), size);
+    }
+
+
     /**
      * Constructor. Create a new tuple desc directly from a schema list.
      */
@@ -225,9 +235,8 @@ public class TupleDesc implements Serializable, Iterable<TDItem> {
      * Compares the specified object with this TupleDesc for equality. Two
      * TupleDescs are considered equal if they are the same size and if the n-th
      * type in this TupleDesc is equal to the n-th type in td.
-     * 
-     * @param
-     *            the Object to be compared for equality with this TupleDesc.
+     *
+     *             Object to be compared for equality with this TupleDesc.
      * @return true if the object is equal to this TupleDesc.
      */
 	@Override

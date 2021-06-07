@@ -11,7 +11,8 @@ public class QueryProcessing {
         List<Attribute> schema = fH.readSchema();
         List<PredicateUnit> predicates = fH.readPredicates();
         RelationshipGraph.initGraph(schema, predicates);
-
+        PredicateSet.initPredicateSet(predicates);
+        Schema.setSchema(schema);
     }
 
     public DbIterator constructQueryPlan(List<PredicateUnit> preds){

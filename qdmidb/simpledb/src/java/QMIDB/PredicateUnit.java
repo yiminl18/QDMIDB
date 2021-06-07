@@ -44,6 +44,10 @@ public class PredicateUnit {
         this.type = "Order";
     }
 
+    public Field getOperand(){
+        return operand;
+    }
+
     public simpledb.JoinPredicate transform(){//transform to predicate that is accepted by simpledb
         return new JoinPredicate(left.getAttribute(), op, right.getAttribute());
     }
@@ -62,6 +66,18 @@ public class PredicateUnit {
 
     public Attribute getRight() {
         return right;
+    }
+
+    public String getType() {return type;}
+
+    public Attribute getFilterAttribute() {return filterAttribute;}
+
+    public JoinPredicate toJoinPredicate(){
+        return new JoinPredicate(left.getAttribute(), op, right.getAttribute());
+    }
+
+    public Predicate toPredicate(){
+        return new Predicate(filterAttribute.getAttribute(), op, operand);
     }
 
     public boolean getIsJoin(){

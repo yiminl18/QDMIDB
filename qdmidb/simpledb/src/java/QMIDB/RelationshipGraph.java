@@ -9,6 +9,7 @@ import java.util.List;
 /*
     *Relationship graph is used to maintain the status of imputation in query processing
     *It takes input of predicates set of query to initialize the graph
+    *ihe: check if edge information stored in edgeSet and edgeMap is same or not
  */
 public class RelationshipGraph {
     private static Map<String, List<GraphNode>> adjNodes = new HashMap<>();//use the integer index of nodes to construct the graph
@@ -109,11 +110,33 @@ public class RelationshipGraph {
         return edges;
     }
 
+    public static List<String> findAllActiveEdge(){//return left attribute for all active predicates
+        List<String> edges = new ArrayList<>();
+        for(int i=0;i<EdgeSet.size();i++){
+            if(EdgeSet.get(i).getEdgeType() == 0 && EdgeSet.get(i).isActive()) {
+                edges.add(EdgeSet.get(i).getStartNode().getAttribute().getAttribute());
+            }
+        }
+        return edges;
+    }
+
     public static int getNumOfActiveEdge(){
         int count = 0;
         for(Map.Entry<String, GraphEdge> iter : edgeMap.entrySet()){
             if(iter.getValue().isActive()) count++;
         }
         return count;
+    }
+
+    public static void triggerByAttribute(Attribute attribute){
+        //first find all relevant join edges which have connected to given attribute
+        //and then trigger them if they are active
+        for(int i=0;i<EdgeSet.size();i++){
+            if(EdgeSet.get(i).getEdgeType() == 0 && (EdgeSet.get(i).getStartNode().getAttribute().getAttribute().equals(attribute) || EdgeSet.get(i).getEndNode().getAttribute().getAttribute().equals(attribute))){
+                if(EdgeSet.get(i).getStartNode().getNumOfNullValues() == 0 && EdgeSet.get(i).getEndNode().getNumOfNullValues() == 0){
+                    EdgeSet.get(i).setActive();
+                }
+            }
+        }
     }
 }

@@ -26,7 +26,9 @@ public class fileHandles {
                 n = Integer.valueOf(line);
                 for(int j=0;j<n;j++){
                     line = br.readLine();
-                    attributes.add(new Attribute(line.split("\\,")[1]));
+                    Attribute attribute = new Attribute(line.split("\\,")[1]);
+                    attribute.setSchemaWidth(n);
+                    attributes.add(attribute);
                 }
             }
         } catch (IOException e) {

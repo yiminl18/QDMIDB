@@ -197,6 +197,7 @@ public class Tuple implements Serializable {
         return missing;
     }
 
+
     public double error(Tuple t) throws BadErrorException {
 		if (!t.schema.equals(schema)) {
 			throw new IllegalArgumentException("Tuples have different schemas.");

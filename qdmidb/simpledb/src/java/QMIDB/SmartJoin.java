@@ -16,6 +16,7 @@ public class SmartJoin extends Operator{
 
     private HashTable table;//table stores the hashTable for child2 in join operator
     private Iterator<Tuple> matches, selfJoinResult = null;//similar to list
+    private HashMap<Predicate, Boolean> CleanBits;//call
 
     /**
      * Constructor. Accepts to children to join and the predicate to join them
@@ -29,9 +30,6 @@ public class SmartJoin extends Operator{
      *            Iterator for the right(inner) relation to join
      */
     public SmartJoin(JoinPredicate p, DbIterator child1, DbIterator child2) throws Exception{
-        Decision decide = new Decision(p);
-        CleanNow1 = decide.DecideJoin().getKey();
-        CleanNow2 = decide.DecideJoin().getValue();
         pred = p;
         this.child1 = child1;
         this.child2 = child2;
@@ -97,6 +95,9 @@ public class SmartJoin extends Operator{
     @Override
     public void open() throws DbException, NoSuchElementException,
             TransactionAbortedException, Exception {
+        Decision decide = new Decision(pred);
+        CleanNow1 = decide.DecideJoin().getKey();
+        CleanNow2 = decide.DecideJoin().getValue();
         super.open();
         child1.open();
         child2.open();
@@ -142,6 +143,12 @@ public class SmartJoin extends Operator{
     public void trigger(){
         if(RelationshipGraph.getNode(attribute1).getNumOfNullValues() == 0 && RelationshipGraph.getNode(attribute2).getNumOfNullValues() == 0){
             RelationshipGraph.getEdge(attribute1,attribute2).setActive();
+        }
+    }
+
+    public void trigger(Attribute left, Attribute right){
+        if(RelationshipGraph.getNode(left).getNumOfNullValues() == 0 && RelationshipGraph.getNode(right).getNumOfNullValues() == 0){
+            RelationshipGraph.getEdge(left,right).setActive();
         }
     }
 
@@ -299,31 +306,104 @@ public class SmartJoin extends Operator{
     public List<Tuple> selfJoin(Tuple t) throws Exception{//t must be in the left relation
         List<Tuple> matching = new ArrayList<>();
         matching.add(t);
-        //if the left attribute value is NULL or missing, it is impossible to find matching
-        Field leftValue  = t.getField(pred.getField1());
-        if(leftValue.isNull() || leftValue.isMissing()) return matching;
+        //check if the predicate attribute have missing values
+        for(int i=0;i<t.getTupleDesc().getSize();i++){
+            if(t.getField(i).isMissing()){
+                Attribute field = new Attribute(t.getTupleDesc().getFieldName(i));
+                if(!PredicateSet.isExist(field)){
+                    continue;
+                }
+                //ask decision node if clean now
 
-        List<String> validPredicates = RelationshipGraph.findActiveEdge(getJoinField1Name());
-        if(validPredicates.size() == 0) return matching;
-
-        boolean flag = false; //fast check first
-        for(int i=0;i<validPredicates.size();i++){
-            String validPred = validPredicates.get(i);
-            if(!HashTables.ifExistHashTable(validPred)){throw new Exception("Hashtable NOT Exist!");}
-            else{
-                if(!HashTables.getHashTable(validPred).getHashMap().containsKey(leftValue)){
-                    flag  =true;
-                    //has valid predicate but non-matching, this tuple must be filtered away
-                    return null;
+                List<PredicateUnit> predicates = PredicateSet.getPredicateUnits(field);
+                for(int j=0;j<predicates.size();j++){
+                    String type = predicates.get(j).getType();
+                    switch (type){
+                        case "Join":
+                            Decision decideJoin = new Decision(predicates.get(j).toJoinPredicate());
+                            boolean CleanLeft = decideJoin.DecideJoin().getKey();
+                            boolean CleanRight = decideJoin.DecideJoin().getValue();
+                            Attribute left = predicates.get(j).getLeft();
+                            Attribute right = predicates.get(j).getRight();
+                            boolean isUpdate = false;
+                            if(left.getAttribute().equals(field.getAttribute()) && CleanLeft){//left relation
+                                isUpdate = true;
+                                //clean tuple
+                                t.setField(i,ImputeFactory.Impute(null));
+                            }else if(right.getAttribute().equals(field.getAttribute()) && CleanRight){
+                                isUpdate = true;
+                                //clean tuple
+                                Field newValue = ImputeFactory.Impute(null);
+                                t.setField(i,newValue);
+                                //update hashTables
+                                if(!HashTables.ifExistHashTable(right.getAttribute())){
+                                    HashMap<Field, List<Tuple>> hashMap = new HashMap<>();
+                                    hashMap.put(newValue, new ArrayList<>());
+                                    hashMap.get(right.getAttribute()).add(subTuple(t,right,i));
+                                    HashTables.addHashTable(right.getAttribute(), new HashTable(right, hashMap));
+                                }
+                            }
+                            if(isUpdate){
+                                //update graph
+                                RelationshipGraph.getNode(field).NumOfNullValuesMinusOne();
+                                trigger(predicates.get(j).getLeft(), predicates.get(j).getRight());
+                            }
+                            break;
+                        case "Filter":
+                            Decision decideFilter = new Decision(predicates.get(j).toPredicate());
+                            boolean CleanFilter = decideFilter.DecideNonJoin();
+                            if(CleanFilter){
+                                Field newValue = ImputeFactory.Impute(null);
+                                //if satisfy filter predicate, then update the tuple
+                                if(newValue.compare(predicates.get(j).getOp(),predicates.get(j).getOperand())){
+                                    t.setField(i,newValue);
+                                }
+                            }
+                            break;
+                    }
                 }
             }
         }
+
+        //check all current active predicates
+        List<String> activeLeftAttribute = RelationshipGraph.findAllActiveEdge();
+        if(activeLeftAttribute.size() == 0) return matching;
+
+        boolean flag = false; //fast check first
+        for(int i=0;i<activeLeftAttribute.size();i++){
+            String leftAttribute = activeLeftAttribute.get(i);
+            Field leftValue = t.getField(t.getTupleDesc().fieldNameToIndex(leftAttribute));
+            if(!HashTables.ifExistHashTable(leftAttribute)){
+                throw new Exception("HashTable Not Found!");
+            }
+            else{
+                if(HashTables.getHashTable(leftAttribute).getHashMap().containsKey(leftValue)){//non-matching
+                    flag = true;
+                    break;
+                }
+            }
+        }
+
+        if(flag){
+            //if now a missing value is removed, update relationship graph
+            for(int i=0;i<t.getTupleDesc().getSize();i++){
+                if(t.getField(i).isMissing()){
+                    Attribute attribute = new Attribute(t.getTupleDesc().getFieldName(i));
+                    RelationshipGraph.getNode(attribute).NumOfNullValuesMinusOne();
+                    //only trigger join: find relevant join predicates
+                    RelationshipGraph.triggerByAttribute(attribute);
+                }
+            }
+            return null;
+        }
+
         //update tuples and construct matching
-        for(int i=0;i<validPredicates.size();i++){
+        for(int i=0;i<activeLeftAttribute.size();i++){
             int size = matching.size();
             for(int j=0;j<size;j++){
-                String validPred = validPredicates.get(i);
-                List<Tuple> temporalMatch = HashTables.getHashTable(validPred).getHashMap().get(leftValue);
+                String leftAttribute = activeLeftAttribute.get(i);
+                Field leftValue = t.getField(t.getTupleDesc().fieldNameToIndex(leftAttribute));
+                List<Tuple> temporalMatch = HashTables.getHashTable(leftAttribute).getHashMap().get(leftValue);
                 int tupleSize = temporalMatch.get(0).getTupleDesc().getSize();
                 String firstFieldName = temporalMatch.get(0).getTupleDesc().getFieldName(0);
                 int firstFieldIndex = t.getTupleDesc().fieldNameToIndex(firstFieldName);
@@ -340,6 +420,16 @@ public class SmartJoin extends Operator{
             }
         }
         return matching;
+    }
+
+    public Tuple subTuple(Tuple t, Attribute attribute, int start){
+        int width = Schema.getWidth(attribute.getAttribute());
+        TupleDesc subTD = t.getTupleDesc().SubTupleDesc(start, width);
+        Tuple subT = new Tuple(subTD);
+        for(int i=0;i<width;i++){
+            subT.setField(i, t.getField(i+start));
+        }
+        return subT;
     }
 
     @Override
