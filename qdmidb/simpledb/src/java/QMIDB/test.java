@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.io.*;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -64,6 +65,24 @@ public class test {
         SmartFilter sf1 = new SmartFilter(
                 new Predicate("S.c", Predicate.Op.GREATER_THAN, new IntField(0)), ss2);
 
+        //test smartJoin
+        JoinPredicate p1 = new JoinPredicate("R.b", Predicate.Op.EQUALS, "S.b");
+        SmartJoin sj = new SmartJoin(p1,ss1,sf1);
+
+        //test smartProject
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("R.a"));
+        attributes.add(new Attribute("R.b"));
+        attributes.add(new Attribute("S.b"));
+        attributes.add(new Attribute("S.c"));
+        Type[] types = new Type[]{Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE};
+        SmartProject sp = new SmartProject(attributes,types, sj);
+
+
+        //print Hashtables
+        //HashTables.print();
+        //System.out.println(RelationshipGraph.getNumOfActiveEdge());
+
 
         /*JoinPredicate p = new JoinPredicate("t1.a", Predicate.Op.EQUALS, "t2.a");
         JoinPredicate p1 = new JoinPredicate("t2.c", Predicate.Op.EQUALS, "t3.c");
@@ -73,15 +92,15 @@ public class test {
 
         // and run it
         try {
-            sf1.open();
-            while (sf1.hasNext()) {
-                Tuple tup = sf1.next();
-                System.out.println(sf1.getTupleDesc());
+            sp.open();
+            while (sp.hasNext()) {
+                Tuple tup = sp.next();
+                System.out.println(sp.getTupleDesc());
                 //System.out.println(j1.getJoinField1Name());
                 //System.out.println(j1.getJoinField2Name());
                 System.out.println(tup);
             }
-            sf1.close();
+            sp.close();
             Database.getBufferPool().transactionComplete(tid);
 
         } catch (Exception e) {

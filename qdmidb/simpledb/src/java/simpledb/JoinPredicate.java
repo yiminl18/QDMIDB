@@ -77,6 +77,8 @@ public class JoinPredicate implements Serializable {
         return t1.getField(field1).isMissing();
     }
 
+    public boolean isNullLeft(Tuple t1){return t1.getField(field1).isNull();}
+
     public boolean isMissingRight(Tuple t2){//check if the given tuple in right relation is missing
         return t2.getField(field2).isMissing();
     }

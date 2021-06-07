@@ -25,4 +25,12 @@ public class HashTables {
     public static boolean ifExistHashTable(String attribute){
         return hashTables.containsKey(attribute);
     }
+
+    public static void print(){
+        //print all hashTables for debugging
+        for(Map.Entry<String, HashTable> iter : hashTables.entrySet()){
+            System.out.println("Key: " + iter.getKey());
+            iter.getValue().print();
+        }
+    }
 }

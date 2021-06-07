@@ -7,10 +7,10 @@ import simpledb.*;
     *A boolen variable to indicate whether or not this null value is clean now or delay.
  */
 public class Decision {
-    Predicate pred;
-    boolean isJoin = false;
-    JoinPredicate joinpred;
-    Pair<Boolean,Boolean> JoinDecision;
+    private Predicate pred;
+    private boolean isJoin = false;
+    private JoinPredicate joinpred;
+    private Pair<Boolean,Boolean> JoinDecision;
 
     public Decision(Predicate pred) {
         this.pred = pred;
@@ -21,5 +21,10 @@ public class Decision {
     public boolean DecideNonJoin(){
         //to do
         return true;
+    }
+
+    public Pair<Boolean,Boolean> DecideJoin(){
+        JoinDecision = new Pair<>(true, true);
+        return JoinDecision;
     }
 }

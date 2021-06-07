@@ -16,7 +16,7 @@ public class SmartProject extends Operator {
     private List<Integer> outFieldIds;
     private List<Attribute> attributes = new ArrayList<>();
 
-    List<Tuple> matching;
+    List<Tuple> matching = new ArrayList<>();
     private Iterator<Tuple> matchingResult = null;
 
     /**
@@ -117,58 +117,59 @@ public class SmartProject extends Operator {
     public void selfJoin(Tuple t) throws Exception{//t must be in the left relation
         matching.clear();
 
-        boolean flag = false; //fast check first
+        boolean isSelfJoin = false;
 
         for (int i = 0; i < td.numFields(); i++) {//iterate all projected missing values
             Field value = t.getField(outFieldIds.get(i));
             if(value.isMissing()){
+                //clean this value
+                value = ImputeFactory.Impute(value);
+                t.setField(i,value);
                 //check if there is matching tuples for this missing value
                 List<String> validPredicates = RelationshipGraph.findActiveEdge(td.getFieldName(outFieldIds.get(i)));
                 for(int j=0;j<validPredicates.size();j++){
+                    isSelfJoin = true;
                     String validPred = validPredicates.get(j);
                     if(!HashTables.ifExistHashTable(validPred)){throw new Exception("Hashtable NOT Exist!");}
                     else{
                         if(!HashTables.getHashTable(validPred).getHashMap().containsKey(value)){
-                            flag = true;
-                            break;
+                            //at least one projected values in this tuple is violated with at least one predicate
+                            return ;
                         }
                     }
                 }
-                if(flag){//this value cannot find any matching tuples
-                    break;
-                }
+            }else if(value.isNull()){
+                //the projected value should not contain NULL values
+                return ;
             }
         }
 
-        if(flag){//at least one projected values in this tuple is violated with at least one predicate
+        matching.add(t);
+        if(!isSelfJoin){//selfJoin is not triggered
             return ;
         }
-
-        //if codes go here, then this tuple should be cleaned, merged and returned
-        matching.add(t);
+        //if codes go here, then this tuple should be merged and returned
         for (int j = 0; j < td.numFields(); j++) {
             Field value = t.getField(outFieldIds.get(j));
-            if(value.isMissing()){
-                List<String> validPredicates = RelationshipGraph.findActiveEdge(td.getFieldName(outFieldIds.get(j)));
+            List<String> validPredicates = RelationshipGraph.findActiveEdge(td.getFieldName(outFieldIds.get(j)));
 
-                for(int i=0;i<validPredicates.size();i++){
-                    int size = matching.size();
-                    for(int p=0;p<size;p++){
-                        String validPred = validPredicates.get(i);
-                        List<Tuple> temporalMatch = HashTables.getHashTable(validPred).getHashMap().get(value);
-                        int tupleSize = temporalMatch.get(0).getTupleDesc().getSize();
-                        String firstFieldName = temporalMatch.get(0).getTupleDesc().getFieldName(0);
-                        int firstFieldIndex = t.getTupleDesc().fieldNameToIndex(firstFieldName);
-                        if(firstFieldIndex == -1){//attributes of right tuple is not included in left tuple
-                            break;//jump to next predicate
+            for(int i=0;i<validPredicates.size();i++){
+                int size = matching.size();
+                for(int p=0;p<size;p++){
+                    String validPred = validPredicates.get(i);
+                    List<Tuple> temporalMatch = HashTables.getHashTable(validPred).getHashMap().get(value);
+                    int tupleSize = temporalMatch.get(0).getTupleDesc().getSize();
+                    String firstFieldName = temporalMatch.get(0).getTupleDesc().getFieldName(0);
+                    int firstFieldIndex = t.getTupleDesc().fieldNameToIndex(firstFieldName);
+                    if(firstFieldIndex == -1){//attributes of right tuple is not included in left tuple
+                        break;//jump to next predicate
+                    }
+                    for(int k=0;k<temporalMatch.size();k++){//iterate all the matching tuples
+                        Tuple tt = matching.get(p);
+                        for(int kk=0;kk<tupleSize;kk++){
+                            tt.setField(firstFieldIndex+kk, temporalMatch.get(p).getField(kk));
                         }
-                        for(int k=0;k<temporalMatch.size();k++){//iterate all the matching tuples
-                            Tuple tt = matching.get(p);
-                            for(int kk=0;kk<tupleSize;kk++){
-                                tt.setField(firstFieldIndex+kk, temporalMatch.get(p).getField(kk));
-                            }
-                            matching.add(tt);
-                        }
+                        matching.add(tt);
                     }
                 }
             }

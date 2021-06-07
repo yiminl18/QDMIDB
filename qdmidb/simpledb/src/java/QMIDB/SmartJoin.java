@@ -14,7 +14,7 @@ public class SmartJoin extends Operator{
     private Tuple t1 = null, t11 = null;
     private final Type type;
 
-    private HashTable table;
+    private HashTable table;//table stores the hashTable for child2 in join operator
     private Iterator<Tuple> matches, selfJoinResult = null;//similar to list
 
     /**
@@ -30,14 +30,15 @@ public class SmartJoin extends Operator{
      */
     public SmartJoin(JoinPredicate p, DbIterator child1, DbIterator child2) throws Exception{
         Decision decide = new Decision(p);
-        CleanNow1 = decide.JoinDecision.getKey();
-        CleanNow2 = decide.JoinDecision.getValue();
-        attribute1 = new Attribute(getJoinField1Name());
-        attribute2 = new Attribute(getJoinField2Name());
+        CleanNow1 = decide.DecideJoin().getKey();
+        CleanNow2 = decide.DecideJoin().getValue();
         pred = p;
         this.child1 = child1;
         this.child2 = child2;
         pred.setField(this.child1, this.child2);
+        attribute1 = new Attribute(getJoinField1Name());
+        attribute2 = new Attribute(getJoinField2Name());
+        table = new HashTable(attribute2);
 
         switch(pred.getOperator()) {
             case EQUALS:
@@ -129,6 +130,8 @@ public class SmartJoin extends Operator{
                     }
                     table.getHashMap().get(joinAttr).add(t);
                 }
+                //update table to HashTable
+                HashTables.addHashTable(attribute2.getAttribute(), table);
             }else{
                 table = HashTables.getHashTable(getJoinField2Name());
             }
@@ -193,11 +196,15 @@ public class SmartJoin extends Operator{
                         if (child1.hasNext()) {
                             t1 = child1.next();
                             //check if t1 can be applied using self join condition
-                            selfJoinResult = selfJoin(t1).iterator();
-                            if(selfJoinResult == null){
+                            //check if it has missing values ..... ihe
+                            List<Tuple> joinResult = selfJoin(t1);
+                            if(joinResult == null){
+                                System.out.println(t1 + " no join result");
+                                t1 = null;
                                 //t1 is filtered away
                                 continue;
                             }
+                            selfJoinResult = selfJoin(t1).iterator();
                             while(selfJoinResult.hasNext()){
                                 t11 = selfJoinResult.next();
                                 //check cleaning for left relation : child 1
@@ -223,6 +230,8 @@ public class SmartJoin extends Operator{
                                             return new Tuple(t11, constructNullTuple(child2));
                                         }
                                         else{
+                                            //ihe - space optimization: for non-matching tuples which do not have missing values, do not store
+                                            //their information is contained in hashTable
                                             t1 = null;
                                             continue;
                                         }
@@ -288,21 +297,28 @@ public class SmartJoin extends Operator{
     }
 
     public List<Tuple> selfJoin(Tuple t) throws Exception{//t must be in the left relation
-        List<Tuple> matching = null;
-        List<String> validPredicates = RelationshipGraph.findActiveEdge(getJoinField1Name());
+        List<Tuple> matching = new ArrayList<>();
+        matching.add(t);
+        //if the left attribute value is NULL or missing, it is impossible to find matching
         Field leftValue  = t.getField(pred.getField1());
+        if(leftValue.isNull() || leftValue.isMissing()) return matching;
+
+        List<String> validPredicates = RelationshipGraph.findActiveEdge(getJoinField1Name());
+        if(validPredicates.size() == 0) return matching;
+
         boolean flag = false; //fast check first
         for(int i=0;i<validPredicates.size();i++){
             String validPred = validPredicates.get(i);
             if(!HashTables.ifExistHashTable(validPred)){throw new Exception("Hashtable NOT Exist!");}
             else{
                 if(!HashTables.getHashTable(validPred).getHashMap().containsKey(leftValue)){
+                    flag  =true;
+                    //has valid predicate but non-matching, this tuple must be filtered away
                     return null;
                 }
             }
         }
         //update tuples and construct matching
-        matching.add(t);
         for(int i=0;i<validPredicates.size();i++){
             int size = matching.size();
             for(int j=0;j<size;j++){

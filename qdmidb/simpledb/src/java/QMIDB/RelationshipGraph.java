@@ -108,4 +108,12 @@ public class RelationshipGraph {
         }
         return edges;
     }
+
+    public static int getNumOfActiveEdge(){
+        int count = 0;
+        for(Map.Entry<String, GraphEdge> iter : edgeMap.entrySet()){
+            if(iter.getValue().isActive()) count++;
+        }
+        return count;
+    }
 }

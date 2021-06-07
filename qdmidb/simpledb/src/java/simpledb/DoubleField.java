@@ -67,6 +67,7 @@ public class DoubleField implements Field {
 	public boolean isMissing() {
 		return value == null;
 	}
+	public boolean isNull() {return value == null;}
 	
 	public double getValue() {
 		return value;

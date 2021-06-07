@@ -42,4 +42,15 @@ public class HashTable {
     }
 
     public void clear(){hashMap.clear();}
+
+    public void print(){
+        //printing hashtable for debugging purpose
+        for(Map.Entry<Field, List<Tuple>> iter : hashMap.entrySet()){
+            System.out.println("Field: " + iter.getKey());
+            List<Tuple> match = iter.getValue();
+            for(int i=0;i<match.size();i++){
+                System.out.println("Matching Tuple: " + match.get(i));
+            }
+        }
+    }
 }
