@@ -212,7 +212,6 @@ public class SmartJoin extends Operator{
                             t1 = child1.next();
                             List<Tuple> joinResult = selfJoin(t1);
                             if(joinResult == null){
-                                //System.out.println(t1 + " no join result");
                                 t1 = null;
                                 selfJoinFlag = false;
                                 //t1 is filtered away
@@ -304,11 +303,11 @@ public class SmartJoin extends Operator{
 
     public List<Tuple> selfJoin(Tuple t) throws Exception{//t must be in the left relation
         List<Tuple> matching = new ArrayList<>();
-        matching.add(t);
         //check if the predicate attribute have missing values
         for(int i=0;i<t.getTupleDesc().numFields();i++){
             if(t.getField(i).isMissing()){
-                Attribute field = new Attribute(t.getTupleDesc().getFieldName(i));
+                String field = t.getTupleDesc().getFieldName(i);
+                //System.out.println("attribute name = " + field);
                 if(!PredicateSet.isExist(field)){
                     continue;
                 }
@@ -325,11 +324,11 @@ public class SmartJoin extends Operator{
                             Attribute left = predicates.get(j).getLeft();
                             Attribute right = predicates.get(j).getRight();
                             boolean isUpdate = false;
-                            if(left.getAttribute().equals(field.getAttribute()) && CleanLeft){//left relation
+                            if(left.getAttribute().equals(field) && CleanLeft){//left relation
                                 isUpdate = true;
                                 //clean tuple
                                 t.setField(i,ImputeFactory.Impute(null));
-                            }else if(right.getAttribute().equals(field.getAttribute()) && CleanRight){
+                            }else if(right.getAttribute().equals(field) && CleanRight){
                                 isUpdate = true;
                                 //clean tuple
                                 Field newValue = ImputeFactory.Impute(null);
@@ -344,7 +343,7 @@ public class SmartJoin extends Operator{
                             }
                             if(isUpdate){
                                 //update graph
-                                RelationshipGraph.getNode(field).NumOfNullValuesMinusOne();
+                                RelationshipGraph.getNode(new Attribute(field)).NumOfNullValuesMinusOne();
                                 trigger(predicates.get(j).getLeft(), predicates.get(j).getRight());
                             }
                             break;
@@ -364,6 +363,8 @@ public class SmartJoin extends Operator{
             }
         }
 
+        matching.add(t);
+        //System.out.println("here " + matching.size() + " " + t);
         //check all current active predicates
         List<String> activeLeftAttribute = RelationshipGraph.findAllActiveEdge();
         if(activeLeftAttribute.size() == 0) return matching;

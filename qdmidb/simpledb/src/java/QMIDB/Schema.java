@@ -20,4 +20,10 @@ public class Schema {
     public static int getWidth(String attributeName){
         return schemaWidthMap.get(attributeName);
     }
+
+    public static void print(){
+        for(int i=0;i<schema.size();i++){
+            System.out.println(schema.get(i).getAttribute());
+        }
+    }
 }

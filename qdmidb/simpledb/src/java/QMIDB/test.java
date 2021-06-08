@@ -27,17 +27,18 @@ public class test {
 
     public static void testComplexQuery() throws Exception{
         Type types1[] = new Type[]{ Type.INT_TYPE, Type.INT_TYPE};
-        String names1[] = new String[]{ "a", "b"};
+        String names1[] = new String[]{ "R.a", "R.b"};
 
         TupleDesc td1 = new TupleDesc(types1, names1);
 
         Type types2[] = new Type[]{ Type.INT_TYPE, Type.INT_TYPE};
-        String names2[] = new String[]{"b", "c" };
+        String names2[] = new String[]{"S.b", "S.c" };
 
         TupleDesc td2 = new TupleDesc(types2, names2);
+        //td1.print();
 
         Type types3[] = new Type[]{ Type.INT_TYPE, Type.INT_TYPE};
-        String names3[] = new String[]{ "a", "d"};
+        String names3[] = new String[]{ "T.a", "T.d"};
 
         TupleDesc td3 = new TupleDesc(types3, names3);
 
@@ -45,6 +46,8 @@ public class test {
         // and tell the catalog about the schema the tables.
         HeapFile table1 = new HeapFile(new File("simpledb/testdata/R.dat"), td1);
         Database.getCatalog().addTable(table1, "R");
+
+        //table1.getTupleDesc().print();
 
         HeapFile table2 = new HeapFile(new File("simpledb/testdata/S.dat"), td2);
         Database.getCatalog().addTable(table2, "S");
@@ -60,6 +63,8 @@ public class test {
         SeqScan ss2 = new SeqScan(tid, table2.getId(), "S");
         SeqScan ss3 = new SeqScan(tid, table3.getId(), "T");
         //System.out.println(ss1.getTupleDesc());
+
+        //ss1.getTupleDesc().print();
 
         // create a filter for the where condition
         SmartFilter sf1 = new SmartFilter(
@@ -95,9 +100,6 @@ public class test {
             sj.open();
             while (sj.hasNext()) {
                 Tuple tup = sj.next();
-                System.out.println(sj.getTupleDesc());
-                //System.out.println(j1.getJoinField1Name());
-                //System.out.println(j1.getJoinField2Name());
                 System.out.println(tup);
             }
             sj.close();

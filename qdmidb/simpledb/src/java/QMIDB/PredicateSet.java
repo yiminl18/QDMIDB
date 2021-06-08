@@ -10,7 +10,7 @@ import java.util.List;
  */
 public class PredicateSet {
     private static List<PredicateUnit> predicateSet;
-    private static HashMap<Attribute, List<PredicateUnit>> predicateMap;
+    private static HashMap<String, List<PredicateUnit>> predicateMap;
 
     public static void initPredicateSet(List<PredicateUnit> predicateSET){
         predicateSet = predicateSET;
@@ -20,15 +20,15 @@ public class PredicateSet {
         for(int i=0;i<predicateSet.size();i++){
             switch (predicateSet.get(i).getType()){
                 case "Join":
-                    Attribute left = predicateSet.get(i).getLeft();
-                    Attribute right = predicateSet.get(i).getRight();
+                    String left = predicateSet.get(i).getLeft().getAttribute();
+                    String right = predicateSet.get(i).getRight().getAttribute();
                     if(!predicateMap.containsKey(left)){
                         predicateMap.put(left, new ArrayList<PredicateUnit>());
                     }
                     predicateMap.get(left).add(predicateSet.get(i));
                     break;
                 case "Filter":
-                    Attribute attribute = predicateSet.get(i).getFilterAttribute();
+                    String attribute = predicateSet.get(i).getFilterAttribute().getAttribute();
                     if(!predicateMap.containsKey(attribute)){
                         predicateMap.put(attribute, new ArrayList<PredicateUnit>());
                     }
@@ -40,11 +40,17 @@ public class PredicateSet {
         }
     }
 
-    public static boolean isExist(Attribute attribute){
+    public static boolean isExist(String attribute){
         return predicateMap.containsKey(attribute);
     }
 
-    public static List<PredicateUnit> getPredicateUnits(Attribute attribute){
+    public static List<PredicateUnit> getPredicateUnits(String attribute){
         return predicateMap.get(attribute);
+    }
+
+    public static void print(){
+        for(int i=0;i<predicateSet.size();i++){
+            predicateSet.get(i).print();
+        }
     }
 }

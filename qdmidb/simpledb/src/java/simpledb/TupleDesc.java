@@ -90,6 +90,11 @@ public class TupleDesc implements Serializable, Iterable<TDItem> {
         size = s;
     }
 
+    public TupleDesc(TupleDesc td){
+        schema = td.schema;
+        size = td.size;
+    }
+
     public TupleDesc SubTupleDesc(int start, int numOfAttribute){
         return new TupleDesc(this.schema.subList(start, start + numOfAttribute));
     }
@@ -172,6 +177,12 @@ public class TupleDesc implements Serializable, Iterable<TDItem> {
         	index++;
         }
         return flag;
+    }
+
+    public void print(){
+        for(TDItem i : schema){
+            System.out.println(i.fieldName);
+        }
     }
     
     /**
