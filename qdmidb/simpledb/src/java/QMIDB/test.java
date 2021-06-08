@@ -92,15 +92,15 @@ public class test {
 
         // and run it
         try {
-            sp.open();
-            while (sp.hasNext()) {
-                Tuple tup = sp.next();
-                System.out.println(sp.getTupleDesc());
+            sj.open();
+            while (sj.hasNext()) {
+                Tuple tup = sj.next();
+                System.out.println(sj.getTupleDesc());
                 //System.out.println(j1.getJoinField1Name());
                 //System.out.println(j1.getJoinField2Name());
                 System.out.println(tup);
             }
-            sp.close();
+            sj.close();
             Database.getBufferPool().transactionComplete(tid);
 
         } catch (Exception e) {

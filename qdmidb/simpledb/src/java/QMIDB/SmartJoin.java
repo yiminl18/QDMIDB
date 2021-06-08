@@ -11,8 +11,9 @@ public class SmartJoin extends Operator{
     private DbIterator child1, child2;
     private Attribute attribute1, attribute2;
     private boolean CleanNow1, CleanNow2;//ask decision node if we need to clean missing values in this join operator
-    private Tuple t1 = null, t11 = null;
+    private Tuple t1 = null, t11 = null;//t11 stores selfJoinResult
     private final Type type;
+    private boolean selfJoinFlag = false;
 
     private HashTable table;//table stores the hashTable for child2 in join operator
     private Iterator<Tuple> matches, selfJoinResult = null;//similar to list
@@ -196,57 +197,68 @@ public class SmartJoin extends Operator{
                 boolean isBuild = true;
                 if(HashTables.findHashTable(table1) == -1){isBuild = false;}//not found the hashTable*/
 
-                while (true) {
-                    // If we don't have a working tuple from the outer relation, get one.
-                    // If nothing's available, we're done.
-                    if (t1 == null) {
-                        if (child1.hasNext()) {
+                while(true){
+                    if(t1 == null){
+                        if(selfJoinFlag){
+                            if(selfJoinResult.hasNext()){
+                                selfJoinFlag = true;
+                                t11 = selfJoinResult.next();
+                            }else{
+                                t1 = null;
+                                selfJoinFlag = false;
+                                continue;
+                            }
+                        }else if(child1.hasNext()){
                             t1 = child1.next();
-                            //check if t1 can be applied using self join condition
                             List<Tuple> joinResult = selfJoin(t1);
                             if(joinResult == null){
-                                System.out.println(t1 + " no join result");
+                                //System.out.println(t1 + " no join result");
                                 t1 = null;
+                                selfJoinFlag = false;
                                 //t1 is filtered away
                                 continue;
                             }
                             selfJoinResult = selfJoin(t1).iterator();
-                            while(selfJoinResult.hasNext()){
+                            if(selfJoinResult.hasNext()){
+                                selfJoinFlag = true;
                                 t11 = selfJoinResult.next();
-
-                                //find all matching tuples in inner relation,and store in matches
-                                if (matches == null) {
-                                    List<Tuple> m = table.getHashMap().get(t11.getField(pred.getField1()));
-                                    if (m == null) {
-                                        //implement outer join only for tuples containing null values
-                                        if(t11.hasMissingFields()){
-                                            t1 = null;
-                                            return new Tuple(t11, constructNullTuple(child2));
-                                        }
-                                        else{
-                                            //space optimization: for non-matching tuples which do not have missing values, do not store
-                                            //their information is contained in hashTable
-                                            t1 = null;
-                                            continue;
-                                        }
-                                    }else{
-                                        matches = m.iterator();
-                                    }
-                                }
-
-                                while (true) {
-                                    if (matches.hasNext()) {
-                                        Tuple t2 = matches.next();
-                                        return new Tuple(t11, t2);
-                                    } else {
-                                        t1 = null;
-                                        matches = null;
-                                        break;
-                                    }
-                                }
+                            }else{
+                                t1 = null;
+                                selfJoinFlag = false;
+                                continue;
                             }
-                        } else {
+                        }else{
                             return null;
+                        }
+                    }
+
+                    if (matches == null) {
+                        List<Tuple> m = table.getHashMap().get(t11.getField(pred.getField1()));
+                        if (m == null) {
+                            //implement outer join only for tuples containing null values
+                            if(t11.hasMissingFields()){
+                                t1 = null;
+                                return new Tuple(t11, constructNullTuple(child2));
+                            }
+                            else{
+                                //space optimization: for non-matching tuples which do not have missing values, do not store
+                                //their information is contained in hashTable
+                                t1 = null;
+                                continue;
+                            }
+                        }else{
+                            matches = m.iterator();
+                        }
+                    }
+
+                    while (true) {
+                        if (matches.hasNext()) {
+                            Tuple t22 = matches.next();
+                            return new Tuple(t11, t22);
+                        } else {
+                            t1 = null;
+                            matches = null;
+                            break;
                         }
                     }
                 }
