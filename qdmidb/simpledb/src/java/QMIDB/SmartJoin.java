@@ -203,7 +203,6 @@ public class SmartJoin extends Operator{
                         if (child1.hasNext()) {
                             t1 = child1.next();
                             //check if t1 can be applied using self join condition
-                            //check if it has missing values ..... ihe
                             List<Tuple> joinResult = selfJoin(t1);
                             if(joinResult == null){
                                 System.out.println(t1 + " no join result");
@@ -214,17 +213,6 @@ public class SmartJoin extends Operator{
                             selfJoinResult = selfJoin(t1).iterator();
                             while(selfJoinResult.hasNext()){
                                 t11 = selfJoinResult.next();
-                                //check cleaning for left relation : child 1
-                                if(pred.isMissingLeft(t11)){
-                                    //ask decision function if clean now
-                                    if(CleanNow1){
-                                        //clean this tuple
-                                        t11 = pred.updateTupleLeft(t11,ImputeFactory.Impute(t11.getField(pred.getField1())));
-                                        //update NumOfNullValue for corresponding graph node
-                                        RelationshipGraph.getNode(this.attribute1).NumOfNullValuesMinusOne();
-                                        trigger();
-                                    }
-                                }
 
                                 //find all matching tuples in inner relation,and store in matches
                                 if (matches == null) {
@@ -233,11 +221,10 @@ public class SmartJoin extends Operator{
                                         //implement outer join only for tuples containing null values
                                         if(t11.hasMissingFields()){
                                             t1 = null;
-                                            //ihe: to verify this logic
                                             return new Tuple(t11, constructNullTuple(child2));
                                         }
                                         else{
-                                            //ihe - space optimization: for non-matching tuples which do not have missing values, do not store
+                                            //space optimization: for non-matching tuples which do not have missing values, do not store
                                             //their information is contained in hashTable
                                             t1 = null;
                                             continue;
@@ -296,8 +283,8 @@ public class SmartJoin extends Operator{
 
     public Tuple constructNullTuple(DbIterator child){
         TupleDesc schema = child.getTupleDesc();
-        Field[] fields = new Field[schema.getSize()];
-        for(int i=0;i<schema.getSize();i++){
+        Field[] fields = new Field[schema.numFields()];
+        for(int i=0;i<schema.numFields();i++){
             fields[i] = new IntField(simpledb.Type.NULL_INTEGER);
         }
         return new Tuple(schema, fields);
@@ -307,7 +294,7 @@ public class SmartJoin extends Operator{
         List<Tuple> matching = new ArrayList<>();
         matching.add(t);
         //check if the predicate attribute have missing values
-        for(int i=0;i<t.getTupleDesc().getSize();i++){
+        for(int i=0;i<t.getTupleDesc().numFields();i++){
             if(t.getField(i).isMissing()){
                 Attribute field = new Attribute(t.getTupleDesc().getFieldName(i));
                 if(!PredicateSet.isExist(field)){
@@ -386,7 +373,7 @@ public class SmartJoin extends Operator{
 
         if(flag){
             //if now a missing value is removed, update relationship graph
-            for(int i=0;i<t.getTupleDesc().getSize();i++){
+            for(int i=0;i<t.getTupleDesc().numFields();i++){
                 if(t.getField(i).isMissing()){
                     Attribute attribute = new Attribute(t.getTupleDesc().getFieldName(i));
                     RelationshipGraph.getNode(attribute).NumOfNullValuesMinusOne();
@@ -404,7 +391,7 @@ public class SmartJoin extends Operator{
                 String leftAttribute = activeLeftAttribute.get(i);
                 Field leftValue = t.getField(t.getTupleDesc().fieldNameToIndex(leftAttribute));
                 List<Tuple> temporalMatch = HashTables.getHashTable(leftAttribute).getHashMap().get(leftValue);
-                int tupleSize = temporalMatch.get(0).getTupleDesc().getSize();
+                int tupleSize = temporalMatch.get(0).getTupleDesc().numFields();
                 String firstFieldName = temporalMatch.get(0).getTupleDesc().getFieldName(0);
                 int firstFieldIndex = t.getTupleDesc().fieldNameToIndex(firstFieldName);
                 if(firstFieldIndex == -1){//attributes of right tuple is not included in left tuple

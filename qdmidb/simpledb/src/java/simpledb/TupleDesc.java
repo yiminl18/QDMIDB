@@ -8,8 +8,8 @@ import java.util.*;
  */
 public class TupleDesc implements Serializable, Iterable<TDItem> {
     //private final TDItem[] schema;
-    private final List<TDItem> schema;
-    private final int size;
+    private List<TDItem> schema;
+    private int size;
 
     /**
      * @return
@@ -54,10 +54,6 @@ public class TupleDesc implements Serializable, Iterable<TDItem> {
         size = s;
     }
 
-    public TupleDesc(List<TDItem> schema, int size){
-        this.schema = schema;
-        this.size = size;
-    }
 
     /**
      * Constructor. Create a new tuple desc with typeAr.length fields with
@@ -94,8 +90,8 @@ public class TupleDesc implements Serializable, Iterable<TDItem> {
         size = s;
     }
 
-    public TupleDesc SubTupleDesc(int start, int size){
-        return new TupleDesc(this.schema.subList(start, start + size), size);
+    public TupleDesc SubTupleDesc(int start, int numOfAttribute){
+        return new TupleDesc(this.schema.subList(start, start + numOfAttribute));
     }
 
 
