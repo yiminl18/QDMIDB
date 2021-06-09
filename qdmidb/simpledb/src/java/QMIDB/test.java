@@ -74,13 +74,14 @@ public class test {
         JoinPredicate p1 = new JoinPredicate("R.b", Predicate.Op.EQUALS, "S.b");
         SmartJoin sj = new SmartJoin(p1,ss1,sf1);
 
+
         //test smartProject
         List<Attribute> attributes = new ArrayList<>();
         attributes.add(new Attribute("R.a"));
         attributes.add(new Attribute("R.b"));
-        attributes.add(new Attribute("S.b"));
-        attributes.add(new Attribute("S.c"));
-        Type[] types = new Type[]{Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE};
+        //attributes.add(new Attribute("S.b"));
+        //attributes.add(new Attribute("S.c"));
+        Type[] types = new Type[]{Type.INT_TYPE, Type.INT_TYPE};
         SmartProject sp = new SmartProject(attributes,types, sj);
 
 
@@ -97,12 +98,12 @@ public class test {
 
         // and run it
         try {
-            sj.open();
-            while (sj.hasNext()) {
-                Tuple tup = sj.next();
+            sp.open();
+            while (sp.hasNext()) {
+                Tuple tup = sp.next();
                 System.out.println(tup);
             }
-            sj.close();
+            sp.close();
             Database.getBufferPool().transactionComplete(tid);
 
         } catch (Exception e) {

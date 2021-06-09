@@ -14,7 +14,6 @@ public class SmartProject extends Operator {
     private DbIterator child;
     private TupleDesc td;
     private List<Integer> outFieldIds;
-    private List<Attribute> attributes = new ArrayList<>();
 
     List<Tuple> matching = new ArrayList<>();
     private Iterator<Tuple> matchingResult = null;
@@ -83,6 +82,7 @@ public class SmartProject extends Operator {
             matchingResult = matching.iterator();
             while(matchingResult.hasNext()){
                 Tuple matchTuple = matchingResult.next();
+                //System.out.println("match tuple: " + matchTuple);
                 Tuple newTuple = new Tuple(td);
                 boolean isContainNull = false;
                 for (int i = 0; i < td.numFields(); i++) {
@@ -94,7 +94,7 @@ public class SmartProject extends Operator {
                     newTuple.setField(i, value);
                 }
                 if(!isContainNull){
-                    return matchTuple;
+                    return newTuple;
                 }
             }
         }
@@ -121,15 +121,24 @@ public class SmartProject extends Operator {
 
         for (int i = 0; i < td.numFields(); i++) {//iterate all projected missing values
             Field value = t.getField(outFieldIds.get(i));
-            if(value.isMissing()){
-                //clean this value
-                value = ImputeFactory.Impute(value);
-                t.setField(i,value);
-                //check if there is matching tuples for this missing value
-                List<String> validPredicates = RelationshipGraph.findActiveEdge(td.getFieldName(outFieldIds.get(i)));
-                for(int j=0;j<validPredicates.size();j++){
+            if(value.isNull()){
+                return ;
+            }else{//missing or has value
+                if(value.isMissing()){
+                    value = ImputeFactory.Impute(value);
+                    t.setField(i,value);
+                }else{
+                    value = t.getField(i);
+                }
+                //in final project should force to check for each related predicate, not valid
+                //because in pipeline implementation, valid predicates may come later
+                List<String> relatedPredicates = RelationshipGraph.findRelatedEdge(td.getFieldName(outFieldIds.get(i)));
+                //System.out.println(relatedPredicates.size() + " ** " + td.getFieldName(outFieldIds.get(i)));
+                for(int j=0;j<relatedPredicates.size();j++){
                     isSelfJoin = true;
-                    String validPred = validPredicates.get(j);
+                    String validPred = relatedPredicates.get(j);
+                    //System.out.println("-- "+ validPred + " " + value);
+                    //HashTables.getHashTable(validPred).print();
                     if(!HashTables.ifExistHashTable(validPred)){throw new Exception("Hashtable NOT Exist!");}
                     else{
                         if(!HashTables.getHashTable(validPred).getHashMap().containsKey(value)){
@@ -138,9 +147,6 @@ public class SmartProject extends Operator {
                         }
                     }
                 }
-            }else if(value.isNull()){
-                //the projected value should not contain NULL values
-                return ;
             }
         }
 
@@ -148,17 +154,18 @@ public class SmartProject extends Operator {
         if(!isSelfJoin){//selfJoin is not triggered
             return ;
         }
+        //System.out.println(matching.get(0));
         //if codes go here, then this tuple should be merged and returned
         for (int j = 0; j < td.numFields(); j++) {
             Field value = t.getField(outFieldIds.get(j));
-            List<String> validPredicates = RelationshipGraph.findActiveEdge(td.getFieldName(outFieldIds.get(j)));
+            List<String> relatedPredicates = RelationshipGraph.findRelatedEdge(td.getFieldName(outFieldIds.get(j)));
 
-            for(int i=0;i<validPredicates.size();i++){
+            for(int i=0;i<relatedPredicates.size();i++){
                 int size = matching.size();
                 for(int p=0;p<size;p++){
-                    String validPred = validPredicates.get(i);
+                    String validPred = relatedPredicates.get(i);
                     List<Tuple> temporalMatch = HashTables.getHashTable(validPred).getHashMap().get(value);
-                    int tupleSize = temporalMatch.get(0).getTupleDesc().getSize();
+                    int tupleSize = temporalMatch.get(0).getTupleDesc().numFields();
                     String firstFieldName = temporalMatch.get(0).getTupleDesc().getFieldName(0);
                     int firstFieldIndex = t.getTupleDesc().fieldNameToIndex(firstFieldName);
                     if(firstFieldIndex == -1){//attributes of right tuple is not included in left tuple

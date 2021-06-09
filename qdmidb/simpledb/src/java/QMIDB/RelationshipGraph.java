@@ -110,6 +110,24 @@ public class RelationshipGraph {
         return edges;
     }
 
+    public static List<String> findRelatedEdge(String attribute){//return right (non-left) attribute for each related predicate
+        List<String> edges = new ArrayList<>();
+        for(int i=0;i<EdgeSet.size();i++){
+            if(EdgeSet.get(i).getEdgeType() == 0 && EdgeSet.get(i).getStartNode().getAttribute().getAttribute().equals(attribute)) {
+                edges.add(EdgeSet.get(i).getEndNode().getAttribute().getAttribute());
+            }
+        }
+        return edges;
+    }
+
+    public static void printJoinEdge(){
+        for(int i=0;i<EdgeSet.size();i++){
+            if(EdgeSet.get(i).getEdgeType() == 0){
+                System.out.println(EdgeSet.get(i).getStartNode().getAttribute().getAttribute() + " " + EdgeSet.get(i).getEndNode().getAttribute());
+            }
+        }
+    }
+
     public static List<String> findAllActiveEdge(){//return left attribute for all active predicates
         List<String> edges = new ArrayList<>();
         for(int i=0;i<EdgeSet.size();i++){

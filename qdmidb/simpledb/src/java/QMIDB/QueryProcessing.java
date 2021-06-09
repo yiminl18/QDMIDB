@@ -1,5 +1,6 @@
 package QMIDB;
 
+import java.util.ArrayList;
 import java.util.List;
 import simpledb.*;
 
@@ -8,8 +9,10 @@ public class QueryProcessing {
     public QueryProcessing() {
         //initialization
         fileHandles fH = new fileHandles();
-        List<Attribute> schema = fH.readSchema();
-        List<PredicateUnit> predicates = fH.readPredicates();
+        //List<Attribute> schema = fH.readSchema();
+        List<Attribute> schema = ManualSchema();
+        //List<PredicateUnit> predicates = fH.readPredicates();
+        List<PredicateUnit> predicates = ManualPredicates();
         RelationshipGraph.initGraph(schema, predicates);
         PredicateSet.initPredicateSet(predicates);
         Schema.setSchema(schema);
@@ -21,4 +24,19 @@ public class QueryProcessing {
         return iterator;
     }
 
+    public List<PredicateUnit> ManualPredicates(){//for testing purpose
+        List<PredicateUnit> predicates = new ArrayList<>();
+        predicates.add(new PredicateUnit(new Attribute("R.b"), Predicate.Op.EQUALS, new Attribute("S.b")));
+        predicates.add(new PredicateUnit(new Attribute("S.c"), Predicate.Op.GREATER_THAN, new IntField(0)));
+        return predicates;
+    }
+
+    public List<Attribute> ManualSchema(){//for testing purpose
+        List<Attribute> schema = new ArrayList<>();
+        schema.add(new Attribute("R.a"));
+        schema.add(new Attribute("R.b"));
+        schema.add(new Attribute("S.b"));
+        schema.add(new Attribute("S.c"));
+        return schema;
+    }
 }

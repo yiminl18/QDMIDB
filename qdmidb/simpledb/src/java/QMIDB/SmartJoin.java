@@ -364,7 +364,7 @@ public class SmartJoin extends Operator{
         }
 
         matching.add(t);
-        //System.out.println("here " + matching.size() + " " + t);
+        //System.out.println("here " + t);
         //check all current active predicates
         List<String> activeLeftAttribute = RelationshipGraph.findAllActiveEdge();
         if(activeLeftAttribute.size() == 0) return matching;
