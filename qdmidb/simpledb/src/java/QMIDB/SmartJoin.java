@@ -335,7 +335,10 @@ public class SmartJoin extends Operator{
             }
             while(true){
                 if(hashMatch.hasNext()){
-                    return new Tuple(constructNullTuple(child1), hashMatch.next());
+                    Tuple tempT = hashMatch.next();
+                    if(tempT.hasMissingFields()){//outer join only constructs for tuples that have missing value
+                        return new Tuple(constructNullTuple(child1), hashMatch.next());
+                    }
                 }else{
                     hashMatch = null;
                     break;
