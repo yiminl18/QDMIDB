@@ -98,12 +98,12 @@ public class test {
 
         // and run it
         try {
-            sp.open();
-            while (sp.hasNext()) {
-                Tuple tup = sp.next();
+            sj.open();
+            while (sj.hasNext()) {
+                Tuple tup = sj.next();
                 System.out.println(tup);
             }
-            sp.close();
+            sj.close();
             Database.getBufferPool().transactionComplete(tid);
 
         } catch (Exception e) {

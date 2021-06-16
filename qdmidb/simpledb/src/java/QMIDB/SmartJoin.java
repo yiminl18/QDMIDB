@@ -11,13 +11,16 @@ public class SmartJoin extends Operator{
     private DbIterator child1, child2;
     private Attribute attribute1, attribute2;
     private boolean CleanNow1, CleanNow2;//ask decision node if we need to clean missing values in this join operator
-    private Tuple t1 = null, t11 = null;//t11 stores selfJoinResult
+    private Tuple t1 = null, t11 = null, rightTuple = null;//t11 stores selfJoinResult
     private final Type type;
     private boolean selfJoinFlag = false;
 
     private HashTable table;//table stores the hashTable for child2 in join operator
-    private Iterator<Tuple> matches, selfJoinResult = null;//similar to list
+    private Iterator<Tuple> matches, selfJoinResult, hashMatch, nullOuterTuple = null;//similar to list
+    private Iterator rightRelation = null;
     private HashMap<Predicate, Boolean> CleanBits;//call
+    private Map.Entry mapElement = null;
+    private List<Tuple> tempOuterNullTuples;
 
     /**
      * Constructor. Accepts to children to join and the predicate to join them
@@ -38,6 +41,7 @@ public class SmartJoin extends Operator{
         attribute1 = new Attribute(getJoinField1Name());
         attribute2 = new Attribute(getJoinField2Name());
         table = new HashTable(attribute2);
+        tempOuterNullTuples = new ArrayList<>();
 
         switch(pred.getOperator()) {
             case EQUALS:
@@ -121,6 +125,8 @@ public class SmartJoin extends Operator{
                             trigger();
                         }
                         else{
+                            //create temp null values for outer join purpose
+                            tempOuterNullTuples.add(new Tuple(constructNullTuple(child1), t));
                             continue;//do not build hashTable for null values
                         }
                     }
@@ -137,7 +143,6 @@ public class SmartJoin extends Operator{
             }else{
                 table = HashTables.getHashTable(getJoinField2Name());
             }
-
         }
     }
 
@@ -227,12 +232,17 @@ public class SmartJoin extends Operator{
                                 continue;
                             }
                         }else{
-                            return null;
+                            //when scanning left relation is done, scan hashtable for right relation
+                            return getNextRightTuple();
                         }
                     }
 
                     if (matches == null) {
-                        List<Tuple> m = table.getHashMap().get(t11.getField(pred.getField1()));
+                        Field rightField = t11.getField(pred.getField1());
+                        List<Tuple> m = table.getHashMap().get(rightField);
+                        //set matchBits for rightField
+                        HashTables.getHashTable(attribute2.getAttribute()).setMatchBit(rightField);
+                        table.setMatchBit(rightField);
                         if (m == null) {
                             //implement outer join only for tuples containing null values
                             if(t11.hasMissingFields()){
@@ -299,6 +309,39 @@ public class SmartJoin extends Operator{
             fields[i] = new IntField(simpledb.Type.NULL_INTEGER);
         }
         return new Tuple(schema, fields);
+    }
+
+    public Tuple getNextRightTuple(){
+        while(true){
+            if(rightRelation == null){
+                rightRelation = table.getHashMap().entrySet().iterator();
+                nullOuterTuple = tempOuterNullTuples.iterator();
+            }
+            if(!rightRelation.hasNext()){
+                while(nullOuterTuple.hasNext()){
+                    return nullOuterTuple.next();
+                }
+                return null;
+            }
+            mapElement = (Map.Entry)rightRelation.next();
+            Field field = (Field) mapElement.getKey();
+            if(hashMatch == null){
+                if(!HashTables.getHashTable(attribute2.getAttribute()).getMatchBit(field)){//not matched, construct new tuple and return
+                    List<Tuple> tempTuples = HashTables.getHashTable(attribute2.getAttribute()).getHashTable(field);
+                    hashMatch = tempTuples.iterator();
+                }else{//this field has already been matched before
+                    continue;
+                }
+            }
+            while(true){
+                if(hashMatch.hasNext()){
+                    return new Tuple(constructNullTuple(child1), hashMatch.next());
+                }else{
+                    hashMatch = null;
+                    break;
+                }
+            }
+        }
     }
 
     public List<Tuple> selfJoin(Tuple t) throws Exception{//t must be in the left relation

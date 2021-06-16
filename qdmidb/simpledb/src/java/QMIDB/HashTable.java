@@ -10,16 +10,28 @@ public class HashTable {
     private static Attribute attribute;
     //map from attribute value to its corresponding tuple
     private static HashMap<Field, List<Tuple>> hashMap;
+    private static HashMap<Field, Boolean> matchBits;//to indicate if an entry in hashMap is matched in join operator
     private static int meanValue;//maintained for Mean imputation method
 
     public HashTable(Attribute attributeName) {
         attribute = attributeName;
         hashMap = new HashMap<>();
+        matchBits = new HashMap<>();
     }
 
     public HashTable(Attribute attributeName, HashMap<Field, List<Tuple>> table){
         attribute = attributeName;
         hashMap = table;
+    }
+
+    public void setMatchBit(Field field){
+        if(!matchBits.containsKey(field)){
+            matchBits.put(field, true);
+        }
+    }
+
+    public boolean getMatchBit(Field field){
+        return matchBits.containsKey(field);
     }
 
     public List<Tuple> getHashTable(Field field){
