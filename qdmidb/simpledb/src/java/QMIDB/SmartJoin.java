@@ -122,7 +122,7 @@ public class SmartJoin extends Operator{
                             t = pred.updateTupleRight(t,ImputeFactory.Impute(t.getField(pred.getField2())));
                             //update NumOfNullValue for corresponding graph node
                             RelationshipGraph.getNode(this.attribute2).NumOfNullValuesMinusOne();
-                            trigger();
+                            RelationshipGraph.trigger(this.attribute2);
                         }
                         else{
                             //create temp null values for outer join purpose
@@ -143,18 +143,6 @@ public class SmartJoin extends Operator{
             }else{
                 table = HashTables.getHashTable(getJoinField2Name());
             }
-        }
-    }
-
-    public void trigger(){
-        if(RelationshipGraph.getNode(attribute1).getNumOfNullValues() == 0 && RelationshipGraph.getNode(attribute2).getNumOfNullValues() == 0){
-            RelationshipGraph.getEdge(attribute1,attribute2).setActive();
-        }
-    }
-
-    public void trigger(Attribute left, Attribute right){
-        if(RelationshipGraph.getNode(left).getNumOfNullValues() == 0 && RelationshipGraph.getNode(right).getNumOfNullValues() == 0){
-            RelationshipGraph.getEdge(left,right).setActive();
         }
     }
 
@@ -245,7 +233,9 @@ public class SmartJoin extends Operator{
                         table.setMatchBit(rightField);
                         if (m == null) {
                             //implement outer join only for tuples containing null values
-                            if(t11.hasMissingFields()){
+                            //the following if-else is optimization for space, in this case we need to build hashtables for left relation
+                            //otherwise, we need to output left tuple + NULL
+                            /*if(t11.hasMissingFields()){
                                 t1 = null;
                                 return new Tuple(t11, constructNullTuple(child2));
                             }
@@ -254,7 +244,9 @@ public class SmartJoin extends Operator{
                                 //their information is contained in hashTable
                                 t1 = null;
                                 continue;
-                            }
+                            }*/
+                            t1 = null;
+                            return new Tuple(t11, constructNullTuple(child2));
                         }else{
                             matches = m.iterator();
                         }
@@ -390,7 +382,7 @@ public class SmartJoin extends Operator{
                             if(isUpdate){
                                 //update graph
                                 RelationshipGraph.getNode(new Attribute(field)).NumOfNullValuesMinusOne();
-                                trigger(predicates.get(j).getLeft(), predicates.get(j).getRight());
+                                RelationshipGraph.trigger(predicates.get(j).getRight());
                             }
                             break;
                         case "Filter":
@@ -412,12 +404,12 @@ public class SmartJoin extends Operator{
         matching.add(t);
         //System.out.println("here " + t);
         //check all current active predicates
-        List<String> activeLeftAttribute = RelationshipGraph.findAllActiveEdge();
-        if(activeLeftAttribute.size() == 0) return matching;
+        List<GraphEdge> activeEdges = RelationshipGraph.findAllActiveEdge();
+        if(activeEdges.size() == 0) return matching;
 
         boolean flag = false; //fast check first
-        for(int i=0;i<activeLeftAttribute.size();i++){
-            String leftAttribute = activeLeftAttribute.get(i);
+        for(int i=0;i<activeEdges.size();i++){
+            String leftAttribute = activeEdges.get(i).getStartNode().getAttribute().getAttribute();
             Field leftValue = t.getField(t.getTupleDesc().fieldNameToIndex(leftAttribute));
             if(!HashTables.ifExistHashTable(leftAttribute)){
                 throw new Exception("HashTable Not Found!");
@@ -437,17 +429,17 @@ public class SmartJoin extends Operator{
                     Attribute attribute = new Attribute(t.getTupleDesc().getFieldName(i));
                     RelationshipGraph.getNode(attribute).NumOfNullValuesMinusOne();
                     //only trigger join: find relevant join predicates
-                    RelationshipGraph.triggerByAttribute(attribute);
+                    RelationshipGraph.trigger(attribute);
                 }
             }
             return null;
         }
 
         //update tuples and construct matching
-        for(int i=0;i<activeLeftAttribute.size();i++){
+        for(int i=0;i<activeEdges.size();i++){
             int size = matching.size();
             for(int j=0;j<size;j++){
-                String leftAttribute = activeLeftAttribute.get(i);
+                String leftAttribute = activeEdges.get(i).getStartNode().getAttribute().getAttribute();
                 Field leftValue = t.getField(t.getTupleDesc().fieldNameToIndex(leftAttribute));
                 List<Tuple> temporalMatch = HashTables.getHashTable(leftAttribute).getHashMap().get(leftValue);
                 int tupleSize = temporalMatch.get(0).getTupleDesc().numFields();

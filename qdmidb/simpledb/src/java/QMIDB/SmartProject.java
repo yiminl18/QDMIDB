@@ -12,11 +12,13 @@ import java.util.NoSuchElementException;
 public class SmartProject extends Operator {
     private static final long serialVersionUID = 1L;
     private DbIterator child;
-    private TupleDesc td;
+    private TupleDesc td;//projected schema
     private List<Integer> outFieldIds;
 
-    List<Tuple> matching = new ArrayList<>();
+    private List<Tuple> matching = new ArrayList<>();
     private Iterator<Tuple> matchingResult = null;
+    private List<Tuple> candidateMatching = new ArrayList<>();
+    private boolean flag = false;
 
     /**
      * Constructor accepts a child operator to read tuples to apply projection
@@ -74,12 +76,15 @@ public class SmartProject extends Operator {
     protected Tuple fetchNext() throws NoSuchElementException,
             TransactionAbortedException, DbException, Exception {
         while (child.hasNext()) {
-            Tuple t = child.next();
-            selfJoin(t);
-            if(matching.size() == 0){
-                continue;
+            if(!flag){
+                Tuple t = child.next();
+                selfJoin(t);
+                if(matching.size() == 0){
+                    continue;
+                }
+                flag = true;
+                matchingResult = matching.iterator();
             }
-            matchingResult = matching.iterator();
             while(matchingResult.hasNext()){
                 Tuple matchTuple = matchingResult.next();
                 //System.out.println("match tuple: " + matchTuple);
@@ -97,6 +102,7 @@ public class SmartProject extends Operator {
                     return newTuple;
                 }
             }
+            flag = false;
         }
         return null;
     }
@@ -118,6 +124,9 @@ public class SmartProject extends Operator {
         matching.clear();
 
         boolean isSelfJoin = false;
+        boolean isAdd = false;
+
+        List<GraphEdge> relatedEdges = new ArrayList<>();
 
         for (int i = 0; i < td.numFields(); i++) {//iterate all projected missing values
             Field value = t.getField(outFieldIds.get(i));
@@ -132,12 +141,14 @@ public class SmartProject extends Operator {
                 }
                 //in final project should force to check for each related predicate, not valid
                 //because in pipeline implementation, valid predicates may come later
-                List<String> relatedPredicates = RelationshipGraph.findRelatedEdge(td.getFieldName(outFieldIds.get(i)));
-                //System.out.println(relatedPredicates.size() + " ** " + td.getFieldName(outFieldIds.get(i)));
-                for(int j=0;j<relatedPredicates.size();j++){
+                relatedEdges = RelationshipGraph.findRelatedEdge(td.getFieldName(outFieldIds.get(i)));
+                for(int j=0;j<relatedEdges.size();j++){
+                    if(!relatedEdges.get(j).isActive() && !isAdd){//if there exists one inactive edge, add this tuple to candidateMatching
+                        isAdd = true;
+                        candidateMatching.add(t);
+                    }
                     isSelfJoin = true;
-                    String validPred = relatedPredicates.get(j);
-                    //System.out.println("-- "+ validPred + " " + value);
+                    String validPred = relatedEdges.get(j).getEndNode().getAttribute().getAttribute();
                     //HashTables.getHashTable(validPred).print();
                     if(!HashTables.ifExistHashTable(validPred)){throw new Exception("Hashtable NOT Exist!");}
                     else{
@@ -158,12 +169,12 @@ public class SmartProject extends Operator {
         //if codes go here, then this tuple should be merged and returned
         for (int j = 0; j < td.numFields(); j++) {
             Field value = t.getField(outFieldIds.get(j));
-            List<String> relatedPredicates = RelationshipGraph.findRelatedEdge(td.getFieldName(outFieldIds.get(j)));
+            relatedEdges = RelationshipGraph.findRelatedEdge(td.getFieldName(outFieldIds.get(j)));
 
-            for(int i=0;i<relatedPredicates.size();i++){
+            for(int i=0;i<relatedEdges.size();i++){
                 int size = matching.size();
                 for(int p=0;p<size;p++){
-                    String validPred = relatedPredicates.get(i);
+                    String validPred = relatedEdges.get(i).getEndNode().getAttribute().getAttribute();
                     List<Tuple> temporalMatch = HashTables.getHashTable(validPred).getHashMap().get(value);
                     int tupleSize = temporalMatch.get(0).getTupleDesc().numFields();
                     String firstFieldName = temporalMatch.get(0).getTupleDesc().getFieldName(0);

@@ -10,17 +10,23 @@ public class GraphEdge {
     private boolean active = false;//if the operator associated with this edge has been applied to trigger self-join imputation
     private GraphNode startNode,endNode;//start node and end node
     private JoinPredicate joinPredicate;
+    private String hashCode;
 
     public GraphEdge(int edgeType, GraphNode startNode, GraphNode endNode, JoinPredicate joinPredicate) {
         this.edgeType = edgeType;
         this.startNode = startNode;
         this.endNode = endNode;
         this.joinPredicate = joinPredicate;
+        this.hashCode = this.startNode.getAttribute().getAttribute() + this.endNode.getAttribute().getAttribute();
     }
 
     public GraphEdge(GraphNode startNode, GraphNode endNode){
         this.startNode = startNode;
         this.endNode = endNode;
+    }
+
+    public String getHashCode(){
+        return this.hashCode;
     }
 
     public JoinPredicate getJoinPredicate(){

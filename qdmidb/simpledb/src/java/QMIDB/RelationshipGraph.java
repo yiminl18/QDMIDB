@@ -16,7 +16,7 @@ public class RelationshipGraph {
     private static Map<String, GraphNode> nodeMap = new HashMap<>();//mapping from String attribute to graph node
     private static Map<String, GraphEdge> edgeMap = new HashMap<>();//mapping from String attribute to graph edge
     private static List<GraphNode> NodeSet = new ArrayList<>();
-    private static List<GraphEdge> EdgeSet = new ArrayList<>();
+    private static List<GraphEdge> EdgeSet, activeEdge = new ArrayList<>();
     private static List<PredicateUnit> preds;
 
     public static void initGraph(List<Attribute> Attributes, List<PredicateUnit> Preds) {
@@ -99,22 +99,11 @@ public class RelationshipGraph {
         }
     }
 
-    public static List<String> findActiveEdge(String attribute){//return right (non-left) attribute for each valid predicate
-        //first find the relative edge
-        List<String> edges = new ArrayList<>();
-        for(int i=0;i<EdgeSet.size();i++){
-            if(EdgeSet.get(i).getEdgeType() == 0 && EdgeSet.get(i).getStartNode().getAttribute().equals(attribute) && EdgeSet.get(i).isActive()) {
-                edges.add(EdgeSet.get(i).getEndNode().getAttribute().getAttribute());
-            }
-        }
-        return edges;
-    }
-
-    public static List<String> findRelatedEdge(String attribute){//return right (non-left) attribute for each related predicate
-        List<String> edges = new ArrayList<>();
+    public static List<GraphEdge> findRelatedEdge(String attribute){//return right (non-left) attribute for each related predicate
+        List<GraphEdge> edges = new ArrayList<>();
         for(int i=0;i<EdgeSet.size();i++){
             if(EdgeSet.get(i).getEdgeType() == 0 && EdgeSet.get(i).getStartNode().getAttribute().getAttribute().equals(attribute)) {
-                edges.add(EdgeSet.get(i).getEndNode().getAttribute().getAttribute());
+                edges.add(EdgeSet.get(i));
             }
         }
         return edges;
@@ -128,14 +117,8 @@ public class RelationshipGraph {
         }
     }
 
-    public static List<String> findAllActiveEdge(){//return left attribute for all active predicates
-        List<String> edges = new ArrayList<>();
-        for(int i=0;i<EdgeSet.size();i++){
-            if(EdgeSet.get(i).getEdgeType() == 0 && EdgeSet.get(i).isActive()) {
-                edges.add(EdgeSet.get(i).getStartNode().getAttribute().getAttribute());
-            }
-        }
-        return edges;
+    public static List<GraphEdge> findAllActiveEdge(){//return left attribute for all active predicates
+        return activeEdge;
     }
 
     public static int getNumOfActiveEdge(){
@@ -146,13 +129,24 @@ public class RelationshipGraph {
         return count;
     }
 
-    public static void triggerByAttribute(Attribute attribute){
+    public static void trigger(Attribute right){
         //first find all relevant join edges which have connected to given attribute
         //and then trigger them if they are active
         for(int i=0;i<EdgeSet.size();i++){
-            if(EdgeSet.get(i).getEdgeType() == 0 && (EdgeSet.get(i).getStartNode().getAttribute().getAttribute().equals(attribute) || EdgeSet.get(i).getEndNode().getAttribute().getAttribute().equals(attribute))){
-                if(EdgeSet.get(i).getStartNode().getNumOfNullValues() == 0 && EdgeSet.get(i).getEndNode().getNumOfNullValues() == 0){
+            if(EdgeSet.get(i).getEdgeType() == 0 && EdgeSet.get(i).getEndNode().getAttribute().getAttribute().equals(right)){
+                if(EdgeSet.get(i).getEndNode().getNumOfNullValues() == 0){
                     EdgeSet.get(i).setActive();
+                    //update active edges
+                    boolean flag = false;
+                    for(int j=0;j<activeEdge.size();j++){
+                        if(activeEdge.get(j).getHashCode().equals(EdgeSet.get(i).getHashCode())){
+                            flag = true;
+                            break;
+                        }
+                    }
+                    if(!flag){
+                        activeEdge.add(EdgeSet.get(i));
+                    }
                 }
             }
         }
