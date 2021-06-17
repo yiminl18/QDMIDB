@@ -4,10 +4,7 @@ package QMIDB;
  */
 import simpledb.*;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 public class SmartProject extends Operator {
     private static final long serialVersionUID = 1L;
@@ -16,9 +13,9 @@ public class SmartProject extends Operator {
     private List<Integer> outFieldIds;
 
     private List<Tuple> matching = new ArrayList<>();
-    private Iterator<Tuple> matchingResult = null;
+    private Iterator<Tuple> matchingResult, candidateMatchIterator, candidateResult = null;
     private List<Tuple> candidateMatching = new ArrayList<>();
-    private boolean flag = false;
+    private boolean flag, flagCandidateMatch = false;
 
     /**
      * Constructor accepts a child operator to read tuples to apply projection
@@ -88,23 +85,36 @@ public class SmartProject extends Operator {
             while(matchingResult.hasNext()){
                 Tuple matchTuple = matchingResult.next();
                 //System.out.println("match tuple: " + matchTuple);
-                Tuple newTuple = new Tuple(td);
-                boolean isContainNull = false;
-                for (int i = 0; i < td.numFields(); i++) {
-                    Field value = matchTuple.getField(outFieldIds.get(i));
-                    if(value.isNull()){
-                        isContainNull = true;
-                        break;
-                    }
-                    newTuple.setField(i, value);
-                }
-                if(!isContainNull){
+                Tuple newTuple = Project(matchTuple);
+                if(newTuple == null){
+                    continue;
+                }else{
                     return newTuple;
                 }
             }
             flag = false;
         }
-        return null;
+        //getNext from CandidateMatching
+        return getNextFromCandidateMatching();
+    }
+
+    public Tuple Project(Tuple t){
+        Tuple newTuple = new Tuple(td);
+        boolean isContainNull = false;
+        for (int i = 0; i < td.numFields(); i++) {
+            Field value = t.getField(outFieldIds.get(i));
+            if(value.isNull()){
+                isContainNull = true;
+                break;
+            }
+            newTuple.setField(i, value);
+        }
+        if(!isContainNull){
+            return newTuple;
+        }
+        else{
+            return null;
+        }
     }
 
     @Override
@@ -120,6 +130,16 @@ public class SmartProject extends Operator {
         }
     }
 
+    public Tuple subTuple(String attribute, Tuple t, int start){
+        int width = Schema.getWidth(attribute);
+        TupleDesc subTD = t.getTupleDesc().SubTupleDesc(start, width);
+        Tuple subT = new Tuple(subTD);
+        for(int i=0;i<width;i++){
+            subT.setField(i, t.getField(i+start));
+        }
+        return subT;
+    }
+
     public void selfJoin(Tuple t) throws Exception{//t must be in the left relation
         matching.clear();
 
@@ -128,36 +148,55 @@ public class SmartProject extends Operator {
 
         List<GraphEdge> relatedEdges = new ArrayList<>();
 
-        for (int i = 0; i < td.numFields(); i++) {//iterate all projected missing values
-            Field value = t.getField(outFieldIds.get(i));
-            if(value.isNull()){
-                return ;
-            }else{//missing or has value
+        List<String> leftActiveAttributes = RelationshipGraph.getActiveLeftAttribute();
+        List<String> rightAttributes = RelationshipGraph.getRightJoinAttribute();
+        List<String> leftAttributes = RelationshipGraph.getLeftJoinAttribute();
+        List<String> inactiveLeftAttributes = leftAttributes;
+        inactiveLeftAttributes.removeAll(leftActiveAttributes);
+
+        for (int i = 0; i< t.getTupleDesc().numFields(); i++) {
+            Field value = t.getField(i);
+            String attribute = t.getTupleDesc().getFieldName(i);
+            //if this attribute is in the left attribute of an active join predicate
+            if(leftActiveAttributes.contains(attribute)){
+                isSelfJoin = true;
                 if(value.isMissing()){
                     value = ImputeFactory.Impute(value);
-                    t.setField(i,value);
-                }else{
-                    value = t.getField(i);
+                    t.setField(i, value);
                 }
-                //in final project should force to check for each related predicate, not valid
-                //because in pipeline implementation, valid predicates may come later
-                relatedEdges = RelationshipGraph.findRelatedEdge(td.getFieldName(outFieldIds.get(i)));
-                for(int j=0;j<relatedEdges.size();j++){
-                    if(!relatedEdges.get(j).isActive() && !isAdd){//if there exists one inactive edge, add this tuple to candidateMatching
-                        isAdd = true;
-                        candidateMatching.add(t);
-                    }
-                    isSelfJoin = true;
-                    String validPred = relatedEdges.get(j).getEndNode().getAttribute().getAttribute();
-                    //HashTables.getHashTable(validPred).print();
-                    if(!HashTables.ifExistHashTable(validPred)){throw new Exception("Hashtable NOT Exist!");}
-                    else{
-                        if(!HashTables.getHashTable(validPred).getHashMap().containsKey(value)){
-                            //at least one projected values in this tuple is violated with at least one predicate
-                            return ;
+                //check if non-matching
+                String rightActiveAttribute = RelationshipGraph.getRightNode(attribute);
+                if(!HashTables.getHashTable(rightActiveAttribute).getHashMap().containsKey(value)){
+                    //at least one attribute value in this tuple is violated with at least one predicate
+                    return ;
+                }
+            }
+            //if this attribute is in the right attribute of any join predicate
+            if(rightAttributes.contains(attribute)){
+                if(value.isMissing()){
+                    value = ImputeFactory.Impute(value);
+                    t.setField(i, value);
+                    //update graph
+                    RelationshipGraph.getNode(new Attribute(attribute)).NumOfNullValuesMinusOne();
+                    RelationshipGraph.trigger(new Attribute(attribute));
+                    //update hashTables
+                    if(!HashTables.ifExistHashTable(attribute)){
+                        HashMap<Field, List<Tuple>> hashMap = new HashMap<>();
+                        hashMap.put(value, new ArrayList<>());
+                        hashMap.get(value).add(subTuple(attribute,t,i));
+                        HashTables.addHashTable(attribute, new HashTable(new Attribute(attribute), hashMap));
+                    }else{
+                        if(!HashTables.getHashTable(attribute).hasKey(value)){
+                            HashTables.getHashTable(attribute).getHashMap().put(value, new ArrayList<>());
                         }
+                        HashTables.getHashTable(attribute).getHashMap().get(value).add(subTuple(attribute,t,i));
                     }
                 }
+            }
+            //if this attribute is left join attribute and in an inactive predicate, add to candidateMatching
+            if(inactiveLeftAttributes.contains(attribute)){
+                candidateMatching.add(t);
+                return;
             }
         }
 
@@ -165,11 +204,11 @@ public class SmartProject extends Operator {
         if(!isSelfJoin){//selfJoin is not triggered
             return ;
         }
-        //System.out.println(matching.get(0));
         //if codes go here, then this tuple should be merged and returned
-        for (int j = 0; j < td.numFields(); j++) {
-            Field value = t.getField(outFieldIds.get(j));
-            relatedEdges = RelationshipGraph.findRelatedEdge(td.getFieldName(outFieldIds.get(j)));
+        for (int j = 0; j< t.getTupleDesc().numFields(); j++) {
+            Field value = t.getField(j);
+            String attribute = t.getTupleDesc().getFieldName(j);
+            relatedEdges = RelationshipGraph.findRelatedEdge(attribute);
 
             for(int i=0;i<relatedEdges.size();i++){
                 int size = matching.size();
@@ -192,5 +231,81 @@ public class SmartProject extends Operator {
                 }
             }
         }
+    }
+
+    public Tuple getNextFromCandidateMatching(){
+        if(!flagCandidateMatch){
+            candidateMatchIterator = candidateMatching.iterator();
+            flagCandidateMatch = true;
+            matching.clear();//reuse matching
+        }
+        boolean matchBit = false;
+        while(candidateMatchIterator.hasNext()){
+            Tuple t = candidateMatchIterator.next();
+            //all predicates should be active now
+            //fast check
+            boolean isConflicted = false;
+            for (int i = 0; i< t.getTupleDesc().numFields(); i++) {
+                Field value = t.getField(i);
+                String attribute = t.getTupleDesc().getFieldName(i);
+                List<GraphEdge> activeEdges = RelationshipGraph.findRelatedEdge(attribute);
+                for(int j=0;j<activeEdges.size();j++){
+                    String rightAttribute = activeEdges.get(j).getEndNode().getAttribute().getAttribute();
+                    if(!HashTables.getHashTable(rightAttribute).getHashMap().containsKey(value)){
+                        isConflicted = true;
+                        break;
+                    }
+                }
+                if(isConflicted){
+                    break;
+                }
+            }
+            if(isConflicted){
+                continue;
+            }
+            //merge and update
+            if(!matchBit){
+                matching.add(t);
+                for (int j = 0; j< t.getTupleDesc().numFields(); j++) {
+                    Field value = t.getField(j);
+                    String attribute = t.getTupleDesc().getFieldName(j);
+                    List<GraphEdge> relatedEdges = RelationshipGraph.findRelatedEdge(attribute);
+
+                    for (int i = 0; i < relatedEdges.size(); i++) {
+                        int size = matching.size();
+                        for (int p = 0; p < size; p++) {
+                            String validPred = relatedEdges.get(i).getEndNode().getAttribute().getAttribute();
+                            List<Tuple> temporalMatch = HashTables.getHashTable(validPred).getHashMap().get(value);
+                            int tupleSize = temporalMatch.get(0).getTupleDesc().numFields();
+                            String firstFieldName = temporalMatch.get(0).getTupleDesc().getFieldName(0);
+                            int firstFieldIndex = t.getTupleDesc().fieldNameToIndex(firstFieldName);
+                            if (firstFieldIndex == -1) {//attributes of right tuple is not included in left tuple
+                                break;//jump to next predicate
+                            }
+                            for (int k = 0; k < temporalMatch.size(); k++) {//iterate all the matching tuples
+                                Tuple tt = matching.get(p);
+                                for (int kk = 0; kk < tupleSize; kk++) {
+                                    tt.setField(firstFieldIndex + kk, temporalMatch.get(p).getField(kk));
+                                }
+                                matching.add(tt);
+                            }
+                        }
+                    }
+                    candidateResult = matching.iterator();
+                }
+                matchBit = true;
+            }
+            while(candidateResult.hasNext()){
+                Tuple tt = candidateResult.next();
+                Tuple ProjectTuple = Project(tt);
+                if(ProjectTuple == null) {
+                    continue;
+                }else{
+                    return ProjectTuple;
+                }
+            }
+            matchBit = false;
+        }
+        return null;
     }
 }

@@ -375,8 +375,14 @@ public class SmartJoin extends Operator{
                                 if(!HashTables.ifExistHashTable(right.getAttribute())){
                                     HashMap<Field, List<Tuple>> hashMap = new HashMap<>();
                                     hashMap.put(newValue, new ArrayList<>());
-                                    hashMap.get(right.getAttribute()).add(subTuple(t,right,i));
+                                    hashMap.get(newValue).add(subTuple(t,right,i));
                                     HashTables.addHashTable(right.getAttribute(), new HashTable(right, hashMap));
+                                }
+                                else{
+                                    if(!HashTables.getHashTable(right.getAttribute()).hasKey(newValue)){
+                                        HashTables.getHashTable(right.getAttribute()).getHashMap().put(newValue, new ArrayList<>());
+                                    }
+                                    HashTables.getHashTable(right.getAttribute()).getHashMap().get(newValue).add(subTuple(t,right,i));
                                 }
                             }
                             if(isUpdate){
@@ -404,12 +410,12 @@ public class SmartJoin extends Operator{
         matching.add(t);
         //System.out.println("here " + t);
         //check all current active predicates
-        List<GraphEdge> activeEdges = RelationshipGraph.findAllActiveEdge();
-        if(activeEdges.size() == 0) return matching;
+        List<String> activeLeftAttributes = RelationshipGraph.getActiveLeftAttribute();
+        if(activeLeftAttributes.size() == 0) return matching;
 
         boolean flag = false; //fast check first
-        for(int i=0;i<activeEdges.size();i++){
-            String leftAttribute = activeEdges.get(i).getStartNode().getAttribute().getAttribute();
+        for(int i=0;i<activeLeftAttributes.size();i++){
+            String leftAttribute = activeLeftAttributes.get(i);
             Field leftValue = t.getField(t.getTupleDesc().fieldNameToIndex(leftAttribute));
             if(!HashTables.ifExistHashTable(leftAttribute)){
                 throw new Exception("HashTable Not Found!");
@@ -436,10 +442,10 @@ public class SmartJoin extends Operator{
         }
 
         //update tuples and construct matching
-        for(int i=0;i<activeEdges.size();i++){
+        for(int i=0;i<activeLeftAttributes.size();i++){
             int size = matching.size();
             for(int j=0;j<size;j++){
-                String leftAttribute = activeEdges.get(i).getStartNode().getAttribute().getAttribute();
+                String leftAttribute = activeLeftAttributes.get(i);
                 Field leftValue = t.getField(t.getTupleDesc().fieldNameToIndex(leftAttribute));
                 List<Tuple> temporalMatch = HashTables.getHashTable(leftAttribute).getHashMap().get(leftValue);
                 int tupleSize = temporalMatch.get(0).getTupleDesc().numFields();

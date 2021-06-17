@@ -38,6 +38,8 @@ public class HashTable {
         return hashMap.get(field);
     }
 
+    public boolean hasKey(Field field){ return hashMap.containsKey(field); }
+
     public int getMeanValue() {
         return meanValue;
     }

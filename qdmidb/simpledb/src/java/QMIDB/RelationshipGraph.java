@@ -16,7 +16,8 @@ public class RelationshipGraph {
     private static Map<String, GraphNode> nodeMap = new HashMap<>();//mapping from String attribute to graph node
     private static Map<String, GraphEdge> edgeMap = new HashMap<>();//mapping from String attribute to graph edge
     private static List<GraphNode> NodeSet = new ArrayList<>();
-    private static List<GraphEdge> EdgeSet, activeEdge = new ArrayList<>();
+    private static List<GraphEdge> EdgeSet = new ArrayList<>();
+    private static List<String> activeLeftAttribute, activeRightAttribute, leftAttribute, rightAttribute = new ArrayList<>();
     private static List<PredicateUnit> preds;
 
     public static void initGraph(List<Attribute> Attributes, List<PredicateUnit> Preds) {
@@ -35,6 +36,8 @@ public class RelationshipGraph {
                 EdgeSet.add(edge);
                 edgeMap.put(preds.get(i).getLeft().getAttribute() + preds.get(i).getRight().getAttribute(),edge);
                 addEdge(edge);
+                rightAttribute.add(preds.get(i).getRight().getAttribute());
+                leftAttribute.add(preds.get(i).getLeft().getAttribute());
             }
         }
         //initialize non-join-edges
@@ -99,6 +102,10 @@ public class RelationshipGraph {
         }
     }
 
+    public static String getRightNode(String leftNode){
+        return edgeMap.get(leftNode).getEndNode().getAttribute().getAttribute();
+    }
+
     public static List<GraphEdge> findRelatedEdge(String attribute){//return right (non-left) attribute for each related predicate
         List<GraphEdge> edges = new ArrayList<>();
         for(int i=0;i<EdgeSet.size();i++){
@@ -117,8 +124,12 @@ public class RelationshipGraph {
         }
     }
 
-    public static List<GraphEdge> findAllActiveEdge(){//return left attribute for all active predicates
-        return activeEdge;
+    public static List<String> getActiveLeftAttribute(){//return left attribute for all active predicates
+        return activeLeftAttribute;
+    }
+
+    public static List<String> getActiveRightAttribute(){
+        return activeRightAttribute;
     }
 
     public static int getNumOfActiveEdge(){
@@ -129,6 +140,14 @@ public class RelationshipGraph {
         return count;
     }
 
+    public static List<String> getRightJoinAttribute(){
+        return rightAttribute;
+    }
+
+    public static List<String> getLeftJoinAttribute(){
+        return leftAttribute;
+    }
+
     public static void trigger(Attribute right){
         //first find all relevant join edges which have connected to given attribute
         //and then trigger them if they are active
@@ -136,16 +155,14 @@ public class RelationshipGraph {
             if(EdgeSet.get(i).getEdgeType() == 0 && EdgeSet.get(i).getEndNode().getAttribute().getAttribute().equals(right)){
                 if(EdgeSet.get(i).getEndNode().getNumOfNullValues() == 0){
                     EdgeSet.get(i).setActive();
+                    String leftNode = EdgeSet.get(i).getStartNode().getAttribute().getAttribute();
+                    String rightNode = EdgeSet.get(i).getEndNode().getAttribute().getAttribute();
                     //update active edges
-                    boolean flag = false;
-                    for(int j=0;j<activeEdge.size();j++){
-                        if(activeEdge.get(j).getHashCode().equals(EdgeSet.get(i).getHashCode())){
-                            flag = true;
-                            break;
-                        }
+                    if(!activeLeftAttribute.contains(leftNode)){
+                        activeLeftAttribute.add(leftNode);
                     }
-                    if(!flag){
-                        activeEdge.add(EdgeSet.get(i));
+                    if(!activeRightAttribute.contains(rightNode)){
+                        activeRightAttribute.add(rightNode);
                     }
                 }
             }
