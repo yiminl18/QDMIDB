@@ -6,7 +6,7 @@ import java.util.*;
     * set of hashtable
  */
 public class HashTables {
-    private static Map<String, HashTable> hashTables = new HashMap<>();
+    private static HashMap<String, HashTable> hashTables = new HashMap<>();
 
     public static void addHashTable(String attribute, HashTable hashTable){
         if(!hashTables.containsKey(attribute)){

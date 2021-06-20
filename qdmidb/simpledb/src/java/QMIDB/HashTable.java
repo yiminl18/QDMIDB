@@ -7,21 +7,22 @@ import java.util.*;
     *this data structure maintains hash table for all joinable attributes
  */
 public class HashTable {
-    private static Attribute attribute;
+    private String attribute;
     //map from attribute value to its corresponding tuple
-    private static HashMap<Field, List<Tuple>> hashMap;
-    private static HashMap<Field, Boolean> matchBits;//to indicate if an entry in hashMap is matched in join operator
-    private static int meanValue;//maintained for Mean imputation method
+    private HashMap<Field, List<Tuple>> hashMap;
+    private HashMap<Field, Boolean> matchBits;//to indicate if an entry in hashMap is matched in join operator
+    private int meanValue;//maintained for Mean imputation method
 
-    public HashTable(Attribute attributeName) {
+    public HashTable(String attributeName) {
         attribute = attributeName;
         hashMap = new HashMap<>();
         matchBits = new HashMap<>();
     }
 
-    public HashTable(Attribute attributeName, HashMap<Field, List<Tuple>> table){
+    public HashTable(String attributeName, HashMap<Field, List<Tuple>> table){
         attribute = attributeName;
         hashMap = table;
+        matchBits = new HashMap<>();
     }
 
     public void setMatchBit(Field field){
@@ -48,7 +49,7 @@ public class HashTable {
         meanValue = meanvalue;
     }
 
-    public Attribute getAttribute() {
+    public String getAttribute() {
         return attribute;
     }
 

@@ -9,11 +9,12 @@ public class QueryProcessing {
     public QueryProcessing() {
         //initialization
         fileHandles fH = new fileHandles();
-        //List<Attribute> schema = fH.readSchema();
-        List<Attribute> schema = ManualSchema();
+        List<Attribute> schema = fH.readSchema();
+        //List<Attribute> schema = ManualSchema();
         //List<PredicateUnit> predicates = fH.readPredicates();
         List<PredicateUnit> predicates = ManualPredicates();
         RelationshipGraph.initGraph(schema, predicates);
+        //RelationshipGraph.printJoinEdge();
         PredicateSet.initPredicateSet(predicates);
         Schema.setSchema(schema);
     }
@@ -27,16 +28,22 @@ public class QueryProcessing {
     public List<PredicateUnit> ManualPredicates(){//for testing purpose
         List<PredicateUnit> predicates = new ArrayList<>();
         predicates.add(new PredicateUnit(new Attribute("R.b"), Predicate.Op.EQUALS, new Attribute("S.b")));
+        predicates.add(new PredicateUnit(new Attribute("R.a"), Predicate.Op.EQUALS, new Attribute("T.a")));
         predicates.add(new PredicateUnit(new Attribute("S.c"), Predicate.Op.GREATER_THAN, new IntField(0)));
         return predicates;
     }
 
     public List<Attribute> ManualSchema(){//for testing purpose
         List<Attribute> schema = new ArrayList<>();
+        /*Attribute attribute = new Attribute("R.a");
+        attribute.setCardinality(4);
+        attribute.setNumOfNullValue(1);*/
         schema.add(new Attribute("R.a"));
         schema.add(new Attribute("R.b"));
         schema.add(new Attribute("S.b"));
         schema.add(new Attribute("S.c"));
+        schema.add(new Attribute("T.a"));
+        schema.add(new Attribute("T.d"));
         return schema;
     }
 }

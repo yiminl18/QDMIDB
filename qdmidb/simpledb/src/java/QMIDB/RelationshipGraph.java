@@ -1,6 +1,7 @@
 package QMIDB;
 import org.w3c.dom.Attr;
 import simpledb.*;
+import weka.gui.treevisualizer.Edge;
 
 import java.util.ArrayList;
 import java.util.*;
@@ -17,7 +18,7 @@ public class RelationshipGraph {
     private static Map<String, GraphEdge> edgeMap = new HashMap<>();//mapping from String attribute to graph edge
     private static List<GraphNode> NodeSet = new ArrayList<>();
     private static List<GraphEdge> EdgeSet = new ArrayList<>();
-    private static List<String> activeLeftAttribute, activeRightAttribute, leftAttribute, rightAttribute = new ArrayList<>();
+    private static List<String> activeLeftAttribute = new ArrayList<>(), activeRightAttribute = new ArrayList<>(), leftAttribute = new ArrayList<>(), rightAttribute = new ArrayList<>();
     private static List<PredicateUnit> preds;
 
     public static void initGraph(List<Attribute> Attributes, List<PredicateUnit> Preds) {
@@ -25,6 +26,8 @@ public class RelationshipGraph {
         //initialize nodes
         for(int i=0;i<Attributes.size();i++){
             GraphNode node = new GraphNode(Attributes.get(i));
+            node.setCardinality(Attributes.get(i).getCardinality());
+            node.setNumOfNullValues(Attributes.get(i).getNumOfNullValue());
             NodeSet.add(node);
             nodeMap.put(Attributes.get(i).getAttribute(),node);
         }
@@ -85,8 +88,8 @@ public class RelationshipGraph {
         }
     }
 
-    public static GraphNode getNode(Attribute attribute){
-        return nodeMap.get(attribute.getAttribute());
+    public static GraphNode getNode(String attribute){
+        return nodeMap.get(attribute);
     }
 
     public static GraphEdge getEdge(Attribute attribute1, Attribute attribute2){
@@ -116,10 +119,20 @@ public class RelationshipGraph {
         return edges;
     }
 
+    public static List<String> findRelatedActiveRightAttributes(String left){
+        List<String> attributes = new ArrayList<>();
+        for(int i=0;i<EdgeSet.size();i++){
+            if(EdgeSet.get(i).getEdgeType() == 0 && EdgeSet.get(i).getStartNode().getAttribute().getAttribute().equals(left) && EdgeSet.get(i).isActive()){
+                attributes.add(EdgeSet.get(i).getEndNode().getAttribute().getAttribute());
+            }
+        }
+        return attributes;
+    }
+
     public static void printJoinEdge(){
         for(int i=0;i<EdgeSet.size();i++){
             if(EdgeSet.get(i).getEdgeType() == 0){
-                System.out.println(EdgeSet.get(i).getStartNode().getAttribute().getAttribute() + " " + EdgeSet.get(i).getEndNode().getAttribute());
+                System.out.println(EdgeSet.get(i).getStartNode().getAttribute().getAttribute() + " " + EdgeSet.get(i).getEndNode().getAttribute().getAttribute());
             }
         }
     }
@@ -152,7 +165,7 @@ public class RelationshipGraph {
         //first find all relevant join edges which have connected to given attribute
         //and then trigger them if they are active
         for(int i=0;i<EdgeSet.size();i++){
-            if(EdgeSet.get(i).getEdgeType() == 0 && EdgeSet.get(i).getEndNode().getAttribute().getAttribute().equals(right)){
+            if(EdgeSet.get(i).getEdgeType() == 0 && EdgeSet.get(i).getEndNode().getAttribute().getAttribute().equals(right.getAttribute())){
                 if(EdgeSet.get(i).getEndNode().getNumOfNullValues() == 0){
                     EdgeSet.get(i).setActive();
                     String leftNode = EdgeSet.get(i).getStartNode().getAttribute().getAttribute();

@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class test {
 
@@ -72,43 +73,104 @@ public class test {
 
         //test smartJoin
         JoinPredicate p1 = new JoinPredicate("R.b", Predicate.Op.EQUALS, "S.b");
-        SmartJoin sj = new SmartJoin(p1,ss1,sf1);
+        SmartJoin sj1 = new SmartJoin(p1,ss1,sf1);
+
+        JoinPredicate p2 = new JoinPredicate("R.a", Predicate.Op.EQUALS, "T.a");
+        SmartJoin sj2 = new SmartJoin(p2,sj1,ss3);
 
 
         //test smartProject
         List<Attribute> attributes = new ArrayList<>();
         attributes.add(new Attribute("R.a"));
         attributes.add(new Attribute("R.b"));
-        //attributes.add(new Attribute("S.b"));
-        //attributes.add(new Attribute("S.c"));
-        Type[] types = new Type[]{Type.INT_TYPE, Type.INT_TYPE};
-        SmartProject sp = new SmartProject(attributes,types, sj);
+        attributes.add(new Attribute("S.b"));
+        attributes.add(new Attribute("S.c"));
+        Type[] types = new Type[]{Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE};
+        SmartProject sp = new SmartProject(attributes,types, sj2);
 
 
-        //print Hashtables
-        //HashTables.print();
-        //System.out.println(RelationshipGraph.getNumOfActiveEdge());
-
-
-        /*JoinPredicate p = new JoinPredicate("t1.a", Predicate.Op.EQUALS, "t2.a");
-        JoinPredicate p1 = new JoinPredicate("t2.c", Predicate.Op.EQUALS, "t3.c");
-        Join j = new Join(p, sf1, ss2);
-        Join j1 = new Join(p1, j, ss3);*/
 
 
         // and run it
         try {
-            sj.open();
-            while (sj.hasNext()) {
-                Tuple tup = sj.next();
+            sp.open();
+            while (sp.hasNext()) {
+                Tuple tup = sp.next();
                 System.out.println(tup);
             }
-            sj.close();
+            sp.close();
             Database.getBufferPool().transactionComplete(tid);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        //HashTables.print();
+    }
+
+    public static void testHashTable(){
+        Type types[] = new Type[]{Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE};
+        String names[] = new String[]{"field0", "field1", "field2"};
+        TupleDesc descriptor = new TupleDesc(types, names);
+        Field fields[] = new Field[]{new IntField(1),new IntField(2),new IntField(3)};
+        Tuple t1 = new Tuple(descriptor, fields);
+        Field fields1[] = new Field[]{new IntField(2),new IntField(4),new IntField(-1)};
+        Tuple t2 = new Tuple(descriptor, fields1);
+        Tuple t3 = new Tuple(t1,t2);
+
+        Field key1 = new IntField(1);
+        String attribute1 = "field0";
+
+        HashMap<Field, List<Tuple>> table = new HashMap<>();
+        table.put(key1, new ArrayList<Tuple>());
+        table.get(key1).add(t1);
+
+        HashTables.addHashTable(attribute1,new HashTable(attribute1, table));
+        System.out.println("hash table 1: ");
+
+        HashTables.print();
+
+        HashMap<Field, List<Tuple>> table1 = new HashMap<>();
+        Field key2 = new IntField(4);
+        String attribute2 = "field1";
+
+        table1.put(key2, new ArrayList<Tuple>());
+        table1.get(key2).add(t2);
+
+        HashTables.addHashTable(attribute2,new HashTable(attribute2, table1));
+
+        System.out.println("hash table 2: ");
+        HashTables.print();
+    }
+
+    public static void testHashMap(){
+        HashMap<String, HashMap<Integer, Integer>> hashmap = new HashMap<>();
+        HashMap<Integer, Integer> subhash = new HashMap<>();
+        subhash.put(1,1);
+        subhash.put(2,4);
+        hashmap.put("a",subhash);
+
+        //print hashmap
+        for(Map.Entry<String, HashMap<Integer, Integer>> iter : hashmap.entrySet()){
+            System.out.println("key: " + iter.getKey());
+            for(Map.Entry<Integer, Integer> iter1: iter.getValue().entrySet()){
+                System.out.println(iter1.getKey() + " " + iter1.getValue());
+            }
+        }
+
+        subhash = new HashMap<>();
+        subhash.put(3,6);
+        subhash.put(4,8);
+        hashmap.put("b",subhash);
+
+        //print hashmap
+        for(Map.Entry<String, HashMap<Integer, Integer>> iter : hashmap.entrySet()){
+            System.out.println("key: " + iter.getKey());
+            for(Map.Entry<Integer, Integer> iter1: iter.getValue().entrySet()){
+                System.out.println(iter1.getKey() + " " + iter1.getValue());
+            }
+        }
+
     }
 
     public static void testScan(){

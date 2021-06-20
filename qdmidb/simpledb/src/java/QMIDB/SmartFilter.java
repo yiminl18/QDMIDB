@@ -82,7 +82,7 @@ public class SmartFilter extends Operator{
                     //clean this tuple
                     t = pred.updateTuple(t,ImputeFactory.Impute(t.getField(pred.getField())));
                     //udpate numofNullValue for corresponding node
-                    RelationshipGraph.getNode(attribute).NumOfNullValuesMinusOne();
+                    RelationshipGraph.getNode(attribute.getAttribute()).NumOfNullValuesMinusOne();
                 }
                 return t;
             }

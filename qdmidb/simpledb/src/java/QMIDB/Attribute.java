@@ -8,6 +8,25 @@ public class Attribute {
     private String attribute;
     private int schemaWidth;
 
+    //store statistics
+    private int cardinality, numOfNullValue;
+
+    public int getCardinality() {
+        return cardinality;
+    }
+
+    public void setCardinality(int cardinality) {
+        this.cardinality = cardinality;
+    }
+
+    public int getNumOfNullValue() {
+        return numOfNullValue;
+    }
+
+    public void setNumOfNullValue(int numOfNullValue) {
+        this.numOfNullValue = numOfNullValue;
+    }
+
     public int getSchemaWidth() {
         return schemaWidth;
     }

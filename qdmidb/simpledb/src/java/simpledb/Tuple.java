@@ -20,6 +20,15 @@ public class Tuple implements Serializable {
     
     private TupleDesc schema;
     private RecordId rid;
+    private boolean mergeBit = false;//this bit is used to indicate if this tuple has been already merged in any join operator
+
+    public boolean isMergeBit() {
+        return mergeBit;
+    }
+
+    public void setMergeBit(boolean mergeBit) {
+        this.mergeBit = mergeBit;
+    }
 
     /**
      * Create a new tuple with the specified schema (type).

@@ -1,11 +1,18 @@
 3
 2
 INT,R.a
+4,1
 INT,R.b
+4,1
 2
 INT,S.b
+3,1
 INT,S.c
+3,1
 2
 INT,T.a
+3,2
 INT,T.d
+3,0
+
 

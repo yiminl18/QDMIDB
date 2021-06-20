@@ -16,6 +16,7 @@ public class SmartProject extends Operator {
     private Iterator<Tuple> matchingResult, candidateMatchIterator, candidateResult = null;
     private List<Tuple> candidateMatching = new ArrayList<>();
     private boolean flag, flagCandidateMatch = false;
+    Tuple candidateT = null;
 
     /**
      * Constructor accepts a child operator to read tuples to apply projection
@@ -165,10 +166,13 @@ public class SmartProject extends Operator {
                     t.setField(i, value);
                 }
                 //check if non-matching
-                String rightActiveAttribute = RelationshipGraph.getRightNode(attribute);
-                if(!HashTables.getHashTable(rightActiveAttribute).getHashMap().containsKey(value)){
-                    //at least one attribute value in this tuple is violated with at least one predicate
-                    return ;
+                List<String> rightActiveAttributes = RelationshipGraph.findRelatedActiveRightAttributes(attribute);
+                for(int j=0;j<rightActiveAttributes.size();j++){
+                    String rightActiveAttribute = rightActiveAttributes.get(j);
+                    if(!HashTables.getHashTable(rightActiveAttribute).getHashMap().containsKey(value)){
+                        //at least one attribute value in this tuple is violated with at least one predicate
+                        return ;
+                    }
                 }
             }
             //if this attribute is in the right attribute of any join predicate
@@ -177,14 +181,14 @@ public class SmartProject extends Operator {
                     value = ImputeFactory.Impute(value);
                     t.setField(i, value);
                     //update graph
-                    RelationshipGraph.getNode(new Attribute(attribute)).NumOfNullValuesMinusOne();
+                    RelationshipGraph.getNode(attribute).NumOfNullValuesMinusOne();
                     RelationshipGraph.trigger(new Attribute(attribute));
                     //update hashTables
                     if(!HashTables.ifExistHashTable(attribute)){
                         HashMap<Field, List<Tuple>> hashMap = new HashMap<>();
                         hashMap.put(value, new ArrayList<>());
                         hashMap.get(value).add(subTuple(attribute,t,i));
-                        HashTables.addHashTable(attribute, new HashTable(new Attribute(attribute), hashMap));
+                        HashTables.addHashTable(attribute, new HashTable(attribute, hashMap));
                     }else{
                         if(!HashTables.getHashTable(attribute).hasKey(value)){
                             HashTables.getHashTable(attribute).getHashMap().put(value, new ArrayList<>());
@@ -223,9 +227,11 @@ public class SmartProject extends Operator {
                     }
                     for(int k=0;k<temporalMatch.size();k++){//iterate all the matching tuples
                         Tuple tt = matching.get(p);
+                        if(temporalMatch.get(k).isMergeBit()) continue;
                         for(int kk=0;kk<tupleSize;kk++){
-                            tt.setField(firstFieldIndex+kk, temporalMatch.get(p).getField(kk));
+                            tt.setField(firstFieldIndex+kk, temporalMatch.get(k).getField(kk));
                         }
+                        temporalMatch.get(k).setMergeBit(true);
                         matching.add(tt);
                     }
                 }
@@ -240,72 +246,82 @@ public class SmartProject extends Operator {
             matching.clear();//reuse matching
         }
         boolean matchBit = false;
-        while(candidateMatchIterator.hasNext()){
-            Tuple t = candidateMatchIterator.next();
-            //all predicates should be active now
-            //fast check
-            boolean isConflicted = false;
-            for (int i = 0; i< t.getTupleDesc().numFields(); i++) {
-                Field value = t.getField(i);
-                String attribute = t.getTupleDesc().getFieldName(i);
-                List<GraphEdge> activeEdges = RelationshipGraph.findRelatedEdge(attribute);
-                for(int j=0;j<activeEdges.size();j++){
-                    String rightAttribute = activeEdges.get(j).getEndNode().getAttribute().getAttribute();
-                    if(!HashTables.getHashTable(rightAttribute).getHashMap().containsKey(value)){
-                        isConflicted = true;
-                        break;
-                    }
+        while(true){
+            if(candidateT == null){
+                //get next tuple from candidateMatching
+                if(candidateMatchIterator.hasNext()){
+                    candidateT = candidateMatchIterator.next();
+                }else{
+                    return null;
                 }
-                if(isConflicted){
-                    break;
-                }
-            }
-            if(isConflicted){
-                continue;
-            }
-            //merge and update
-            if(!matchBit){
-                matching.add(t);
-                for (int j = 0; j< t.getTupleDesc().numFields(); j++) {
-                    Field value = t.getField(j);
-                    String attribute = t.getTupleDesc().getFieldName(j);
-                    List<GraphEdge> relatedEdges = RelationshipGraph.findRelatedEdge(attribute);
-
-                    for (int i = 0; i < relatedEdges.size(); i++) {
-                        int size = matching.size();
-                        for (int p = 0; p < size; p++) {
-                            String validPred = relatedEdges.get(i).getEndNode().getAttribute().getAttribute();
-                            List<Tuple> temporalMatch = HashTables.getHashTable(validPred).getHashMap().get(value);
-                            int tupleSize = temporalMatch.get(0).getTupleDesc().numFields();
-                            String firstFieldName = temporalMatch.get(0).getTupleDesc().getFieldName(0);
-                            int firstFieldIndex = t.getTupleDesc().fieldNameToIndex(firstFieldName);
-                            if (firstFieldIndex == -1) {//attributes of right tuple is not included in left tuple
-                                break;//jump to next predicate
-                            }
-                            for (int k = 0; k < temporalMatch.size(); k++) {//iterate all the matching tuples
-                                Tuple tt = matching.get(p);
-                                for (int kk = 0; kk < tupleSize; kk++) {
-                                    tt.setField(firstFieldIndex + kk, temporalMatch.get(p).getField(kk));
-                                }
-                                matching.add(tt);
+                //construct all matching tuples for candidateT
+                if(matching.size() == 0) {
+                    //all predicates should be active now
+                    //fast check
+                    boolean isConflicted = false;
+                    for (int i = 0; i < candidateT.getTupleDesc().numFields(); i++) {
+                        Field value = candidateT.getField(i);
+                        String attribute = candidateT.getTupleDesc().getFieldName(i);
+                        List<GraphEdge> activeEdges = RelationshipGraph.findRelatedEdge(attribute);
+                        for (int j = 0; j < activeEdges.size(); j++) {
+                            String rightAttribute = activeEdges.get(j).getEndNode().getAttribute().getAttribute();
+                            if (!HashTables.getHashTable(rightAttribute).getHashMap().containsKey(value)) {
+                                isConflicted = true;
+                                break;
                             }
                         }
+                        if (isConflicted) {
+                            break;
+                        }
                     }
-                    candidateResult = matching.iterator();
+                    if (isConflicted) {
+                        candidateT = null;
+                        continue;
+                    }
+                    //merge and update
+                    matching.add(candidateT);
+                    for (int j = 0; j < candidateT.getTupleDesc().numFields(); j++) {
+                        Field value = candidateT.getField(j);
+                        String attribute = candidateT.getTupleDesc().getFieldName(j);
+                        List<GraphEdge> relatedEdges = RelationshipGraph.findRelatedEdge(attribute);
+
+                        for (int i = 0; i < relatedEdges.size(); i++) {
+                            int size = matching.size();
+                            for (int p = 0; p < size; p++) {
+                                String validPred = relatedEdges.get(i).getEndNode().getAttribute().getAttribute();
+                                List<Tuple> temporalMatch = HashTables.getHashTable(validPred).getHashMap().get(value);
+                                int tupleSize = temporalMatch.get(0).getTupleDesc().numFields();
+                                String firstFieldName = temporalMatch.get(0).getTupleDesc().getFieldName(0);
+                                int firstFieldIndex = candidateT.getTupleDesc().fieldNameToIndex(firstFieldName);
+                                if (firstFieldIndex == -1) {//attributes of right tuple is not included in left tuple
+                                    break;//jump to next predicate
+                                }
+                                for (int k = 0; k < temporalMatch.size(); k++) {//iterate all the matching tuples
+                                    Tuple tt = matching.get(p);
+                                    for (int kk = 0; kk < tupleSize; kk++) {
+                                        tt.setField(firstFieldIndex + kk, temporalMatch.get(p).getField(kk));
+                                    }
+                                    matching.add(tt);
+                                }
+                            }
+                        }
+                        candidateResult = matching.iterator();
+                    }
                 }
-                matchBit = true;
             }
-            while(candidateResult.hasNext()){
-                Tuple tt = candidateResult.next();
-                Tuple ProjectTuple = Project(tt);
-                if(ProjectTuple == null) {
-                    continue;
-                }else{
-                    return ProjectTuple;
+            //return matching tuples
+            if(candidateResult != null){
+                while(candidateResult.hasNext()){
+                    Tuple tt = candidateResult.next();
+                    Tuple ProjectTuple = Project(tt);
+                    if(ProjectTuple == null) {
+                        continue;
+                    }else{
+                        return ProjectTuple;
+                    }
                 }
+                candidateT = null;
             }
-            matchBit = false;
         }
-        return null;
     }
 }

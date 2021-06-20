@@ -15,7 +15,7 @@ public class SmartJoin extends Operator{
     private final Type type;
     private boolean selfJoinFlag = false;
 
-    private HashTable table;//table stores the hashTable for child2 in join operator
+    private HashMap<Field, List<Tuple>> table;//table stores the hashTable for child2 in join operator
     private Iterator<Tuple> matches, selfJoinResult, hashMatch, nullOuterTuple = null;//similar to list
     private Iterator rightRelation = null;
     private HashMap<Predicate, Boolean> CleanBits;//call
@@ -40,7 +40,6 @@ public class SmartJoin extends Operator{
         pred.setField(this.child1, this.child2);
         attribute1 = new Attribute(getJoinField1Name());
         attribute2 = new Attribute(getJoinField2Name());
-        table = new HashTable(attribute2);
         tempOuterNullTuples = new ArrayList<>();
 
         switch(pred.getOperator()) {
@@ -110,6 +109,7 @@ public class SmartJoin extends Operator{
         if (type == Type.HASH) {
             //this implementation can make sure all join-able attributes are AT MOST indexed ONCE
             //check if hashTable for second child exist
+            table = new HashMap<>();
             if(!HashTables.ifExistHashTable(getJoinField2Name())){//not found, build a new one
                 int joinAttrIdx = pred.getField2();
                 while (child2.hasNext()) {
@@ -121,7 +121,7 @@ public class SmartJoin extends Operator{
                             //clean this tuple
                             t = pred.updateTupleRight(t,ImputeFactory.Impute(t.getField(pred.getField2())));
                             //update NumOfNullValue for corresponding graph node
-                            RelationshipGraph.getNode(this.attribute2).NumOfNullValuesMinusOne();
+                            RelationshipGraph.getNode(this.attribute2.getAttribute()).NumOfNullValuesMinusOne();
                             RelationshipGraph.trigger(this.attribute2);
                         }
                         else{
@@ -133,16 +133,17 @@ public class SmartJoin extends Operator{
 
                     Field joinAttr = t.getField(joinAttrIdx);
                     if(joinAttr == new IntField(simpledb.Type.NULL_INTEGER)){continue;}
-                    if (!table.getHashMap().containsKey(joinAttr)) {
-                        table.getHashMap().put(joinAttr, new ArrayList<Tuple>());
+                    if (!table.containsKey(joinAttr)) {
+                        table.put(joinAttr, new ArrayList<Tuple>());
                     }
-                    table.getHashMap().get(joinAttr).add(t);
+                    table.get(joinAttr).add(t);
                 }
                 //update table to HashTable
-                HashTables.addHashTable(attribute2.getAttribute(), table);
+                HashTables.addHashTable(attribute2.getAttribute(), new HashTable(attribute2.getAttribute(), table));
             }else{
-                table = HashTables.getHashTable(getJoinField2Name());
+                table = HashTables.getHashTable(getJoinField2Name()).getHashMap();
             }
+            //HashTables.print();
         }
     }
 
@@ -181,7 +182,7 @@ public class SmartJoin extends Operator{
     protected Tuple fetchNext() throws TransactionAbortedException, DbException, Exception {
         switch (type) {
             case HASH:
-                if (table.getHashMap().size() == 0) { return null; }
+                if (table.size() == 0) { return null; }
 
                 // Iterate over the outer relation and select matching tuples from the table.
                 // we build hashTable for child 1 for later using if not done before while iterating
@@ -210,7 +211,7 @@ public class SmartJoin extends Operator{
                                 //t1 is filtered away
                                 continue;
                             }
-                            selfJoinResult = selfJoin(t1).iterator();
+                            selfJoinResult = joinResult.iterator();
                             if(selfJoinResult.hasNext()){
                                 selfJoinFlag = true;
                                 t11 = selfJoinResult.next();
@@ -227,10 +228,14 @@ public class SmartJoin extends Operator{
 
                     if (matches == null) {
                         Field rightField = t11.getField(pred.getField1());
-                        List<Tuple> m = table.getHashMap().get(rightField);
-                        //set matchBits for rightField
-                        HashTables.getHashTable(attribute2.getAttribute()).setMatchBit(rightField);
-                        table.setMatchBit(rightField);
+                        //System.out.println("* " + rightField + " " + attribute1.getAttribute() + " " + attribute2.getAttribute());
+                        List<Tuple> m = table.get(rightField);
+                        /*if(m!=null){
+                            System.out.println("printf hash table");
+                            for(int i=0;i<m.size();i++){
+                                System.out.println(m.get(i));
+                            }
+                        }*/
                         if (m == null) {
                             //implement outer join only for tuples containing null values
                             //the following if-else is optimization for space, in this case we need to build hashtables for left relation
@@ -248,6 +253,8 @@ public class SmartJoin extends Operator{
                             t1 = null;
                             return new Tuple(t11, constructNullTuple(child2));
                         }else{
+                            //set matchBits for rightField
+                            HashTables.getHashTable(attribute2.getAttribute()).setMatchBit(rightField);
                             matches = m.iterator();
                         }
                     }
@@ -255,6 +262,8 @@ public class SmartJoin extends Operator{
                     while (true) {
                         if (matches.hasNext()) {
                             Tuple t22 = matches.next();
+                            //System.out.println("matches: " + t11 + " || " + t22);
+                            t22.setMergeBit(true);
                             return new Tuple(t11, t22);
                         } else {
                             t1 = null;
@@ -306,7 +315,7 @@ public class SmartJoin extends Operator{
     public Tuple getNextRightTuple(){
         while(true){
             if(rightRelation == null){
-                rightRelation = table.getHashMap().entrySet().iterator();
+                rightRelation = table.entrySet().iterator();
                 nullOuterTuple = tempOuterNullTuples.iterator();
             }
             if(!rightRelation.hasNext()){
@@ -376,7 +385,7 @@ public class SmartJoin extends Operator{
                                     HashMap<Field, List<Tuple>> hashMap = new HashMap<>();
                                     hashMap.put(newValue, new ArrayList<>());
                                     hashMap.get(newValue).add(subTuple(t,right,i));
-                                    HashTables.addHashTable(right.getAttribute(), new HashTable(right, hashMap));
+                                    HashTables.addHashTable(right.getAttribute(), new HashTable(right.getAttribute(), hashMap));
                                 }
                                 else{
                                     if(!HashTables.getHashTable(right.getAttribute()).hasKey(newValue)){
@@ -387,7 +396,7 @@ public class SmartJoin extends Operator{
                             }
                             if(isUpdate){
                                 //update graph
-                                RelationshipGraph.getNode(new Attribute(field)).NumOfNullValuesMinusOne();
+                                RelationshipGraph.getNode(field).NumOfNullValuesMinusOne();
                                 RelationshipGraph.trigger(predicates.get(j).getRight());
                             }
                             break;
@@ -408,38 +417,45 @@ public class SmartJoin extends Operator{
         }
 
         matching.add(t);
-        //System.out.println("here " + t);
+        //System.out.println("here1 " + t);
         //check all current active predicates
         List<String> activeLeftAttributes = RelationshipGraph.getActiveLeftAttribute();
         if(activeLeftAttributes.size() == 0) return matching;
 
         boolean flag = false; //fast check first
-        for(int i=0;i<activeLeftAttributes.size();i++){
+        for(int i=0;i<activeLeftAttributes.size();i++){//one left could correspond to multiple right attributes
             String leftAttribute = activeLeftAttributes.get(i);
             Field leftValue = t.getField(t.getTupleDesc().fieldNameToIndex(leftAttribute));
-            if(!HashTables.ifExistHashTable(leftAttribute)){
-                throw new Exception("HashTable Not Found!");
-            }
-            else{
-                if(HashTables.getHashTable(leftAttribute).getHashMap().containsKey(leftValue)){//non-matching
-                    flag = true;
-                    break;
+            List<String> activeRightAttributes = RelationshipGraph.findRelatedActiveRightAttributes(activeLeftAttributes.get(i));
+            for(int j=0;j<activeRightAttributes.size();j++){
+                String rightAttribute = activeRightAttributes.get(j);
+                if(!HashTables.ifExistHashTable(rightAttribute)){
+                    throw new Exception("HashTable Not Found!");
+                }
+                else{
+                    if(!HashTables.getHashTable(rightAttribute).getHashMap().containsKey(leftValue)){//non-matching
+                        flag = true;
+                        break;
+                    }
                 }
             }
+            if(flag) break;
         }
 
         if(flag){
             //if now a missing value is removed, update relationship graph
             for(int i=0;i<t.getTupleDesc().numFields();i++){
                 if(t.getField(i).isMissing()){
-                    Attribute attribute = new Attribute(t.getTupleDesc().getFieldName(i));
+                    String attribute = (t.getTupleDesc().getFieldName(i));
                     RelationshipGraph.getNode(attribute).NumOfNullValuesMinusOne();
                     //only trigger join: find relevant join predicates
-                    RelationshipGraph.trigger(attribute);
+                    RelationshipGraph.trigger(new Attribute(attribute));
                 }
             }
             return null;
         }
+
+        //System.out.println("here2 " + t);
 
         //update tuples and construct matching
         for(int i=0;i<activeLeftAttributes.size();i++){
@@ -447,19 +463,26 @@ public class SmartJoin extends Operator{
             for(int j=0;j<size;j++){
                 String leftAttribute = activeLeftAttributes.get(i);
                 Field leftValue = t.getField(t.getTupleDesc().fieldNameToIndex(leftAttribute));
-                List<Tuple> temporalMatch = HashTables.getHashTable(leftAttribute).getHashMap().get(leftValue);
-                int tupleSize = temporalMatch.get(0).getTupleDesc().numFields();
-                String firstFieldName = temporalMatch.get(0).getTupleDesc().getFieldName(0);
-                int firstFieldIndex = t.getTupleDesc().fieldNameToIndex(firstFieldName);
-                if(firstFieldIndex == -1){//attributes of right tuple is not included in left tuple
-                    break;//jump to next predicate
-                }
-                for(int k=0;k<temporalMatch.size();k++){//iterate all the matching tuples
-                    Tuple tt = matching.get(j);
-                    for(int kk=0;kk<tupleSize;kk++){
-                        tt.setField(firstFieldIndex+kk, temporalMatch.get(j).getField(kk));
+                List<String> activeRightAttributes = RelationshipGraph.findRelatedActiveRightAttributes(leftAttribute);
+                List<Tuple> temporalMatch;
+                for(int k=0;k<activeRightAttributes.size();k++){
+                    String rightAttribute = activeRightAttributes.get(k);
+                    temporalMatch = HashTables.getHashTable(rightAttribute).getHashMap().get(leftValue);
+                    int tupleSize = temporalMatch.get(0).getTupleDesc().numFields();
+                    String firstFieldName = temporalMatch.get(0).getTupleDesc().getFieldName(0);
+                    int firstFieldIndex = t.getTupleDesc().fieldNameToIndex(firstFieldName);
+                    if(firstFieldIndex == -1){//attributes of right tuple is not included in left tuple
+                        break;//jump to next predicate
                     }
-                    matching.add(tt);
+                    for(int p=0;p<temporalMatch.size();p++){//iterate all the matching tuples
+                        Tuple tt = matching.get(j);
+                        if(temporalMatch.get(p).isMergeBit()) continue;
+                        for(int kk=0;kk<tupleSize;kk++){
+                            tt.setField(firstFieldIndex+kk, temporalMatch.get(p).getField(kk));
+                        }
+                        temporalMatch.get(p).setMergeBit(true);
+                        matching.add(tt);
+                    }
                 }
             }
         }

@@ -2,6 +2,7 @@ Structure of schema should be:
 N
 K1
 T1,A1
+Cardinality1, numOfNullValues1
 T2,A2
 ...
 A_K1
