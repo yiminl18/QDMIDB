@@ -16,7 +16,7 @@ public class Tuple implements Serializable {
 
     private static final long serialVersionUID = 1L;
     
-    private final Field[] fields;
+    private Field[] fields;
     
     private TupleDesc schema;
     private RecordId rid;
@@ -33,7 +33,7 @@ public class Tuple implements Serializable {
     /**
      * Create a new tuple with the specified schema (type).
      * 
-     * @param td
+     *
      *            the schema of this tuple. It must be a valid TupleDesc
      *            instance with at least one field.
      */
@@ -47,7 +47,10 @@ public class Tuple implements Serializable {
             throw new IllegalArgumentException("Schema does not match fields.");
         }
         schema = td;
-        this.fields = fields;
+        this.fields = new Field[fields.length];
+        for(int i=0;i<fields.length;i++){
+            this.fields[i] = fields[i];
+        }
     }
     
     /**
@@ -74,6 +77,9 @@ public class Tuple implements Serializable {
     public TupleDesc getTupleDesc() {
         return schema;
     }
+
+    public Field[] getFields() { return this.fields; }
+
 
     /**
      * @return The RecordId representing the location of this tuple on disk. May

@@ -73,15 +73,20 @@ public class SmartProject extends Operator {
      */
     protected Tuple fetchNext() throws NoSuchElementException,
             TransactionAbortedException, DbException, Exception {
-        while (child.hasNext()) {
+        while (true) {
             if(!flag){
-                Tuple t = child.next();
-                selfJoin(t);
-                if(matching.size() == 0){
-                    continue;
+                if(child.hasNext()){
+                    Tuple t = child.next();
+                    selfJoin(t);
+                    if(matching.size() == 0){
+                        continue;
+                    }
+                    flag = true;
+                    matchingResult = matching.iterator();
                 }
-                flag = true;
-                matchingResult = matching.iterator();
+                else{
+                    break;
+                }
             }
             while(matchingResult.hasNext()){
                 Tuple matchTuple = matchingResult.next();
@@ -226,8 +231,10 @@ public class SmartProject extends Operator {
                         break;//jump to next predicate
                     }
                     for(int k=0;k<temporalMatch.size();k++){//iterate all the matching tuples
-                        Tuple tt = matching.get(p);
+                        Tuple tt = new Tuple(matching.get(p).getTupleDesc(), matching.get(p).getFields());
+                        //System.out.println("ready to merge: " + tt + " " + temporalMatch.get(k));
                         if(temporalMatch.get(k).isMergeBit()) continue;
+                        //System.out.println("not merged before: " + tt + " " + temporalMatch.get(k));
                         for(int kk=0;kk<tupleSize;kk++){
                             tt.setField(firstFieldIndex+kk, temporalMatch.get(k).getField(kk));
                         }
@@ -237,6 +244,11 @@ public class SmartProject extends Operator {
                 }
             }
         }
+        /*System.out.println("print matching: ");
+        for(int i=0;i<matching.size();i++){
+            System.out.println(matching.get(i));
+        }
+        System.out.println("done matching: ");*/
     }
 
     public Tuple getNextFromCandidateMatching(){
@@ -297,10 +309,12 @@ public class SmartProject extends Operator {
                                     break;//jump to next predicate
                                 }
                                 for (int k = 0; k < temporalMatch.size(); k++) {//iterate all the matching tuples
-                                    Tuple tt = matching.get(p);
+                                    Tuple tt = new Tuple(matching.get(p).getTupleDesc(), matching.get(p).getFields());
+                                    if(temporalMatch.get(k).isMergeBit()) continue;
                                     for (int kk = 0; kk < tupleSize; kk++) {
-                                        tt.setField(firstFieldIndex + kk, temporalMatch.get(p).getField(kk));
+                                        tt.setField(firstFieldIndex + kk, temporalMatch.get(k).getField(kk));
                                     }
+                                    temporalMatch.get(k).setMergeBit(true);
                                     matching.add(tt);
                                 }
                             }

@@ -9,10 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.io.*;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class test {
 
@@ -85,7 +82,9 @@ public class test {
         attributes.add(new Attribute("R.b"));
         attributes.add(new Attribute("S.b"));
         attributes.add(new Attribute("S.c"));
-        Type[] types = new Type[]{Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE};
+        attributes.add(new Attribute("T.a"));
+        attributes.add(new Attribute("T.d"));
+        Type[] types = new Type[]{Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE};
         SmartProject sp = new SmartProject(attributes,types, sj2);
 
 
@@ -171,6 +170,36 @@ public class test {
             }
         }
 
+    }
+
+    public static void testList(){
+        List<Tuple> matching = new ArrayList<>();
+        List<Integer> lista = new ArrayList<>();
+
+        Type types[] = new Type[]{Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE};
+        String names[] = new String[]{"field0", "field1", "field2"};
+        TupleDesc descriptor = new TupleDesc(types, names);
+        Field fields[] = new Field[]{new IntField(1),new IntField(2),new IntField(3)};
+        Tuple t1 = new Tuple(descriptor, fields);
+        Field fields1[] = new Field[]{new IntField(2),new IntField(4),new IntField(-1)};
+        Tuple t2 = new Tuple(descriptor, fields1);
+        Tuple t3 = new Tuple(t1,t2);
+
+
+        matching.add(t1);
+        matching.add(t2);
+
+        Tuple t = new Tuple(matching.get(0).getTupleDesc(), matching.get(0).getFields());
+        t.setField(0,new IntField(10));
+        matching.add(t);
+
+        /*t.setFields(matching.get(0).getFields());
+        t.setTupleDesc(matching.get(0).getTupleDesc());
+        t.setField(0, new IntField(10));*/
+        //matching.add(t);
+        for(int i=0;i<matching.size();i++){
+            System.out.println(matching.get(i));
+        }
     }
 
     public static void testScan(){

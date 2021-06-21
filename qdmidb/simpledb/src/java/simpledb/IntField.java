@@ -33,7 +33,7 @@ public class IntField implements Field {
      * @param i The value of this field.
      */
     public IntField(int i) {
-        value = i;
+        this.value = i;
         if(i == Type.MISSING_INTEGER){
             missing = true;
         }

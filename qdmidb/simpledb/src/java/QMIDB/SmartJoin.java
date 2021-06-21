@@ -16,10 +16,7 @@ public class SmartJoin extends Operator{
     private boolean selfJoinFlag = false;
 
     private HashMap<Field, List<Tuple>> table;//table stores the hashTable for child2 in join operator
-    private Iterator<Tuple> matches, selfJoinResult, hashMatch, nullOuterTuple = null;//similar to list
-    private Iterator rightRelation = null;
-    private HashMap<Predicate, Boolean> CleanBits;//call
-    private Map.Entry mapElement = null;
+    private Iterator<Tuple> matches = null, selfJoinResult = null, nullOuterTuple = null;//similar to list
     private List<Tuple> tempOuterNullTuples;
 
     /**
@@ -115,22 +112,18 @@ public class SmartJoin extends Operator{
                 while (child2.hasNext()) {
                     Tuple t = child2.next();
                     //check cleaning for right relation : child 2
-                    if(pred.isMissingRight(t)){
-                        //ask decision function if clean now
-                        if(CleanNow2){
-                            //clean this tuple
-                            t = pred.updateTupleRight(t,ImputeFactory.Impute(t.getField(pred.getField2())));
-                            //update NumOfNullValue for corresponding graph node
-                            RelationshipGraph.getNode(this.attribute2.getAttribute()).NumOfNullValuesMinusOne();
-                            RelationshipGraph.trigger(this.attribute2);
-                        }
-                        else{
-                            //create temp null values for outer join purpose
-                            tempOuterNullTuples.add(new Tuple(constructNullTuple(child1), t));
-                            continue;//do not build hashTable for null values
-                        }
+                    if (pred.isMissingRight(t) && CleanNow2) {
+                        //clean this tuple
+                        t = pred.updateTupleRight(t, ImputeFactory.Impute(t.getField(pred.getField2())));
+                        //update NumOfNullValue for corresponding graph node
+                        RelationshipGraph.getNode(this.attribute2.getAttribute()).NumOfNullValuesMinusOne();
+                        RelationshipGraph.trigger(this.attribute2);
                     }
-
+                    if (t.hasMissingFields()) {
+                        //create temp null values for outer join purpose
+                        tempOuterNullTuples.add(new Tuple(constructNullTuple(child1), t));
+                        continue;//do not build hashTable for null values
+                    }
                     Field joinAttr = t.getField(joinAttrIdx);
                     if(joinAttr == new IntField(simpledb.Type.NULL_INTEGER)){continue;}
                     if (!table.containsKey(joinAttr)) {
@@ -262,9 +255,13 @@ public class SmartJoin extends Operator{
                     while (true) {
                         if (matches.hasNext()) {
                             Tuple t22 = matches.next();
-                            //System.out.println("matches: " + t11 + " || " + t22);
-                            t22.setMergeBit(true);
-                            return new Tuple(t11, t22);
+                            //System.out.println("matches: " + t11 + " || " + t22 + " " + t22.isMergeBit());
+                            //if there is no project, this is always correct
+                            //merge can happen in smart project first due to pipeline processing
+                            if(!t22.isMergeBit()) {
+                                t22.setMergeBit(true);
+                                return new Tuple(t11, t22);
+                            }
                         } else {
                             t1 = null;
                             matches = null;
@@ -313,39 +310,13 @@ public class SmartJoin extends Operator{
     }
 
     public Tuple getNextRightTuple(){
-        while(true){
-            if(rightRelation == null){
-                rightRelation = table.entrySet().iterator();
-                nullOuterTuple = tempOuterNullTuples.iterator();
-            }
-            if(!rightRelation.hasNext()){
-                while(nullOuterTuple.hasNext()){
-                    return nullOuterTuple.next();
-                }
-                return null;
-            }
-            mapElement = (Map.Entry)rightRelation.next();
-            Field field = (Field) mapElement.getKey();
-            if(hashMatch == null){
-                if(!HashTables.getHashTable(attribute2.getAttribute()).getMatchBit(field)){//not matched, construct new tuple and return
-                    List<Tuple> tempTuples = HashTables.getHashTable(attribute2.getAttribute()).getHashTable(field);
-                    hashMatch = tempTuples.iterator();
-                }else{//this field has already been matched before
-                    continue;
-                }
-            }
-            while(true){
-                if(hashMatch.hasNext()){
-                    Tuple tempT = hashMatch.next();
-                    if(tempT.hasMissingFields()){//outer join only constructs for tuples that have missing value
-                        return new Tuple(constructNullTuple(child1), hashMatch.next());
-                    }
-                }else{
-                    hashMatch = null;
-                    break;
-                }
-            }
+        if(nullOuterTuple == null){
+            nullOuterTuple = tempOuterNullTuples.iterator();
         }
+        while(nullOuterTuple.hasNext()){
+            return nullOuterTuple.next();
+        }
+        return null;
     }
 
     public List<Tuple> selfJoin(Tuple t) throws Exception{//t must be in the left relation
@@ -475,7 +446,7 @@ public class SmartJoin extends Operator{
                         break;//jump to next predicate
                     }
                     for(int p=0;p<temporalMatch.size();p++){//iterate all the matching tuples
-                        Tuple tt = matching.get(j);
+                        Tuple tt = new Tuple(matching.get(j).getTupleDesc(), matching.get(j).getFields());
                         if(temporalMatch.get(p).isMergeBit()) continue;
                         for(int kk=0;kk<tupleSize;kk++){
                             tt.setField(firstFieldIndex+kk, temporalMatch.get(p).getField(kk));
