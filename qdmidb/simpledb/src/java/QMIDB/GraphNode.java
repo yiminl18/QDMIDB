@@ -7,6 +7,15 @@ public class GraphNode {
     private int cardinality;
     private int numOfNullValues;
     private Attribute attribute;
+    private boolean isPicked = false;
+
+    public boolean isPicked() {
+        return isPicked;
+    }
+
+    public void setPicked(boolean picked) {
+        isPicked = picked;
+    }
 
     public GraphNode(Attribute attribute) {
         this.attribute = attribute;

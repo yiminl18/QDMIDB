@@ -174,7 +174,7 @@ public class test {
 
     public static void testList(){
         List<Tuple> matching = new ArrayList<>();
-        List<Integer> lista = new ArrayList<>();
+        List<Tuple> matching1 = new ArrayList<>();
 
         Type types[] = new Type[]{Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE};
         String names[] = new String[]{"field0", "field1", "field2"};
@@ -189,16 +189,13 @@ public class test {
         matching.add(t1);
         matching.add(t2);
 
-        Tuple t = new Tuple(matching.get(0).getTupleDesc(), matching.get(0).getFields());
-        t.setField(0,new IntField(10));
-        matching.add(t);
+        matching1.add(t3);
 
-        /*t.setFields(matching.get(0).getFields());
-        t.setTupleDesc(matching.get(0).getTupleDesc());
-        t.setField(0, new IntField(10));*/
-        //matching.add(t);
-        for(int i=0;i<matching.size();i++){
-            System.out.println(matching.get(i));
+        matching1.add(matching.get(0));
+
+
+        for(int i=0;i<matching1.size();i++){
+            System.out.println(matching1.get(i));
         }
     }
 

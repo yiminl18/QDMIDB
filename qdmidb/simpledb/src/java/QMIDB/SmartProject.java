@@ -14,9 +14,12 @@ public class SmartProject extends Operator {
 
     private List<Tuple> matching = new ArrayList<>();
     private Iterator<Tuple> matchingResult, candidateMatchIterator, candidateResult = null;
-    private List<Tuple> candidateMatching = new ArrayList<>();
+    private List<Tuple> candidateMatching =  new ArrayList<>(), matchedTuples = new ArrayList<>();
+    private List<Boolean> candidateMatchingBits = new ArrayList<>();//it is used to indicate which tuple in candidateMatching has been filtered away
     private boolean flag, flagCandidateMatch = false;
     Tuple candidateT = null;
+    private String pickedColumn = null;
+    private final List<String> leftJoinAttributes = RelationshipGraph.getLeftJoinAttribute();
 
     /**
      * Constructor accepts a child operator to read tuples to apply projection
@@ -75,6 +78,7 @@ public class SmartProject extends Operator {
             TransactionAbortedException, DbException, Exception {
         while (true) {
             if(!flag){
+                pickedColumn = RelationshipGraph.getNextColumn();
                 if(child.hasNext()){
                     Tuple t = child.next();
                     selfJoin(t);
@@ -101,7 +105,25 @@ public class SmartProject extends Operator {
             flag = false;
         }
         //getNext from CandidateMatching
-        return getNextFromCandidateMatching();
+        while(true){
+            if(!flagCandidateMatch){
+                matching.clear();
+                for(int i=0;i<candidateMatching.size();i++){
+                    candidateMatchingBits.add(false);
+                }
+                getNextFromCandidateMatching();
+                candidateMatchIterator = matchedTuples.iterator();
+                flagCandidateMatch = true;
+            }
+            else{
+                if(candidateMatchIterator.hasNext()){
+                    return Project(candidateMatchIterator.next());
+                }
+                else{
+                    return null;
+                }
+            }
+        }
     }
 
     public Tuple Project(Tuple t){
@@ -156,13 +178,18 @@ public class SmartProject extends Operator {
 
         List<String> leftActiveAttributes = RelationshipGraph.getActiveLeftAttribute();
         List<String> rightAttributes = RelationshipGraph.getRightJoinAttribute();
-        List<String> leftAttributes = RelationshipGraph.getLeftJoinAttribute();
-        List<String> inactiveLeftAttributes = leftAttributes;
+        List<String> inactiveLeftAttributes = leftJoinAttributes;
         inactiveLeftAttributes.removeAll(leftActiveAttributes);
 
         for (int i = 0; i< t.getTupleDesc().numFields(); i++) {
+
             Field value = t.getField(i);
             String attribute = t.getTupleDesc().getFieldName(i);
+
+            if(attribute.equals(pickedColumn) && value.isMissing()){//clean this attribute value
+                value = ImputeFactory.Impute(value);
+                t.setField(i, value);
+            }
             //if this attribute is in the left attribute of an active join predicate
             if(leftActiveAttributes.contains(attribute)){
                 isSelfJoin = true;
@@ -181,7 +208,7 @@ public class SmartProject extends Operator {
                 }
             }
             //if this attribute is in the right attribute of any join predicate
-            if(rightAttributes.contains(attribute)){
+            /*if(rightAttributes.contains(attribute)){
                 if(value.isMissing()){
                     value = ImputeFactory.Impute(value);
                     t.setField(i, value);
@@ -201,7 +228,7 @@ public class SmartProject extends Operator {
                         HashTables.getHashTable(attribute).getHashMap().get(value).add(subTuple(attribute,t,i));
                     }
                 }
-            }
+            }*/
             //if this attribute is left join attribute and in an inactive predicate, add to candidateMatching
             if(inactiveLeftAttributes.contains(attribute)){
                 candidateMatching.add(t);
@@ -251,90 +278,74 @@ public class SmartProject extends Operator {
         System.out.println("done matching: ");*/
     }
 
-    public Tuple getNextFromCandidateMatching(){
-        if(!flagCandidateMatch){
-            candidateMatchIterator = candidateMatching.iterator();
-            flagCandidateMatch = true;
-            matching.clear();//reuse matching
-        }
-        boolean matchBit = false;
+    public void getNextFromCandidateMatching(){
         while(true){
-            if(candidateT == null){
-                //get next tuple from candidateMatching
-                if(candidateMatchIterator.hasNext()){
-                    candidateT = candidateMatchIterator.next();
-                }else{
-                    return null;
+            String nextColumn = RelationshipGraph.getNextColumn();
+            if(nextColumn == null) break;
+            for(int i=0;i<candidateMatching.size();i++){
+                if(candidateMatchingBits.get(i)) continue;//if this tuple has already been filter away, do not consider anymore
+                //use pickedColumn to do self-Join
+                Tuple t = candidateMatching.get(i);
+                List<String> leftAttributes = RelationshipGraph.getLeftJoinAttribute(pickedColumn);
+                boolean flag = false;
+                for(int j=0;j<leftAttributes.size();j++){
+                    String leftAttribute = leftAttributes.get(j);
+                    int index = t.getTupleDesc().fieldNameToIndex(leftAttribute);
+                    Field value = t.getField(index);
+                    if(!HashTables.getHashTable(leftAttribute).getHashMap().containsKey(value)){
+                        //remove this tuple
+                        flag = true;
+                        candidateMatchingBits.set(i, true);
+                        break;
+                    }
                 }
-                //construct all matching tuples for candidateT
-                if(matching.size() == 0) {
-                    //all predicates should be active now
-                    //fast check
-                    boolean isConflicted = false;
-                    for (int i = 0; i < candidateT.getTupleDesc().numFields(); i++) {
-                        Field value = candidateT.getField(i);
-                        String attribute = candidateT.getTupleDesc().getFieldName(i);
-                        List<GraphEdge> activeEdges = RelationshipGraph.findRelatedEdge(attribute);
-                        for (int j = 0; j < activeEdges.size(); j++) {
-                            String rightAttribute = activeEdges.get(j).getEndNode().getAttribute().getAttribute();
-                            if (!HashTables.getHashTable(rightAttribute).getHashMap().containsKey(value)) {
-                                isConflicted = true;
-                                break;
-                            }
-                        }
-                        if (isConflicted) {
-                            break;
-                        }
-                    }
-                    if (isConflicted) {
-                        candidateT = null;
-                        continue;
-                    }
-                    //merge and update
-                    matching.add(candidateT);
-                    for (int j = 0; j < candidateT.getTupleDesc().numFields(); j++) {
-                        Field value = candidateT.getField(j);
-                        String attribute = candidateT.getTupleDesc().getFieldName(j);
-                        List<GraphEdge> relatedEdges = RelationshipGraph.findRelatedEdge(attribute);
-
-                        for (int i = 0; i < relatedEdges.size(); i++) {
-                            int size = matching.size();
-                            for (int p = 0; p < size; p++) {
-                                String validPred = relatedEdges.get(i).getEndNode().getAttribute().getAttribute();
-                                List<Tuple> temporalMatch = HashTables.getHashTable(validPred).getHashMap().get(value);
-                                int tupleSize = temporalMatch.get(0).getTupleDesc().numFields();
-                                String firstFieldName = temporalMatch.get(0).getTupleDesc().getFieldName(0);
-                                int firstFieldIndex = candidateT.getTupleDesc().fieldNameToIndex(firstFieldName);
-                                if (firstFieldIndex == -1) {//attributes of right tuple is not included in left tuple
-                                    break;//jump to next predicate
-                                }
-                                for (int k = 0; k < temporalMatch.size(); k++) {//iterate all the matching tuples
-                                    Tuple tt = new Tuple(matching.get(p).getTupleDesc(), matching.get(p).getFields());
-                                    if(temporalMatch.get(k).isMergeBit()) continue;
-                                    for (int kk = 0; kk < tupleSize; kk++) {
-                                        tt.setField(firstFieldIndex + kk, temporalMatch.get(k).getField(kk));
-                                    }
-                                    temporalMatch.get(k).setMergeBit(true);
-                                    matching.add(tt);
-                                }
-                            }
-                        }
-                        candidateResult = matching.iterator();
+                if(!flag){//if codes go here, then clean nextcolumn of this tuple
+                    int index = t.getTupleDesc().fieldNameToIndex(nextColumn);
+                    Field value = t.getField(index);
+                    if(value.isMissing()){
+                        value = ImputeFactory.Impute(value);
+                        t.setField(index, value);
                     }
                 }
             }
-            //return matching tuples
-            if(candidateResult != null){
-                while(candidateResult.hasNext()){
-                    Tuple tt = candidateResult.next();
-                    Tuple ProjectTuple = Project(tt);
-                    if(ProjectTuple == null) {
-                        continue;
-                    }else{
-                        return ProjectTuple;
+        }
+        //the codes are here, merge and update tuples
+        for(int i=0;i<candidateMatching.size();i++){
+            if(candidateMatchingBits.get(i)) continue;
+            Tuple t = candidateMatching.get(i);
+            List<Tuple> tupleMatching = new ArrayList<>();
+            tupleMatching.add(t);
+            for(int j=0;j<leftJoinAttributes.size();j++){
+                String leftJoinAttribute = leftJoinAttributes.get(j);
+                int size = tupleMatching.size();
+                for(int k=0;k<size;k++){
+                    Field leftValue = t.getField(t.getTupleDesc().fieldNameToIndex(leftJoinAttribute));
+                    List<String> activeRightAttributes = RelationshipGraph.findRelatedActiveRightAttributes(leftJoinAttribute);
+                    List<Tuple> temporalMatch;
+                    for(int p=0;p<activeRightAttributes.size();p++){
+                        String rightAttribute = activeRightAttributes.get(p);
+                        temporalMatch = HashTables.getHashTable(rightAttribute).getHashMap().get(leftValue);
+                        int tupleSize = temporalMatch.get(0).getTupleDesc().numFields();
+                        String firstFieldName = temporalMatch.get(0).getTupleDesc().getFieldName(0);
+                        int firstFieldIndex = t.getTupleDesc().fieldNameToIndex(firstFieldName);
+                        if(firstFieldIndex == -1){//attributes of right tuple is not included in left tuple
+                            break;//jump to next predicate
+                        }
+                        for(int q=0;q<temporalMatch.size();q++){//iterate all the matching tuples
+                            Tuple tt = new Tuple(tupleMatching.get(k).getTupleDesc(), tupleMatching.get(k).getFields());
+                            if(temporalMatch.get(q).isMergeBit()) continue;
+                            for(int kk=0;kk<tupleSize;kk++){
+                                tt.setField(firstFieldIndex+kk, temporalMatch.get(q).getField(kk));
+                            }
+                            temporalMatch.get(q).setMergeBit(true);
+                            tupleMatching.add(tt);
+                        }
                     }
                 }
-                candidateT = null;
+            }
+            //add final results to MatchedTuples
+            for(int j=0;j<tupleMatching.size();j++){
+                matchedTuples.add(tupleMatching.get(i));
             }
         }
     }

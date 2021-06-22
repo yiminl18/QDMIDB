@@ -13,7 +13,7 @@ import java.util.List;
     *ihe: check if edge information stored in edgeSet and edgeMap is same or not
  */
 public class RelationshipGraph {
-    private static Map<String, List<GraphNode>> adjNodes = new HashMap<>();//use the integer index of nodes to construct the graph
+    private static Map<String, List<String>> adjNodes = new HashMap<>();//from right to left attribute in join predicates
     private static Map<String, GraphNode> nodeMap = new HashMap<>();//mapping from String attribute to graph node
     private static Map<String, GraphEdge> edgeMap = new HashMap<>();//mapping from String attribute to graph edge
     private static List<GraphNode> NodeSet = new ArrayList<>();
@@ -77,13 +77,17 @@ public class RelationshipGraph {
         }
     }
 
+    public static List<String> getLeftJoinAttribute(String right){
+        return adjNodes.get(right);
+    }
+
     public static void addEdge(GraphEdge edge){
-        if(adjNodes.get(edge.getStartNode().getAttribute().getAttribute()) == null){
-            adjNodes.put(edge.getStartNode().getAttribute().getAttribute(), new ArrayList<>());
+        if(adjNodes.get(edge.getEndNode().getAttribute().getAttribute()) == null){
+            adjNodes.put(edge.getEndNode().getAttribute().getAttribute(), new ArrayList<>());
         }
         else{
-            if(!adjNodes.containsKey(edge.getStartNode().getAttribute().getAttribute())){
-                adjNodes.get(edge.getStartNode().getAttribute().getAttribute()).add(edge.getEndNode());
+            if(!adjNodes.containsKey(edge.getEndNode().getAttribute().getAttribute())){
+                adjNodes.get(edge.getEndNode().getAttribute().getAttribute()).add(edge.getStartNode().getAttribute().getAttribute());
             }
         }
     }
@@ -103,6 +107,21 @@ public class RelationshipGraph {
         else{
             return null;
         }
+    }
+
+    public static String getNextColumn(){//find next column to clean in SmartProject
+        int MinNumOfMissingValue = Integer.MAX_VALUE;
+        String nextColumn = null;
+        for(int i=0;i<rightAttribute.size();i++){
+            String right = rightAttribute.get(i);
+            if(activeRightAttribute.contains(right)) continue;
+            if(!nodeMap.get(right).isPicked() && nodeMap.get(right).getNumOfNullValues() < MinNumOfMissingValue){
+                MinNumOfMissingValue = nodeMap.get(right).getNumOfNullValues();
+                nextColumn = right;
+                nodeMap.get(right).setPicked(true);
+            }
+        }
+        return nextColumn;
     }
 
     public static String getRightNode(String leftNode){
