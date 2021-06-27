@@ -18,7 +18,7 @@ public class SmartProject extends Operator {
     private List<Boolean> candidateMatchingBits = new ArrayList<>();//it is used to indicate which tuple in candidateMatching has been filtered away
     private boolean flag, flagCandidateMatch = false;
     Tuple candidateT = null;
-    private String pickedColumn = null;
+    private String pickedColumn = RelationshipGraph.getNextColumn();
     private final List<String> leftJoinAttributes = RelationshipGraph.getLeftJoinAttribute();
 
     /**
@@ -78,9 +78,9 @@ public class SmartProject extends Operator {
             TransactionAbortedException, DbException, Exception {
         while (true) {
             if(!flag){
-                pickedColumn = RelationshipGraph.getNextColumn();
                 if(child.hasNext()){
                     Tuple t = child.next();
+                    System.out.println("Project: " + t);
                     selfJoin(t);
                     if(matching.size() == 0){
                         continue;
@@ -104,14 +104,21 @@ public class SmartProject extends Operator {
             }
             flag = false;
         }
+        System.out.println("here");
         //getNext from CandidateMatching
         while(true){
             if(!flagCandidateMatch){
                 matching.clear();
+                System.out.println("candidate Mathcing:");
                 for(int i=0;i<candidateMatching.size();i++){
                     candidateMatchingBits.add(false);
+                    System.out.println(candidateMatching.get(i));
                 }
                 getNextFromCandidateMatching();
+                /*System.out.println("print: matched Tuples: ");
+                for(int i=0;i<matchedTuples.size();i++){
+                    System.out.println(matchedTuples.get(i));
+                }*/
                 candidateMatchIterator = matchedTuples.iterator();
                 flagCandidateMatch = true;
             }
@@ -181,15 +188,20 @@ public class SmartProject extends Operator {
         List<String> inactiveLeftAttributes = leftJoinAttributes;
         inactiveLeftAttributes.removeAll(leftActiveAttributes);
 
-        for (int i = 0; i< t.getTupleDesc().numFields(); i++) {
+        //clean attribute value in pickedColumn is missing
+        int index = t.getTupleDesc().fieldNameToIndex(pickedColumn);
+        Field pickedValue = t.getField(index);
+        if(pickedValue.isMissing()){
+            pickedValue = ImputeFactory.Impute(pickedValue);
+            t.setField(index, pickedValue);
+            updateGraph(pickedColumn);
+            updateHashTable(pickedColumn, pickedValue, t);
+        }
 
+        for (int i = 0; i< t.getTupleDesc().numFields(); i++) {
             Field value = t.getField(i);
             String attribute = t.getTupleDesc().getFieldName(i);
 
-            if(attribute.equals(pickedColumn) && value.isMissing()){//clean this attribute value
-                value = ImputeFactory.Impute(value);
-                t.setField(i, value);
-            }
             //if this attribute is in the left attribute of an active join predicate
             if(leftActiveAttributes.contains(attribute)){
                 isSelfJoin = true;
@@ -207,28 +219,6 @@ public class SmartProject extends Operator {
                     }
                 }
             }
-            //if this attribute is in the right attribute of any join predicate
-            /*if(rightAttributes.contains(attribute)){
-                if(value.isMissing()){
-                    value = ImputeFactory.Impute(value);
-                    t.setField(i, value);
-                    //update graph
-                    RelationshipGraph.getNode(attribute).NumOfNullValuesMinusOne();
-                    RelationshipGraph.trigger(new Attribute(attribute));
-                    //update hashTables
-                    if(!HashTables.ifExistHashTable(attribute)){
-                        HashMap<Field, List<Tuple>> hashMap = new HashMap<>();
-                        hashMap.put(value, new ArrayList<>());
-                        hashMap.get(value).add(subTuple(attribute,t,i));
-                        HashTables.addHashTable(attribute, new HashTable(attribute, hashMap));
-                    }else{
-                        if(!HashTables.getHashTable(attribute).hasKey(value)){
-                            HashTables.getHashTable(attribute).getHashMap().put(value, new ArrayList<>());
-                        }
-                        HashTables.getHashTable(attribute).getHashMap().get(value).add(subTuple(attribute,t,i));
-                    }
-                }
-            }*/
             //if this attribute is left join attribute and in an inactive predicate, add to candidateMatching
             if(inactiveLeftAttributes.contains(attribute)){
                 candidateMatching.add(t);
@@ -305,6 +295,8 @@ public class SmartProject extends Operator {
                     if(value.isMissing()){
                         value = ImputeFactory.Impute(value);
                         t.setField(index, value);
+                        updateGraph(nextColumn);
+                        updateHashTable(nextColumn, value, t);
                     }
                 }
             }
@@ -345,8 +337,28 @@ public class SmartProject extends Operator {
             }
             //add final results to MatchedTuples
             for(int j=0;j<tupleMatching.size();j++){
-                matchedTuples.add(tupleMatching.get(i));
+                matchedTuples.add(tupleMatching.get(j));
             }
+        }
+    }
+
+    public void updateGraph(String attribute){
+        RelationshipGraph.getNode(attribute).NumOfNullValuesMinusOne();
+        RelationshipGraph.trigger(new Attribute(attribute));
+    }
+
+    public void updateHashTable(String attribute, Field value, Tuple t){
+        if(!HashTables.ifExistHashTable(attribute)){
+            HashMap<Field, List<Tuple>> hashMap = new HashMap<>();
+            hashMap.put(value, new ArrayList<>());
+            hashMap.get(value).add(t);
+            HashTables.addHashTable(attribute, new HashTable(attribute, hashMap));
+        }
+        else{
+            if(!HashTables.getHashTable(attribute).hasKey(value)){
+                HashTables.getHashTable(attribute).getHashMap().put(value, new ArrayList<>());
+            }
+            HashTables.getHashTable(attribute).getHashMap().get(value).add(t);
         }
     }
 }

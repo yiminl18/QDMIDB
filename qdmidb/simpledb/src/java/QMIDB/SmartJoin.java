@@ -197,6 +197,7 @@ public class SmartJoin extends Operator{
                             }
                         }else if(child1.hasNext()){
                             t1 = child1.next();
+                            System.out.println("Join: " + t1);
                             List<Tuple> joinResult = selfJoin(t1);
                             if(joinResult == null){
                                 t1 = null;

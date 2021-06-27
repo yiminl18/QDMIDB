@@ -13,7 +13,7 @@ public class main {
         //PredicateSet.print();
         //Schema.print();
         test t = new test();
-        t.testList();
+        t.testComplexQuery();
         //t.testSubDesc();
     }
 
