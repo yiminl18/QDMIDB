@@ -166,7 +166,8 @@ public class SmartProject extends Operator {
     }
 
     public Tuple subTuple(String attribute, Tuple t){
-        int start = 0;
+        String first = Schema.getFirstAttribute(attribute);
+        int start = t.getTupleDesc().fieldNameToIndex(first);
         int width = Schema.getWidth(attribute);
         TupleDesc subTD = t.getTupleDesc().SubTupleDesc(start, width);
         Tuple subT = new Tuple(subTD);
@@ -196,7 +197,7 @@ public class SmartProject extends Operator {
             pickedValue = ImputeFactory.Impute(pickedValue);
             t.setField(index, pickedValue);
             updateGraph(pickedColumn);
-            updateHashTable(pickedColumn, pickedValue, t);
+            updateHashTable(pickedColumn, pickedValue, subTuple(pickedColumn, t));
         }
 
         for (int i = 0; i< t.getTupleDesc().numFields(); i++) {
@@ -303,7 +304,7 @@ public class SmartProject extends Operator {
                         value = ImputeFactory.Impute(value);
                         t.setField(index, value);
                         updateGraph(nextColumn);
-                        updateHashTable(nextColumn, value, t);
+                        updateHashTable(nextColumn, value, subTuple(nextColumn, t));
                     }
                 }
             }

@@ -354,23 +354,11 @@ public class SmartJoin extends Operator{
                                 Field newValue = ImputeFactory.Impute(null);
                                 t.setField(i,newValue);
                                 //update hashTables
-                                if(!HashTables.ifExistHashTable(right.getAttribute())){
-                                    HashMap<Field, List<Tuple>> hashMap = new HashMap<>();
-                                    hashMap.put(newValue, new ArrayList<>());
-                                    hashMap.get(newValue).add(subTuple(t,right,i));
-                                    HashTables.addHashTable(right.getAttribute(), new HashTable(right.getAttribute(), hashMap));
-                                }
-                                else{
-                                    if(!HashTables.getHashTable(right.getAttribute()).hasKey(newValue)){
-                                        HashTables.getHashTable(right.getAttribute()).getHashMap().put(newValue, new ArrayList<>());
-                                    }
-                                    HashTables.getHashTable(right.getAttribute()).getHashMap().get(newValue).add(subTuple(t,right,i));
-                                }
+                                updateHashTable(right.getAttribute(), newValue, subTuple(right.getAttribute(), t));
                             }
                             if(isUpdate){
                                 //update graph
-                                RelationshipGraph.getNode(field).NumOfNullValuesMinusOne();
-                                RelationshipGraph.trigger(predicates.get(j).getRight());
+                                updateGraph(right.getAttribute());
                             }
                             break;
                         case "Filter":
@@ -420,9 +408,7 @@ public class SmartJoin extends Operator{
             for(int i=0;i<t.getTupleDesc().numFields();i++){
                 if(t.getField(i).isMissing()){
                     String attribute = (t.getTupleDesc().getFieldName(i));
-                    RelationshipGraph.getNode(attribute).NumOfNullValuesMinusOne();
-                    //only trigger join: find relevant join predicates
-                    RelationshipGraph.trigger(new Attribute(attribute));
+                    updateGraph(attribute);
                 }
             }
             return null;
@@ -462,8 +448,10 @@ public class SmartJoin extends Operator{
         return matching;
     }
 
-    public Tuple subTuple(Tuple t, Attribute attribute, int start){
-        int width = Schema.getWidth(attribute.getAttribute());
+    public Tuple subTuple(String attribute, Tuple t){
+        String first = Schema.getFirstAttribute(attribute);
+        int start = t.getTupleDesc().fieldNameToIndex(first);
+        int width = Schema.getWidth(attribute);
         TupleDesc subTD = t.getTupleDesc().SubTupleDesc(start, width);
         Tuple subT = new Tuple(subTD);
         for(int i=0;i<width;i++){
@@ -484,5 +472,25 @@ public class SmartJoin extends Operator{
         }
         this.child1 = children[0];
         this.child2 = children[1];
+    }
+
+    public void updateGraph(String attribute){
+        RelationshipGraph.getNode(attribute).NumOfNullValuesMinusOne();
+        RelationshipGraph.trigger(new Attribute(attribute));
+    }
+
+    public void updateHashTable(String attribute, Field value, Tuple t){
+        if(!HashTables.ifExistHashTable(attribute)){
+            HashMap<Field, List<Tuple>> hashMap = new HashMap<>();
+            hashMap.put(value, new ArrayList<>());
+            hashMap.get(value).add(t);
+            HashTables.addHashTable(attribute, new HashTable(attribute, hashMap));
+        }
+        else{
+            if(!HashTables.getHashTable(attribute).hasKey(value)){
+                HashTables.getHashTable(attribute).getHashMap().put(value, new ArrayList<>());
+            }
+            HashTables.getHashTable(attribute).getHashMap().get(value).add(t);
+        }
     }
 }
