@@ -13,7 +13,8 @@ public class main {
         //PredicateSet.print();
         //Schema.print();
         test t = new test();
-        t.testComplexQuery();
+        //t.testComplexQuery();
+        System.out.println(RelationshipGraph.getLeftJoinAttribute("S.b"));
         //t.testSubDesc();
     }
 

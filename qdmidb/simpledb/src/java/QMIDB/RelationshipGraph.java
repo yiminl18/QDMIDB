@@ -82,12 +82,15 @@ public class RelationshipGraph {
     }
 
     public static void addEdge(GraphEdge edge){
-        if(adjNodes.get(edge.getEndNode().getAttribute().getAttribute()) == null){
-            adjNodes.put(edge.getEndNode().getAttribute().getAttribute(), new ArrayList<>());
+        String startNode = edge.getStartNode().getAttribute().getAttribute();
+        String endNode = edge.getEndNode().getAttribute().getAttribute();
+        if(adjNodes.get(endNode) == null){
+            adjNodes.put(endNode, new ArrayList<>());
+            adjNodes.get(endNode).add(startNode);
         }
         else{
-            if(!adjNodes.containsKey(edge.getEndNode().getAttribute().getAttribute())){
-                adjNodes.get(edge.getEndNode().getAttribute().getAttribute()).add(edge.getStartNode().getAttribute().getAttribute());
+            if(!adjNodes.get(endNode).contains(startNode)){
+                adjNodes.get(endNode).add(startNode);
             }
         }
     }
