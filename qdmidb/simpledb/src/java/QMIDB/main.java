@@ -14,7 +14,10 @@ public class main {
         //Schema.print();
         test t = new test();
         //t.testComplexQuery();
-        System.out.println(RelationshipGraph.getLeftJoinAttribute("S.b"));
+        for(int i=0;i<Schema.getSchema().size();i++){
+            String attr = Schema.getSchema().get(i).getAttribute();
+            System.out.println( attr+ " " + Schema.getFirstAttribute(attr));
+        }
         //t.testSubDesc();
     }
 

@@ -122,14 +122,15 @@ public class SmartJoin extends Operator{
                     if (t.hasMissingFields()) {
                         //create temp null values for outer join purpose
                         tempOuterNullTuples.add(new Tuple(constructNullTuple(child1), t));
-                        continue;//do not build hashTable for null values
                     }
-                    Field joinAttr = t.getField(joinAttrIdx);
-                    if(joinAttr == new IntField(simpledb.Type.NULL_INTEGER)){continue;}
-                    if (!table.containsKey(joinAttr)) {
-                        table.put(joinAttr, new ArrayList<Tuple>());
+                    if(!pred.isMissingRight(t)){
+                        Field joinAttr = t.getField(joinAttrIdx);
+                        if(joinAttr == new IntField(simpledb.Type.NULL_INTEGER)){continue;}
+                        if (!table.containsKey(joinAttr)) {
+                            table.put(joinAttr, new ArrayList<Tuple>());
+                        }
+                        table.get(joinAttr).add(t);
                     }
-                    table.get(joinAttr).add(t);
                 }
                 //update table to HashTable
                 HashTables.addHashTable(attribute2.getAttribute(), new HashTable(attribute2.getAttribute(), table));
@@ -197,7 +198,7 @@ public class SmartJoin extends Operator{
                             }
                         }else if(child1.hasNext()){
                             t1 = child1.next();
-                            System.out.println("Join: " + t1);
+                            //System.out.println("Join: " + t1);
                             List<Tuple> joinResult = selfJoin(t1);
                             if(joinResult == null){
                                 t1 = null;

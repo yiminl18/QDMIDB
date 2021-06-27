@@ -80,7 +80,7 @@ public class SmartProject extends Operator {
             if(!flag){
                 if(child.hasNext()){
                     Tuple t = child.next();
-                    System.out.println("Project: " + t);
+                    //System.out.println("Project: " + t);
                     selfJoin(t);
                     if(matching.size() == 0){
                         continue;
@@ -165,7 +165,8 @@ public class SmartProject extends Operator {
         }
     }
 
-    public Tuple subTuple(String attribute, Tuple t, int start){
+    public Tuple subTuple(String attribute, Tuple t){
+        int start = 0;
         int width = Schema.getWidth(attribute);
         TupleDesc subTD = t.getTupleDesc().SubTupleDesc(start, width);
         Tuple subT = new Tuple(subTD);
@@ -282,8 +283,14 @@ public class SmartProject extends Operator {
                     String leftAttribute = leftAttributes.get(j);
                     int index = t.getTupleDesc().fieldNameToIndex(leftAttribute);
                     Field value = t.getField(index);
-                    if(!HashTables.getHashTable(leftAttribute).getHashMap().containsKey(value)){
+                    if(value.isMissing()){//this round uses pickedColumn to do self-join, so we need to clean left join attribute
+                        value = ImputeFactory.Impute(value);
+                        t.setField(index, value);
+                    }
+                    if(!HashTables.getHashTable(pickedColumn).getHashMap().containsKey(value)){
                         //remove this tuple
+                        System.out.println(pickedColumn + " *** " + t);
+                        HashTables.getHashTable(pickedColumn).print();
                         flag = true;
                         candidateMatchingBits.set(i, true);
                         break;
