@@ -88,8 +88,6 @@ public class test {
         SmartProject sp = new SmartProject(attributes,types, sj2);
 
 
-
-
         // and run it
         try {
             sp.open();
@@ -99,7 +97,6 @@ public class test {
             }
             sp.close();
             Database.getBufferPool().transactionComplete(tid);
-
         } catch (Exception e) {
             e.printStackTrace();
         }

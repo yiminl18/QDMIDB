@@ -19,7 +19,7 @@ public class SmartProject extends Operator {
     private boolean flag, flagCandidateMatch = false;
     Tuple candidateT = null;
     private String pickedColumn = RelationshipGraph.getNextColumn();
-    private final List<String> leftJoinAttributes = RelationshipGraph.getLeftJoinAttribute();
+    private final List<String> leftJoinAttributes = copyList(RelationshipGraph.getLeftJoinAttribute());
 
     /**
      * Constructor accepts a child operator to read tuples to apply projection
@@ -104,18 +104,17 @@ public class SmartProject extends Operator {
             }
             flag = false;
         }
-        System.out.println("here");
         //getNext from CandidateMatching
         while(true){
             if(!flagCandidateMatch){
                 matching.clear();
-                System.out.println("candidate Mathcing:");
+                //System.out.println("candidate Mathcing:");
                 for(int i=0;i<candidateMatching.size();i++){
                     candidateMatchingBits.add(false);
-                    System.out.println(candidateMatching.get(i));
+                    //System.out.println(candidateMatching.get(i));
                 }
                 getNextFromCandidateMatching();
-                /*System.out.println("print: matched Tuples: ");
+                /*System.out.println("final tuples");
                 for(int i=0;i<matchedTuples.size();i++){
                     System.out.println(matchedTuples.get(i));
                 }*/
@@ -123,12 +122,12 @@ public class SmartProject extends Operator {
                 flagCandidateMatch = true;
             }
             else{
-                if(candidateMatchIterator.hasNext()){
-                    return Project(candidateMatchIterator.next());
+                while(candidateMatchIterator.hasNext()){
+                    Tuple finalResult = Project(candidateMatchIterator.next());
+                    if(finalResult == null) continue;
+                    return finalResult;
                 }
-                else{
-                    return null;
-                }
+                return null;
             }
         }
     }
@@ -157,6 +156,14 @@ public class SmartProject extends Operator {
         return new DbIterator[] { this.child };
     }
 
+    public List<String> copyList(List<String> list){
+        List<String> l = new ArrayList<>();
+        for(int i=0;i<list.size();i++){
+            l.add(list.get(i));
+        }
+        return l;
+    }
+
     @Override
     public void setChildren(DbIterator[] children) {
         if (this.child!=children[0])
@@ -183,11 +190,10 @@ public class SmartProject extends Operator {
         boolean isSelfJoin = false;
         boolean isAdd = false;
 
-        List<GraphEdge> relatedEdges = new ArrayList<>();
+        List<GraphEdge> relatedEdges;
 
         List<String> leftActiveAttributes = RelationshipGraph.getActiveLeftAttribute();
-        List<String> rightAttributes = RelationshipGraph.getRightJoinAttribute();
-        List<String> inactiveLeftAttributes = leftJoinAttributes;
+        List<String> inactiveLeftAttributes = copyList(RelationshipGraph.getLeftJoinAttribute());
         inactiveLeftAttributes.removeAll(leftActiveAttributes);
 
         //clean attribute value in pickedColumn is missing
@@ -205,7 +211,7 @@ public class SmartProject extends Operator {
             String attribute = t.getTupleDesc().getFieldName(i);
 
             //if this attribute is in the left attribute of an active join predicate
-            if(leftActiveAttributes.contains(attribute)){
+            if(leftActiveAttributes.contains(attribute) && !value.isNull()){
                 isSelfJoin = true;
                 if(value.isMissing()){
                     value = ImputeFactory.Impute(value);
@@ -251,23 +257,31 @@ public class SmartProject extends Operator {
                     }
                     for(int k=0;k<temporalMatch.size();k++){//iterate all the matching tuples
                         Tuple tt = new Tuple(matching.get(p).getTupleDesc(), matching.get(p).getFields());
-                        //System.out.println("ready to merge: " + tt + " " + temporalMatch.get(k));
-                        if(temporalMatch.get(k).isMergeBit()) continue;
-                        //System.out.println("not merged before: " + tt + " " + temporalMatch.get(k));
-                        for(int kk=0;kk<tupleSize;kk++){
-                            tt.setField(firstFieldIndex+kk, temporalMatch.get(k).getField(kk));
+                        if(!temporalMatch.get(k).isMergeBit()){
+                            for(int kk=0;kk<tupleSize;kk++){
+                                tt.setField(firstFieldIndex+kk, temporalMatch.get(k).getField(kk));
+                            }
+                            temporalMatch.get(k).setMergeBit(true);
+                            matching.add(tt);
                         }
-                        temporalMatch.get(k).setMergeBit(true);
-                        matching.add(tt);
+                        else{
+                            boolean hasNuLL = false;
+                            for(int kk=0;kk<tupleSize;kk++){
+                                Field rawValue = tt.getField(firstFieldIndex+kk);
+                                if(rawValue.isNull()){
+                                    hasNuLL = true;
+                                    tt.setField(firstFieldIndex+kk, temporalMatch.get(k).getField(kk));
+                                }
+                            }
+                            if(hasNuLL){
+                                temporalMatch.get(k).setMergeBit(true);
+                                matching.add(tt);
+                            }
+                        }
                     }
                 }
             }
         }
-        /*System.out.println("print matching: ");
-        for(int i=0;i<matching.size();i++){
-            System.out.println(matching.get(i));
-        }
-        System.out.println("done matching: ");*/
     }
 
     public void getNextFromCandidateMatching(){
@@ -288,10 +302,9 @@ public class SmartProject extends Operator {
                         value = ImputeFactory.Impute(value);
                         t.setField(index, value);
                     }
+                    if(value.isNull()) continue;
                     if(!HashTables.getHashTable(pickedColumn).getHashMap().containsKey(value)){
                         //remove this tuple
-                        System.out.println(pickedColumn + " *** " + t);
-                        HashTables.getHashTable(pickedColumn).print();
                         flag = true;
                         candidateMatchingBits.set(i, true);
                         break;
@@ -309,17 +322,25 @@ public class SmartProject extends Operator {
                 }
             }
         }
+        /*System.out.println("candidateMatching:");
+        for(int i=0;i<candidateMatching.size();i++){
+            if(candidateMatchingBits.get(i)) continue;
+            System.out.println(candidateMatching.get(i));
+        }*/
         //the codes are here, merge and update tuples
         for(int i=0;i<candidateMatching.size();i++){
             if(candidateMatchingBits.get(i)) continue;
             Tuple t = candidateMatching.get(i);
+
             List<Tuple> tupleMatching = new ArrayList<>();
             tupleMatching.add(t);
             for(int j=0;j<leftJoinAttributes.size();j++){
                 String leftJoinAttribute = leftJoinAttributes.get(j);
-                int size = tupleMatching.size();
-                for(int k=0;k<size;k++){
-                    Field leftValue = t.getField(t.getTupleDesc().fieldNameToIndex(leftJoinAttribute));
+                for(int k=0;k<tupleMatching.size();k++){
+                    Field leftValue = tupleMatching.get(k).getField(tupleMatching.get(k).getTupleDesc().fieldNameToIndex(leftJoinAttribute));
+                    if(leftValue.isNull()){
+                        continue;
+                    }
                     List<String> activeRightAttributes = RelationshipGraph.findRelatedActiveRightAttributes(leftJoinAttribute);
                     List<Tuple> temporalMatch;
                     for(int p=0;p<activeRightAttributes.size();p++){
@@ -333,12 +354,28 @@ public class SmartProject extends Operator {
                         }
                         for(int q=0;q<temporalMatch.size();q++){//iterate all the matching tuples
                             Tuple tt = new Tuple(tupleMatching.get(k).getTupleDesc(), tupleMatching.get(k).getFields());
-                            if(temporalMatch.get(q).isMergeBit()) continue;
-                            for(int kk=0;kk<tupleSize;kk++){
-                                tt.setField(firstFieldIndex+kk, temporalMatch.get(q).getField(kk));
+                            if(!temporalMatch.get(q).isMergeBit()){
+                                for(int kk=0;kk<tupleSize;kk++){
+                                    tt.setField(firstFieldIndex+kk, temporalMatch.get(q).getField(kk));
+                                }
+                                temporalMatch.get(q).setMergeBit(true);
+                                tupleMatching.add(tt);
                             }
-                            temporalMatch.get(q).setMergeBit(true);
-                            tupleMatching.add(tt);
+                            else{
+                                boolean hasNull = false;
+                                for(int kk=0;kk<tupleSize;kk++){
+                                    Field tempValue = temporalMatch.get(q).getField(kk);
+                                    Field rawValue = tt.getField(firstFieldIndex+kk);
+                                    if(rawValue.isNull()){
+                                        hasNull = true;
+                                        tt.setField(firstFieldIndex+kk, tempValue);
+                                    }
+                                }
+                                if(hasNull){
+                                    temporalMatch.get(q).setMergeBit(true);
+                                    tupleMatching.add(tt);
+                                }
+                            }
                         }
                     }
                 }

@@ -435,12 +435,27 @@ public class SmartJoin extends Operator{
                     }
                     for(int p=0;p<temporalMatch.size();p++){//iterate all the matching tuples
                         Tuple tt = new Tuple(matching.get(j).getTupleDesc(), matching.get(j).getFields());
-                        if(temporalMatch.get(p).isMergeBit()) continue;
-                        for(int kk=0;kk<tupleSize;kk++){
-                            tt.setField(firstFieldIndex+kk, temporalMatch.get(p).getField(kk));
+                        if(!temporalMatch.get(p).isMergeBit()){
+                            for(int kk=0;kk<tupleSize;kk++){
+                                tt.setField(firstFieldIndex+kk, temporalMatch.get(p).getField(kk));
+                            }
+                            temporalMatch.get(p).setMergeBit(true);
+                            matching.add(tt);
                         }
-                        temporalMatch.get(p).setMergeBit(true);
-                        matching.add(tt);
+                        else{
+                            boolean hasNULL = false;
+                            for(int kk=0;kk<tupleSize;kk++){
+                                Field rawValue = tt.getField(firstFieldIndex+kk);
+                                if(rawValue.isNull()){
+                                    hasNULL = true;
+                                    tt.setField(firstFieldIndex+kk, temporalMatch.get(p).getField(kk));
+                                }
+                            }
+                            if(hasNULL){
+                                temporalMatch.get(p).setMergeBit(true);
+                                matching.add(tt);
+                            }
+                        }
                     }
                 }
             }
