@@ -1,0 +1,3 @@
+exams(body_mass_index int, blood_pressure_secs int, cuff_size int, id int, waist_circumference int, height int, arm_circumference int, blood_pressure_systolic int, weight int, head_circumference int)
+labs(white_blood_cell_ct int, id int, hematocrit int, cholesterol int, vitamin_b12 int, albumin int, blood_lead int, blood_selenium int, triglyceride int, creatine int)
+demo(income int, num_people_household int, marital_status int, age_yrs int, gender int, id int, is_citizen int, years_edu int, age_months int, time_in_us int)

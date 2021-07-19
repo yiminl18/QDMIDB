@@ -262,4 +262,38 @@ public class test {
         TupleDesc descriptor = new TupleDesc(types, names);
         System.out.println(descriptor.SubTupleDesc(2,1));
     }
+
+    public static void testArray(String s, char a){
+        List<String> str = new ArrayList<>();
+        int pre = 0;
+        boolean flag = false;
+        for(int i=0;i<s.length();i++){
+            char c = s.charAt(i);
+            if(c == a){
+                if(i==0){//first char is missing
+                    str.add("*");
+                }else{
+                    if(!flag){
+                        flag = true;
+                        str.add(s.substring(pre,i));
+                        pre = i;
+                        continue;
+                    }
+                    if(i == pre+1){//missing
+                        str.add("*");
+                    }else{
+                        str.add(s.substring(pre+1,i));
+                    }
+                    if(i == s.length()-1){
+                        str.add("*");
+                    }
+                }
+                pre = i;
+            }
+        }
+        for(int i=0;i<str.size();i++){
+            System.out.print(str.get(i) + " ");
+        }
+        System.out.println("");
+    }
 }

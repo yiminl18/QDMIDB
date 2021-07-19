@@ -19,6 +19,7 @@ public class fileHandles {
         int N,n;
         List<Attribute> attributes = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(schemaFilePath)))) {
+
             String line = br.readLine();
             N = Integer.valueOf(line);
             for(int i=0;i<N;i++){

@@ -1,0 +1,4 @@
+3
+10
+INT,exams.body_mass_index
+
