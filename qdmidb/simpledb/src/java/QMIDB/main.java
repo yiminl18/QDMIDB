@@ -19,7 +19,7 @@ public class main {
         //t.testSubDesc();
 
         DataPreparation dp = new DataPreparation();
-
+        dp.generateSchema();
     }
 
 }

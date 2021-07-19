@@ -1,5 +1,7 @@
 package Experiment;
 
+import QMIDB.Attribute;
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
@@ -69,10 +71,10 @@ public class DataPreparation {
         String tablePathIn = "simpledb/demo_data/" + tableName + ".csv";
         String tablePathOut = "simpledb/demo_data/" + tableName + "_new.csv";
 
-        if(new File(tablePathOut).exists()){
+        /*if(new File(tablePathOut).exists()){
             System.out.println(tablePathOut + " Exists!");
             return;
-        }
+        }*/
 
         Table table = getTable(tableName);
         int cardinality = 0;
@@ -125,7 +127,38 @@ public class DataPreparation {
             table.attributes.get(i).setCardinality(cardinality);
             table.attributes.get(i).setNumOfNullValue(missingCount.get(i));
         }
+    }
 
-        //table.print();
+    public void generateSchema(){
+        String schema = "simpledb/demo_data/schema.txt";
+
+        try{
+            FileWriter out = new FileWriter(schema);
+            BufferedWriter bw=new BufferedWriter(out);
+
+            int tableNum = tableNames.size();
+
+            bw.write(String.valueOf(tableNum));
+            bw.newLine();
+
+            for(int i=0;i<tableNum;i++){
+                System.out.println(tables.get(i).attributes.size());
+                bw.write(String.valueOf(tables.get(i).attributes.size()));
+                bw.newLine();
+                for(int j=0;j<tables.get(i).attributes.size();j++){
+                    Attribute attribute = tables.get(i).attributes.get(j);
+                    bw.write("INT," + attribute.getAttribute());
+                    bw.newLine();
+                    bw.write(String.valueOf(attribute.getCardinality()) + "," + String.valueOf(attribute.getNumOfNullValue()));
+                    bw.newLine();
+                }
+            }
+
+            bw.flush();
+            bw.close();
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Schema generated!");
     }
 }
