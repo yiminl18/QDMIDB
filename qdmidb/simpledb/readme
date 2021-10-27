@@ -1,0 +1,9 @@
+Dataset
+
+1. set up data set: simpledb/testdata/
+replace txt file, update metadata of dataset in simpledb/metadata
+
+2. transform txt to dat
+-load simpledb.jar
+-run: java -jar simpledb.jar convert file.txt N
+N is the number of column of file.txt
