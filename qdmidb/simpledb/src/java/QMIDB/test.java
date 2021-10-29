@@ -42,15 +42,15 @@ public class test {
 
         // create the tables, associate them with the data files
         // and tell the catalog about the schema the tables.
-        HeapFile table1 = new HeapFile(new File("simpledb/testdata/R.dat"), td1);
+        HeapFile table1 = new HeapFile(new File("simpledb/testdata/R1.dat"), td1);
         Database.getCatalog().addTable(table1, "R");
 
         //table1.getTupleDesc().print();
 
-        HeapFile table2 = new HeapFile(new File("simpledb/testdata/S.dat"), td2);
+        HeapFile table2 = new HeapFile(new File("simpledb/testdata/S1.dat"), td2);
         Database.getCatalog().addTable(table2, "S");
 
-        HeapFile table3 = new HeapFile(new File("simpledb/testdata/T.dat"), td3);
+        HeapFile table3 = new HeapFile(new File("simpledb/testdata/T1.dat"), td3);
         Database.getCatalog().addTable(table3, "T");
 
         // construct the query: we use two SeqScans, which spoonfeed

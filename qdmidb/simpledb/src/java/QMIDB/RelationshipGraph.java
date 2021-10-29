@@ -55,6 +55,12 @@ public class RelationshipGraph {
         }
     }
 
+    public static boolean isActiveLeft(String attribute){
+        //the given attribute should be in the left side of join predicate
+        //return if this attribute active or not
+        return activeLeftAttribute.contains(attribute);
+    }
+
     public boolean edgeEqual(GraphEdge edge1, GraphEdge edge2){
         String edge1left = edge1.getStartNode().getAttribute().getAttribute();
         String edge1right = edge1.getEndNode().getAttribute().getAttribute();
@@ -188,6 +194,7 @@ public class RelationshipGraph {
         //and then trigger them if they are active
         for(int i=0;i<EdgeSet.size();i++){
             if(EdgeSet.get(i).getEdgeType() == 0 && EdgeSet.get(i).getEndNode().getAttribute().getAttribute().equals(right.getAttribute())){
+                //trigger condition is that the right column in join predicate does not have missing values
                 if(EdgeSet.get(i).getEndNode().getNumOfNullValues() == 0){
                     EdgeSet.get(i).setActive();
                     String leftNode = EdgeSet.get(i).getStartNode().getAttribute().getAttribute();

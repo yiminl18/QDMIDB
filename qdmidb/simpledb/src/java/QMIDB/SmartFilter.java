@@ -106,7 +106,7 @@ public class SmartFilter extends Operator{
         child = children[0];
     }
 
-    public void getAttribute(){
+    public void getAttribute(){//return the attribute on selection operator
         TupleDesc schema = child.getTupleDesc();
         String fName = schema.getFieldName(pred.getField());
         this.attribute = new Attribute(fName);

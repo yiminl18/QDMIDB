@@ -103,6 +103,12 @@ public class SmartJoin extends Operator{
         child1.open();
         child2.open();
 
+        /*
+            * build hash table for right relation - child 2
+            * add tuples in right relation containing missing values to tempOuterNullTuples
+            * tuples in tempOuterNullTuples will finally be returned in getNextRightTuple()
+         */
+
         if (type == Type.HASH) {
             //this implementation can make sure all join-able attributes are AT MOST indexed ONCE
             //check if hashTable for second child exist
@@ -321,18 +327,92 @@ public class SmartJoin extends Operator{
         return null;
     }
 
+    boolean isRemove(Tuple t, String leftAttribute)throws Exception{
+        /*
+            * given a tuple t and some active leftAttribute
+            * return if t will be removed by this triggered predicate
+            * true: can be removed
+         */
+        Field leftValue = t.getField(t.getTupleDesc().fieldNameToIndex(leftAttribute));
+        List<String> activeRightAttributes = RelationshipGraph.findRelatedActiveRightAttributes(leftAttribute);
+        for(int j=0;j<activeRightAttributes.size();j++){
+            String rightAttribute = activeRightAttributes.get(j);
+            if(!HashTables.ifExistHashTable(rightAttribute)){
+                throw new Exception("HashTable Not Found!");
+            }
+            else{
+                if(!HashTables.getHashTable(rightAttribute).getHashMap().containsKey(leftValue)){//non-matching
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+
+    /*
+        * given a tuple t
+        * check if predicate attribute values in t have missing values
+        * if t has missing values, then the corresponding predicate cannot be triggered
+        * predicate trigger condition is that there are no missing values in their columns
+        * ask if clean now
+        * if clean, update hash tables and relationship graph
+        *
+    */
+
     public List<Tuple> selfJoin(Tuple t) throws Exception{//t must be in the left relation
+
+        //check all current active predicates to see if t can be removed
+        List<String> activeLeftAttributes = RelationshipGraph.getActiveLeftAttribute();
+
+        //System.out.println("first " + t);
+
+        boolean flag = false; //fast check first
+        for(int i=0;i<activeLeftAttributes.size();i++){//one left could correspond to multiple right attributes
+            String leftAttribute = activeLeftAttributes.get(i);
+            int index = t.getTupleDesc().fieldNameToIndex(leftAttribute);
+            //skip missing values
+            if(index == -1){
+                continue;
+            }
+            if(t.getField(index).isMissing()){
+                continue;
+            }
+            flag = isRemove(t, leftAttribute);
+            if(flag) break;
+        }
+
+        //if flag = true, tuple t will be removed
+        if(flag){
+            //if now a missing value is removed, update relationship graph
+            for(int i=0;i<t.getTupleDesc().numFields();i++){
+                if(t.getField(i).isMissing()){
+                    String attribute = (t.getTupleDesc().getFieldName(i));
+                    updateGraph(attribute);
+                }
+            }
+            return null;
+        }
+        //System.out.println("second " + t);
+
+        //if codes go here, it cannot be removed by current active predicates
+        //next ask decision node if we need to impute missing values if any
+
+        boolean flag1 = false;
+
         List<Tuple> matching = new ArrayList<>();
         //check if the predicate attribute have missing values
         for(int i=0;i<t.getTupleDesc().numFields();i++){
             if(t.getField(i).isMissing()){
-                String field = t.getTupleDesc().getFieldName(i);
+                String field = t.getTupleDesc().getFieldName(i);//field is current attribute name
                 //System.out.println("attribute name = " + field);
+                //only consider attribute in predicate set
                 if(!PredicateSet.isExist(field)){
                     continue;
                 }
                 //ask decision node if clean now
 
+                //find all the predicates containing this attribute
                 List<PredicateUnit> predicates = PredicateSet.getPredicateUnits(field);
                 for(int j=0;j<predicates.size();j++){
                     String type = predicates.get(j).getType();
@@ -359,6 +439,12 @@ public class SmartJoin extends Operator{
                             if(isUpdate){
                                 //update graph
                                 updateGraph(right.getAttribute());
+                                //check now if current attribute active or not, if yes, check if this tuple can be removed
+                                if(RelationshipGraph.isActiveLeft(field)){
+                                    if(isRemove(t, field)){
+                                        flag1 = true;
+                                    }
+                                }
                             }
                             break;
                         case "Filter":
@@ -377,44 +463,23 @@ public class SmartJoin extends Operator{
             }
         }
 
-        matching.add(t);
-        //System.out.println("here1 " + t);
-        //check all current active predicates
-        List<String> activeLeftAttributes = RelationshipGraph.getActiveLeftAttribute();
-        if(activeLeftAttributes.size() == 0) return matching;
-
-        boolean flag = false; //fast check first
-        for(int i=0;i<activeLeftAttributes.size();i++){//one left could correspond to multiple right attributes
-            String leftAttribute = activeLeftAttributes.get(i);
-            Field leftValue = t.getField(t.getTupleDesc().fieldNameToIndex(leftAttribute));
-            List<String> activeRightAttributes = RelationshipGraph.findRelatedActiveRightAttributes(activeLeftAttributes.get(i));
-            for(int j=0;j<activeRightAttributes.size();j++){
-                String rightAttribute = activeRightAttributes.get(j);
-                if(!HashTables.ifExistHashTable(rightAttribute)){
-                    throw new Exception("HashTable Not Found!");
-                }
-                else{
-                    if(!HashTables.getHashTable(rightAttribute).getHashMap().containsKey(leftValue)){//non-matching
-                        flag = true;
-                        break;
-                    }
-                }
-            }
-            if(flag) break;
-        }
-
-        if(flag){
-            //if now a missing value is removed, update relationship graph
-            for(int i=0;i<t.getTupleDesc().numFields();i++){
-                if(t.getField(i).isMissing()){
-                    String attribute = (t.getTupleDesc().getFieldName(i));
-                    updateGraph(attribute);
-                }
-            }
+        if(flag1){//t will be removed
             return null;
         }
+        //System.out.println("third " + t);
 
-        //System.out.println("here2 " + t);
+        matching.add(t);
+
+        /*
+            * if codes go here, two things can happen
+            * 1) t remains same as before when there are no active predicates and decision node decide to delay
+            * 2) there are some active predicate and t has matched tuples - merge and update
+         */
+
+        activeLeftAttributes = RelationshipGraph.getActiveLeftAttribute();
+        if(activeLeftAttributes.size() == 0){
+            return matching;
+        }
 
         //update tuples and construct matching
         for(int i=0;i<activeLeftAttributes.size();i++){

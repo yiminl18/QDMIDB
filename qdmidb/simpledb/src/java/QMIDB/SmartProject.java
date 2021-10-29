@@ -74,6 +74,20 @@ public class SmartProject extends Operator {
      *
      * @return The next tuple, or null if there are no more tuples
      */
+
+    /*
+        * selfJoin(t): ->equivalent to clean operator
+        * t is removed if some active predicate triggers in t and non-matched result
+        * if t has any matches, will return all the matched tuples in matching.iterator()
+        * if any attribute in t is left join and inactive attribute, add t to candidateMatching
+        * means that t can potentially have more matched tuples
+        *
+        * only after all tuples are scanned, Quip will start dealing with tuples in CandidateMatching
+        * getNextFromCandidateMatching -> real project operator
+        * So before getNextFromCandidateMatching(), there should be no inactive predicates before all tuples have been scanned
+        * So actually, project operator has two phases: selfJoin(t) and getNextFromCandidateMatching()
+        * they are executed consecutively without overlapping
+     */
     protected Tuple fetchNext() throws NoSuchElementException,
             TransactionAbortedException, DbException, Exception {
         while (true) {
@@ -184,6 +198,9 @@ public class SmartProject extends Operator {
         return subT;
     }
 
+    /*
+        *Logic of selfJoin and project, see implementation/note 53
+     */
     public void selfJoin(Tuple t) throws Exception{//t must be in the left relation
         matching.clear();
 
@@ -283,6 +300,10 @@ public class SmartProject extends Operator {
             }
         }
     }
+
+    /*
+
+     */
 
     public void getNextFromCandidateMatching(){
         while(true){

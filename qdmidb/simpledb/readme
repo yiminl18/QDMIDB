@@ -7,3 +7,12 @@ replace txt file, update metadata of dataset in simpledb/metadata
 -load simpledb.jar
 -run: java -jar simpledb.jar convert file.txt N
 N is the number of column of file.txt
+
+Metadata
+
+1. attributes,types. See first two parameters in SmartJoin function
+
+
+Query processing
+
+1. Manually construct query plan tree and run query. See test.java/testComplexQuery for example.

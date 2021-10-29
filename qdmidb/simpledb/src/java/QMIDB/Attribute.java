@@ -1,7 +1,8 @@
 package QMIDB;
 
 /*
-    * this class implements Attribute for relations
+    * this class implements Attribute/columns for relations
+    * also store some statistics, such as cardinality, number of Null values, number of attributes in this relation
  */
 public class Attribute {
     //format should be "tableName.attributeName"
