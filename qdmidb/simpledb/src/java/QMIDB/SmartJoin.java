@@ -17,7 +17,7 @@ public class SmartJoin extends Operator{
 
     private HashMap<Field, List<Tuple>> table;//table stores the hashTable for child2 in join operator
     private Iterator<Tuple> matches = null, selfJoinResult = null, nullOuterTuple = null;//similar to list
-    private List<Tuple> tempOuterNullTuples;
+    private List<Tuple> tempOuterNullTuples;//store tuples containing missing values by outer join in right relation
 
     /**
      * Constructor. Accepts to children to join and the predicate to join them

@@ -7,10 +7,30 @@ package QMIDB;
 public class Attribute {
     //format should be "tableName.attributeName"
     private String attribute;
-    private int schemaWidth;
+    private boolean isLeft;//is this attribute in join attribute
+    private int schemaWidth;//number of attributes in this relation
 
     //store statistics
     private int cardinality, numOfNullValue;
+    //numOfJoinForMissing: number of joins for those tuples which have missing values in this attribute
+    //numOfMissingSoFar: number of missing values in this attribute seen so far
+    private int numOfJoinForMissing, numOfMissingSoFar;
+
+    public int getNumOfJoinTest() {
+        return numOfJoinForMissing;
+    }
+
+    public void setNumOfJoinTest(int numOfJoinForMissing) {
+        this.numOfJoinForMissing = numOfJoinForMissing;
+    }
+
+    public int getNumOfMissingSoFar() {
+        return numOfMissingSoFar;
+    }
+
+    public void setNumOfMissingSoFar(int numOfMissingSoFar) {
+        this.numOfMissingSoFar = numOfMissingSoFar;
+    }
 
     public int getCardinality() {
         return cardinality;

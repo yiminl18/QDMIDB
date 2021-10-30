@@ -13,6 +13,8 @@ public class main {
         test t = new test();
         t.testComplexQuery();
 
+        System.out.println(ImputeFactory.getImputationTimes());
+
         //DataPreparation dp = new DataPreparation();
         //dp.generateSchema();
     }

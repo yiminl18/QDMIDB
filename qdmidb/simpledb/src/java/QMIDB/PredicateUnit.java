@@ -17,6 +17,7 @@ public class PredicateUnit {
     private String orderType; //desc, asc
     private Attribute filterAttribute;
     private String type;//Filter, Join, Aggregate, Order
+    private boolean flag;//to indicate if this predicate has been met
 
     public PredicateUnit(Attribute left, Predicate.Op op, Attribute right) {//read join
         this.left = left;
@@ -46,6 +47,14 @@ public class PredicateUnit {
 
     public Field getOperand(){
         return operand;
+    }
+
+    public boolean getFlag(){
+        return flag;
+    }
+
+    public void setFlag(boolean f){
+        flag = f;
     }
 
     public simpledb.JoinPredicate transform(){//transform to predicate that is accepted by simpledb

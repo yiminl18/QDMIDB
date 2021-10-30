@@ -7,6 +7,7 @@ import java.util.List;
 /*
     Store all predicates
     A list of predicateUnit
+    also maintain necessary statistics in each predicate during query processing
  */
 public class PredicateSet {
     private static List<PredicateUnit> predicateSet;

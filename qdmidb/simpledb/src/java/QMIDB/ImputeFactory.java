@@ -6,13 +6,16 @@ import simpledb.*;
  */
 public class ImputeFactory {
     private static String imputationMethod;
+    private static int imputationTimes;
 
     public static void setImputationMethod(String ImputationMethod){
         imputationMethod = ImputationMethod;
+        imputationTimes = 0;
     }
 
     public static Field Impute(Field attributeValue){
         Field imputedValue = new IntField(1);
+        imputationTimes ++;
         if(imputationMethod == "REGRESSION_TREE"){
             return RegressionTree(attributeValue);
         }else if(imputationMethod == "HOTDECK"){
@@ -24,6 +27,10 @@ public class ImputeFactory {
         }else{
             return imputedValue;
         }
+    }
+
+    public static int getImputationTimes(){
+        return imputationTimes;
     }
 
     public Integer getEstimateTime(){

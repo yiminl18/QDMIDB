@@ -90,12 +90,12 @@ public class test {
 
         // and run it
         try {
-            sp.open();
-            while (sp.hasNext()) {
-                Tuple tup = sp.next();
+            sj1.open();
+            while (sj1.hasNext()) {
+                Tuple tup = sj1.next();
                 System.out.println(tup);
             }
-            sp.close();
+            sj1.close();
             Database.getBufferPool().transactionComplete(tid);
         } catch (Exception e) {
             e.printStackTrace();

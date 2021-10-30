@@ -20,11 +20,11 @@ public class Decision {
 
     public boolean DecideNonJoin(){
         //to do
-        return true;
+        return false;
     }
 
     public Pair<Boolean,Boolean> DecideJoin(){
-        JoinDecision = new Pair<>(true, true);
+        JoinDecision = new Pair<>(false, false);
         return JoinDecision;
     }
 }
