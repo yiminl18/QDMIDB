@@ -16,6 +16,7 @@ public class ImputeFactory {
     public static Field Impute(Attribute attribute, Tuple tuple){
         Field imputedValue = new IntField(1);
         imputationTimes ++;
+        Statistics.getAttribute(attribute.toString()).incrementNumOfImputed();
         if(imputationMethod == "REGRESSION_TREE"){
             return RegressionTree(attribute, tuple);
         }else if(imputationMethod == "HOTDECK"){

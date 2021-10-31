@@ -9,6 +9,7 @@ import java.util.*;
 public class TupleDesc implements Serializable, Iterable<TDItem> {
     //private final TDItem[] schema;
     private List<TDItem> schema;
+    private HashMap<String, Integer> schemaName = new HashMap<>();;//String format of all attributes in this schema, used for O(1) search
     private int size;
 
     /**
@@ -48,10 +49,14 @@ public class TupleDesc implements Serializable, Iterable<TDItem> {
     	}
     	
     	int s = 0;
+    	int id = 0;
         for (TDItem i : schema) {
         	s += i.fieldType.length;
+        	schemaName.put(i.fieldName, id);
+        	id++;
         }
         size = s;
+
     }
 
 
@@ -71,8 +76,11 @@ public class TupleDesc implements Serializable, Iterable<TDItem> {
     	}
     	
     	int s = 0;
+    	int id = 0;
         for (TDItem i : schema) {
         	s += i.fieldType.length;
+            schemaName.put(i.fieldName, id);
+            id++;
         }
         size = s;
     }
@@ -84,8 +92,11 @@ public class TupleDesc implements Serializable, Iterable<TDItem> {
     	}
     	
     	int s = 0;
+    	int id = 0;
         for (TDItem i : schema) {
         	s += i.fieldType.length;
+            schemaName.put(i.fieldName, id);
+            id++;
         }
         size = s;
     }
@@ -93,6 +104,11 @@ public class TupleDesc implements Serializable, Iterable<TDItem> {
     public TupleDesc(TupleDesc td){
         schema = td.schema;
         size = td.size;
+        int id = 0;
+        for (TDItem i : schema) {
+            schemaName.put(i.fieldName, id);
+            id++;
+        }
     }
 
     public TupleDesc SubTupleDesc(int start, int numOfAttribute){
@@ -167,6 +183,8 @@ public class TupleDesc implements Serializable, Iterable<TDItem> {
     	if (name == null) {
     		throw new NoSuchElementException();
     	}
+        /*
+        //old code -- linear search
         int index = 0;
     	int flag = -1;
         for (TDItem i : schema) {
@@ -175,8 +193,9 @@ public class TupleDesc implements Serializable, Iterable<TDItem> {
         		return index;
         	}
         	index++;
-        }
-        return flag;
+        }*/
+        //new code: O(1) search
+        return schemaName.get(name);
     }
 
     public void print(){

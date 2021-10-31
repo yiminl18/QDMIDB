@@ -35,7 +35,7 @@ public class SeqScan implements DbIterator {
     public SeqScan(TransactionId tid, int tableid, String tableAlias) {
         this.tid = tid;
         tableId = tableid;
-        this.tableAlias = tableAlias;
+        this.tableAlias = tableAlias;//this is table name
     }
 
     /**

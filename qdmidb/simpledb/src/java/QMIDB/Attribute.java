@@ -3,6 +3,7 @@ package QMIDB;
 /*
     * this class implements Attribute/columns for relations
     * also store some statistics, such as cardinality, number of Null values, number of attributes in this relation
+    * attribute class cannot be static, should be the member of predicateUnit, which should be static
  */
 public class Attribute {
     //format should be "tableName.attributeName"
@@ -12,24 +13,38 @@ public class Attribute {
 
     //store statistics
     private int cardinality, numOfNullValue;
+
     //numOfJoinForMissing: number of joins for those tuples which have missing values in this attribute
     //numOfMissingSoFar: number of missing values in this attribute seen so far
-    private int numOfJoinForMissing, numOfMissingSoFar;
+    //numOfImputed: number of imputed values in this attribute so far
+    private int numOfJoinForMissing=0, numOfMissingSoFar=0, numOfImputed=0;
+
+    //Prob: probability that a value in this attribute will be imputed in query processing
+
+    public void incrementNumOfJoinForMissing(){
+        numOfJoinForMissing += 1;
+    }
+
+    public void incrementNumOfMissingSoFar(){
+        numOfMissingSoFar += 1;
+    }
+
+    public void incrementNumOfImputed(){
+        numOfImputed += 1;
+    }
+
+    public double getProb(){
+        return Double.valueOf(numOfImputed)/Double.valueOf(numOfMissingSoFar);
+    }
+
+    public int getNumOfImputed() { return numOfImputed; }
 
     public int getNumOfJoinTest() {
         return numOfJoinForMissing;
     }
 
-    public void setNumOfJoinTest(int numOfJoinForMissing) {
-        this.numOfJoinForMissing = numOfJoinForMissing;
-    }
-
     public int getNumOfMissingSoFar() {
         return numOfMissingSoFar;
-    }
-
-    public void setNumOfMissingSoFar(int numOfMissingSoFar) {
-        this.numOfMissingSoFar = numOfMissingSoFar;
     }
 
     public int getCardinality() {

@@ -1,4 +1,9 @@
 package QMIDB;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 /*
     * this class is used to store global statistics used for decision function
     * 1. # of join test so far
@@ -6,10 +11,33 @@ package QMIDB;
  */
 public class Statistics {
     private static int numOfJoin;
+    private static List<Attribute> attributes;
+    private static List<String> attributesString; //String format of attributes, used for fast retrieving
+    private static HashMap<String,String> relationToAttributeName = new HashMap<>();//from relation to its attributes in predicate
 
 
-    public Statistics(){
+    public Statistics(List<Attribute> attributeList){
         numOfJoin = 0;
+        attributes = attributeList;
+        attributesString = new ArrayList<>();
+        for(int i=0;i<attributes.size();i++){
+            attributesString.add(attributes.get(i).toString());
+        }
+        for(int i=0;i<attributes.size();i++){
+            String relation = attributes.get(i).getRelation();
+            String attributeName = attributes.get(i).getAttribute();
+            relationToAttributeName.put(relation,attributeName);
+        }
+    }
+
+    public static List<Attribute> getAttributes(){
+        return attributes;
+    }
+
+    public static Attribute getAttribute(String attribute){
+        int index = attributesString.indexOf(attribute);
+        if(index == -1) return null;
+        return attributes.get(index);
     }
 
     public static void addOneJoin(){
