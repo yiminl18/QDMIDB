@@ -217,7 +217,7 @@ public class SmartProject extends Operator {
         int index = t.getTupleDesc().fieldNameToIndex(pickedColumn);
         Field pickedValue = t.getField(index);
         if(pickedValue.isMissing()){
-            pickedValue = ImputeFactory.Impute(pickedValue);
+            pickedValue = ImputeFactory.Impute(new Attribute(pickedColumn),null);
             t.setField(index, pickedValue);
             updateGraph(pickedColumn);
             updateHashTable(pickedColumn, pickedValue, subTuple(pickedColumn, t));
@@ -231,7 +231,7 @@ public class SmartProject extends Operator {
             if(leftActiveAttributes.contains(attribute) && !value.isNull()){
                 isSelfJoin = true;
                 if(value.isMissing()){
-                    value = ImputeFactory.Impute(value);
+                    value = ImputeFactory.Impute(new Attribute(attribute),null);//ihe: null should be the corresponding active join predicate
                     t.setField(i, value);
                 }
                 //check if non-matching
@@ -320,7 +320,7 @@ public class SmartProject extends Operator {
                     int index = t.getTupleDesc().fieldNameToIndex(leftAttribute);
                     Field value = t.getField(index);
                     if(value.isMissing()){//this round uses pickedColumn to do self-join, so we need to clean left join attribute
-                        value = ImputeFactory.Impute(value);
+                        value = ImputeFactory.Impute(new Attribute(leftAttribute),null);
                         t.setField(index, value);
                     }
                     if(value.isNull()) continue;
@@ -335,7 +335,7 @@ public class SmartProject extends Operator {
                     int index = t.getTupleDesc().fieldNameToIndex(nextColumn);
                     Field value = t.getField(index);
                     if(value.isMissing()){
-                        value = ImputeFactory.Impute(value);
+                        value = ImputeFactory.Impute(new Attribute(nextColumn),null);
                         t.setField(index, value);
                         updateGraph(nextColumn);
                         updateHashTable(nextColumn, value, subTuple(nextColumn, t));

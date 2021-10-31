@@ -120,7 +120,7 @@ public class SmartJoin extends Operator{
                     //check cleaning for right relation : child 2
                     if (pred.isMissingRight(t) && CleanNow2) {
                         //clean this tuple
-                        t = pred.updateTupleRight(t, ImputeFactory.Impute(t.getField(pred.getField2())));
+                        t = pred.updateTupleRight(t, ImputeFactory.Impute(attribute2, t));
                         //update NumOfNullValue for corresponding graph node
                         RelationshipGraph.getNode(this.attribute2.getAttribute()).NumOfNullValuesMinusOne();
                         RelationshipGraph.trigger(this.attribute2);
@@ -427,11 +427,11 @@ public class SmartJoin extends Operator{
                             if(left.getAttribute().equals(field) && CleanLeft){//left relation
                                 isUpdate = true;
                                 //clean tuple
-                                t.setField(i,ImputeFactory.Impute(null));
+                                t.setField(i,ImputeFactory.Impute(left, t));
                             }else if(right.getAttribute().equals(field) && CleanRight){
                                 isUpdate = true;
                                 //clean tuple
-                                Field newValue = ImputeFactory.Impute(null);
+                                Field newValue = ImputeFactory.Impute(right, t);
                                 t.setField(i,newValue);
                                 //update hashTables
                                 updateHashTable(right.getAttribute(), newValue, subTuple(right.getAttribute(), t));
@@ -451,7 +451,7 @@ public class SmartJoin extends Operator{
                             Decision decideFilter = new Decision(predicates.get(j).toPredicate());
                             boolean CleanFilter = decideFilter.DecideNonJoin();
                             if(CleanFilter){
-                                Field newValue = ImputeFactory.Impute(null);
+                                Field newValue = ImputeFactory.Impute(predicates.get(j).getFilterAttribute(),t);
                                 //if satisfy filter predicate, then update the tuple
                                 if(newValue.compare(predicates.get(j).getOp(),predicates.get(j).getOperand())){
                                     t.setField(i,newValue);

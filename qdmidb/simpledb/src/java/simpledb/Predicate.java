@@ -1,6 +1,9 @@
 package simpledb;
 
 
+import QMIDB.Attribute;
+import QMIDB.PredicateUnit;
+
 import java.io.Serializable;
 
 /**
@@ -64,6 +67,10 @@ public class Predicate implements Serializable {
         this.attribute = attribute;
         this.op = op;
         this.operand = operand;
+    }
+
+    public QMIDB.PredicateUnit toPredicateUnit(){
+        return new PredicateUnit(new Attribute(attribute),op,operand);
     }
 
     public void setField(DbIterator dbIterator) throws Exception {

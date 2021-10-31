@@ -13,17 +13,17 @@ public class ImputeFactory {
         imputationTimes = 0;
     }
 
-    public static Field Impute(Field attributeValue){
+    public static Field Impute(Attribute attribute, Tuple tuple){
         Field imputedValue = new IntField(1);
         imputationTimes ++;
         if(imputationMethod == "REGRESSION_TREE"){
-            return RegressionTree(attributeValue);
+            return RegressionTree(attribute, tuple);
         }else if(imputationMethod == "HOTDECK"){
-            return HotDeck(attributeValue);
+            return HotDeck(attribute, tuple);
         }else if(imputationMethod == "MEAN"){
-            return Mean(attributeValue);
+            return Mean(attribute, tuple);
         }else if(imputationMethod == "RANDOM"){
-            return Random(attributeValue);
+            return Random(attribute, tuple);
         }else{
             return imputedValue;
         }
@@ -50,20 +50,24 @@ public class ImputeFactory {
         return time;
     }
 
-    public static Field RegressionTree(Field attributeValue){
+    public static Field RegressionTree(Attribute attribute, Tuple tuple){
         //to do
+        Field attributeValue = new IntField(0);
         return attributeValue;
     }
 
-    public static Field HotDeck(Field attributeValue){
+    public static Field HotDeck(Attribute attribute, Tuple tuple){
+        Field attributeValue = new IntField(0);
         return attributeValue;
     }
 
-    public static Field Mean(Field attributeValue){
+    public static Field Mean(Attribute attribute, Tuple tuple){
+        Field attributeValue = new IntField(0);
         return attributeValue;
     }
 
-    public static Field Random(Field attributeValue){
+    public static Field Random(Attribute attribute, Tuple tuple){
+        Field attributeValue = new IntField(0);
         return attributeValue;
     }
 }

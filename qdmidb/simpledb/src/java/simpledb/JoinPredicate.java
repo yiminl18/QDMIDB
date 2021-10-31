@@ -1,5 +1,8 @@
 package simpledb;
 
+import QMIDB.Attribute;
+import QMIDB.PredicateUnit;
+
 import java.io.Serializable;
 
 /**
@@ -71,6 +74,10 @@ public class JoinPredicate implements Serializable {
     public Predicate.Op getOperator()
     {
         return op;
+    }
+
+    public PredicateUnit toPredicateUnit(){
+        return new PredicateUnit(new Attribute(attribute1), op, new Attribute(attribute2));
     }
 
     public boolean isMissingLeft(Tuple t1){//check if the given tuple in left relation is missing
