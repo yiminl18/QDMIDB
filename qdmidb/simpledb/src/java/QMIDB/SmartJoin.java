@@ -14,6 +14,7 @@ public class SmartJoin extends Operator{
     private Tuple t1 = null, t11 = null, rightTuple = null;//t11 stores selfJoinResult
     private final Type type;
     private boolean selfJoinFlag = false;
+    private boolean child2IsMissing = false;//if right relation has missing values on predicate attribute (attribute2)
 
     private HashMap<Field, List<Tuple>> table;//table stores the hashTable for child2 in join operator
     private Iterator<Tuple> matches = null, selfJoinResult = null, nullOuterTuple = null;//similar to list
@@ -124,6 +125,9 @@ public class SmartJoin extends Operator{
                         //update NumOfNullValue for corresponding graph node
                         RelationshipGraph.getNode(this.attribute2.getAttribute()).NumOfNullValuesMinusOne();
                         RelationshipGraph.trigger(this.attribute2);
+                    }
+                    else if (pred.isMissingRight(t) && !CleanNow2){
+                        child2IsMissing = true;
                     }
                     if (t.hasMissingFields()) {
                         //create temp null values for outer join purpose
@@ -237,6 +241,7 @@ public class SmartJoin extends Operator{
                                 System.out.println(m.get(i));
                             }
                         }*/
+                        //there is non matched tuple for t11
                         if (m == null) {
                             //implement outer join only for tuples containing null values
                             //the following if-else is optimization for space, in this case we need to build hashtables for left relation
@@ -252,7 +257,9 @@ public class SmartJoin extends Operator{
                                 continue;
                             }*/
                             t1 = null;
-                            return new Tuple(t11, constructNullTuple(child2));
+                            if(child2IsMissing){//ihe: check
+                                return new Tuple(t11, constructNullTuple(child2));
+                            }
                         }else{
                             //set matchBits for rightField
                             HashTables.getHashTable(attribute2.getAttribute()).setMatchBit(rightField);

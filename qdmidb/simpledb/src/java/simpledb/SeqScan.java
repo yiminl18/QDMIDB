@@ -1,5 +1,7 @@
 package simpledb;
 
+import QMIDB.Statistics;
+
 import java.util.*;
 
 /**
@@ -102,7 +104,16 @@ public class SeqScan implements DbIterator {
     }
 
     public Tuple next() throws NoSuchElementException, TransactionAbortedException, DbException {
-        return tuples.next();
+        //update statistics for the number of missing values seen so far for attributes in predicate set
+        List<String> attributes = Statistics.getAttributesInRelation(tableAlias);
+        Tuple tuple = tuples.next();
+        for(int i=0;i<attributes.size();i++){
+            int index = tuple.getTupleDesc().fieldNameToIndex(attributes.get(i));
+            if(tuple.getField(index).isMissing()){
+                Statistics.getAttribute(attributes.get(i)).incrementNumOfMissingSoFar();
+            }
+        }
+        return tuple;
     }
 
     public void close() {

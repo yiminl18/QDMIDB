@@ -13,7 +13,7 @@ public class Statistics {
     private static int numOfJoin;
     private static List<Attribute> attributes;
     private static List<String> attributesString; //String format of attributes, used for fast retrieving
-    private static HashMap<String,String> relationToAttributeName = new HashMap<>();//from relation to its attributes in predicate
+    private static HashMap<String, List<String>> relationToAttributeName = new HashMap<>();//from relation to its attributes in predicate
 
 
     public Statistics(List<Attribute> attributeList){
@@ -26,8 +26,19 @@ public class Statistics {
         for(int i=0;i<attributes.size();i++){
             String relation = attributes.get(i).getRelation();
             String attributeName = attributes.get(i).getAttribute();
-            relationToAttributeName.put(relation,attributeName);
+            if(relationToAttributeName.containsKey(relation)){
+                relationToAttributeName.get(relation).add(attributeName);
+            }
+            else{
+                List<String> aNames = new ArrayList<>();
+                aNames.add(attributeName);
+                relationToAttributeName.put(relation, aNames);
+            }
         }
+    }
+
+    public static List<String> getAttributesInRelation(String relation){
+        return relationToAttributeName.get(relation);
     }
 
     public static List<Attribute> getAttributes(){
