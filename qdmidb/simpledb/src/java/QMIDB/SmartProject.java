@@ -217,7 +217,7 @@ public class SmartProject extends Operator {
         int index = t.getTupleDesc().fieldNameToIndex(pickedColumn);
         Field pickedValue = t.getField(index);
         if(pickedValue.isMissing()){
-            pickedValue = ImputeFactory.Impute(new Attribute(pickedColumn),null);
+            pickedValue = ImputeFactory.Impute(new Attribute(pickedColumn),t);
             t.setField(index, pickedValue);
             updateGraph(pickedColumn);
             updateHashTable(pickedColumn, pickedValue, subTuple(pickedColumn, t));
@@ -231,7 +231,7 @@ public class SmartProject extends Operator {
             if(leftActiveAttributes.contains(attribute) && !value.isNull()){
                 isSelfJoin = true;
                 if(value.isMissing()){
-                    value = ImputeFactory.Impute(new Attribute(attribute),null);//ihe: null should be the corresponding active join predicate
+                    value = ImputeFactory.Impute(new Attribute(attribute),t);//ihe: null should be the corresponding active join predicate
                     t.setField(i, value);
                 }
                 //check if non-matching
@@ -263,6 +263,7 @@ public class SmartProject extends Operator {
 
             for(int i=0;i<relatedEdges.size();i++){
                 int size = matching.size();
+                t.countImputedJoinBy(size);
                 for(int p=0;p<size;p++){
                     String validPred = relatedEdges.get(i).getEndNode().getAttribute().getAttribute();
                     List<Tuple> temporalMatch = HashTables.getHashTable(validPred).getHashMap().get(value);
@@ -320,7 +321,7 @@ public class SmartProject extends Operator {
                     int index = t.getTupleDesc().fieldNameToIndex(leftAttribute);
                     Field value = t.getField(index);
                     if(value.isMissing()){//this round uses pickedColumn to do self-join, so we need to clean left join attribute
-                        value = ImputeFactory.Impute(new Attribute(leftAttribute),null);
+                        value = ImputeFactory.Impute(new Attribute(leftAttribute),t);
                         t.setField(index, value);
                     }
                     if(value.isNull()) continue;
@@ -335,7 +336,7 @@ public class SmartProject extends Operator {
                     int index = t.getTupleDesc().fieldNameToIndex(nextColumn);
                     Field value = t.getField(index);
                     if(value.isMissing()){
-                        value = ImputeFactory.Impute(new Attribute(nextColumn),null);
+                        value = ImputeFactory.Impute(new Attribute(nextColumn),t);
                         t.setField(index, value);
                         updateGraph(nextColumn);
                         updateHashTable(nextColumn, value, subTuple(nextColumn, t));
@@ -343,11 +344,6 @@ public class SmartProject extends Operator {
                 }
             }
         }
-        /*System.out.println("candidateMatching:");
-        for(int i=0;i<candidateMatching.size();i++){
-            if(candidateMatchingBits.get(i)) continue;
-            System.out.println(candidateMatching.get(i));
-        }*/
         //the codes are here, merge and update tuples
         for(int i=0;i<candidateMatching.size();i++){
             if(candidateMatchingBits.get(i)) continue;
@@ -364,6 +360,7 @@ public class SmartProject extends Operator {
                     }
                     List<String> activeRightAttributes = RelationshipGraph.findRelatedActiveRightAttributes(leftJoinAttribute);
                     List<Tuple> temporalMatch;
+                    tupleMatching.get(k).countImputedJoinBy(activeRightAttributes.size());
                     for(int p=0;p<activeRightAttributes.size();p++){
                         String rightAttribute = activeRightAttributes.get(p);
                         temporalMatch = HashTables.getHashTable(rightAttribute).getHashMap().get(leftValue);

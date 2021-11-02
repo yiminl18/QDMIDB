@@ -8,7 +8,8 @@ package QMIDB;
 public class Attribute {
     //format should be "tableName.attributeName"
     private String attribute;
-    private boolean isLeft;//is this attribute in join attribute
+    //in join predicate, missing values in right attribute will cause outer joins in left relation
+    private boolean isRight = false;//is this attribute in join attribute
     private int schemaWidth;//number of attributes in this relation
 
     //store statistics
@@ -17,13 +18,28 @@ public class Attribute {
     //numOfJoinForMissing: number of joins for those tuples which have missing values in this attribute
     //numOfMissingSoFar: number of missing values in this attribute seen so far
     //numOfImputed: number of imputed values in this attribute so far
-    private int numOfJoinForMissing=0, numOfMissingSoFar=0, numOfImputed=0;
+    //numOfOuterJoinTest: number of join tests for outer join tuples due to missing values in this attribute
+    //numOfImputedJoin: number of join tests for tuples containing imputed value in this attribute
+    private double numOfJoinForMissing=0, numOfMissingSoFar=0, numOfImputed=0, numOfOuterJoinTest = 0, numOfImputedJoin = 0;
 
     //Prob: probability that a value in this attribute will be imputed in query processing
+    private double Prob;
+    private double evaluateVc, evaluateVd;
 
-    public void incrementNumOfJoinForMissing(){
-        numOfJoinForMissing += 1;
+    public boolean isRight() {
+        return isRight;
     }
+
+    public void setRight(boolean right) {
+        isRight = right;
+    }
+
+
+    public void addNumOfImputedJoinBy(int offset) {numOfImputedJoin += offset;}
+
+    public void addNumOfJoinForMissingBy(int offset) {numOfJoinForMissing += offset;}
+
+    public void addNumOfOuterJoinTestBy(int offset) {numOfOuterJoinTest += offset;}
 
     public void incrementNumOfMissingSoFar(){
         numOfMissingSoFar += 1;
@@ -33,17 +49,43 @@ public class Attribute {
         numOfImputed += 1;
     }
 
+    public void addNumOfImputedBy(int offset) {numOfImputed += offset;}
+
     public double getProb(){
-        return Double.valueOf(numOfImputed)/Double.valueOf(numOfMissingSoFar);
+        if(numOfMissingSoFar == 0){
+            return -1;
+        }
+        this.Prob = numOfImputed/numOfMissingSoFar;
+        return this.Prob;
     }
 
-    public int getNumOfImputed() { return numOfImputed; }
+    public double getEvaluateVc(){//on average, the number of join tests for vc
+        if(numOfImputed == 0){
+            return -1;
+        }
+        this.evaluateVc = numOfImputedJoin/numOfImputed;
+        return this.evaluateVc;
+    }
 
-    public int getNumOfJoinTest() {
+    public double getEvaluateVd(){
+        if(numOfMissingSoFar == 0){
+            return -1;
+        }
+        this.evaluateVd = numOfJoinForMissing;
+        if(this.isRight){
+            this.evaluateVd += numOfOuterJoinTest;
+        }
+        this.evaluateVd = this.evaluateVd/numOfMissingSoFar;
+        return this.evaluateVd;
+    }
+
+    public double getNumOfImputed() { return numOfImputed; }
+
+    public double getNumOfJoinTest() {
         return numOfJoinForMissing;
     }
 
-    public int getNumOfMissingSoFar() {
+    public double getNumOfMissingSoFar() {
         return numOfMissingSoFar;
     }
 

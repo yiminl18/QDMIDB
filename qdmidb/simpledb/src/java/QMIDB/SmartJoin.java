@@ -20,6 +20,9 @@ public class SmartJoin extends Operator{
     private Iterator<Tuple> matches = null, selfJoinResult = null, nullOuterTuple = null;//similar to list
     private List<Tuple> tempOuterNullTuples;//store tuples containing missing values by outer join in right relation
 
+    private List<Integer> PAfieldLeft = Statistics.computePAfield(child1.getTupleDesc());
+    private List<Integer> PAfieldRight = Statistics.computePAfield(child2.getTupleDesc());
+
     /**
      * Constructor. Accepts to children to join and the predicate to join them
      * on
@@ -39,6 +42,7 @@ public class SmartJoin extends Operator{
         attribute1 = new Attribute(getJoinField1Name());
         attribute2 = new Attribute(getJoinField2Name());
         tempOuterNullTuples = new ArrayList<>();
+        Statistics.getAttribute(attribute2.getAttribute()).setRight(true);
 
         switch(pred.getOperator()) {
             case EQUALS:
@@ -98,8 +102,8 @@ public class SmartJoin extends Operator{
     public void open() throws DbException, NoSuchElementException,
             TransactionAbortedException, Exception {
         Decision decide = new Decision(pred);
-        CleanNow1 = decide.DecideJoin().getKey();
-        CleanNow2 = decide.DecideJoin().getValue();
+        CleanNow1 = decide.Decide(this.attribute1.getAttribute());
+        CleanNow2 = decide.Decide(this.attribute2.getAttribute());
         super.open();
         child1.open();
         child2.open();
@@ -234,7 +238,10 @@ public class SmartJoin extends Operator{
                     if (matches == null) {
                         Field rightField = t11.getField(pred.getField1());
                         //System.out.println("* " + rightField + " " + attribute1.getAttribute() + " " + attribute2.getAttribute());
+                        //ihe:ifmatch
+                        t11.setPAfield(PAfieldLeft);
                         List<Tuple> m = table.get(rightField);
+
                         /*if(m!=null){
                             System.out.println("printf hash table");
                             for(int i=0;i<m.size();i++){
@@ -256,12 +263,22 @@ public class SmartJoin extends Operator{
                                 t1 = null;
                                 continue;
                             }*/
+                            t11.countMissingValueBy(1);
+                            t11.countOuterTupleBy(1);
+                            t11.countImputedJoinBy(1);
                             t1 = null;
-                            if(child2IsMissing){//ihe: check
+                            if(t11.hasMissingFields() || child2IsMissing){//ihe: check
+                                t11.addOuterAttribute(attribute2.getAttribute());
                                 return new Tuple(t11, constructNullTuple(child2));
+                            }
+                            else{
+                                continue;
                             }
                         }else{
                             //set matchBits for rightField
+                            t11.countMissingValueBy(m.size());
+                            t11.countOuterTupleBy(m.size());
+                            t11.countImputedJoinBy(m.size());
                             HashTables.getHashTable(attribute2.getAttribute()).setMatchBit(rightField);
                             matches = m.iterator();
                         }
@@ -342,6 +359,7 @@ public class SmartJoin extends Operator{
          */
         Field leftValue = t.getField(t.getTupleDesc().fieldNameToIndex(leftAttribute));
         List<String> activeRightAttributes = RelationshipGraph.findRelatedActiveRightAttributes(leftAttribute);
+
         for(int j=0;j<activeRightAttributes.size();j++){
             String rightAttribute = activeRightAttributes.get(j);
             if(!HashTables.ifExistHashTable(rightAttribute)){
@@ -426,10 +444,10 @@ public class SmartJoin extends Operator{
                     switch (type){
                         case "Join":
                             Decision decideJoin = new Decision(predicates.get(j).toJoinPredicate());
-                            boolean CleanLeft = decideJoin.DecideJoin().getKey();
-                            boolean CleanRight = decideJoin.DecideJoin().getValue();
                             Attribute left = predicates.get(j).getLeft();
                             Attribute right = predicates.get(j).getRight();
+                            boolean CleanLeft = decideJoin.Decide(left.getAttribute());
+                            boolean CleanRight = decideJoin.Decide(right.getAttribute());
                             boolean isUpdate = false;
                             if(left.getAttribute().equals(field) && CleanLeft){//left relation
                                 isUpdate = true;
@@ -456,7 +474,7 @@ public class SmartJoin extends Operator{
                             break;
                         case "Filter":
                             Decision decideFilter = new Decision(predicates.get(j).toPredicate());
-                            boolean CleanFilter = decideFilter.DecideNonJoin();
+                            boolean CleanFilter = decideFilter.Decide(predicates.get(j).getFilterAttribute().getAttribute());
                             if(CleanFilter){
                                 Field newValue = ImputeFactory.Impute(predicates.get(j).getFilterAttribute(),t);
                                 //if satisfy filter predicate, then update the tuple
@@ -479,7 +497,7 @@ public class SmartJoin extends Operator{
 
         /*
             * if codes go here, two things can happen
-            * 1) t remains same as before when there are no active predicates and decision node decide to delay
+            * 1) t remains same as before when there are no active predicates and decision node decides to delay
             * 2) there are some active predicate and t has matched tuples - merge and update
          */
 
@@ -487,6 +505,8 @@ public class SmartJoin extends Operator{
         if(activeLeftAttributes.size() == 0){
             return matching;
         }
+
+        t.setPAfield(PAfieldLeft);
 
         //update tuples and construct matching
         for(int i=0;i<activeLeftAttributes.size();i++){
@@ -496,6 +516,12 @@ public class SmartJoin extends Operator{
                 Field leftValue = t.getField(t.getTupleDesc().fieldNameToIndex(leftAttribute));
                 List<String> activeRightAttributes = RelationshipGraph.findRelatedActiveRightAttributes(leftAttribute);
                 List<Tuple> temporalMatch;
+                //ihe:merge
+                //update join test times for missing value for all predicate attributes values in t
+                t.countMissingValueBy(activeRightAttributes.size());
+                t.countOuterTupleBy(activeRightAttributes.size());
+                t.countImputedJoinBy(activeRightAttributes.size());
+
                 for(int k=0;k<activeRightAttributes.size();k++){
                     String rightAttribute = activeRightAttributes.get(k);
                     temporalMatch = HashTables.getHashTable(rightAttribute).getHashMap().get(leftValue);

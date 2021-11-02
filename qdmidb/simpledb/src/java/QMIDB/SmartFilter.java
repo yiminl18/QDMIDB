@@ -30,9 +30,9 @@ public class SmartFilter extends Operator{
         pred = p;
         this.child = child;
         this.decideNode = new Decision(p);
-        isClean = this.decideNode.DecideNonJoin();
         pred.setField(this.child);
         getAttribute();
+        isClean = this.decideNode.Decide(this.attribute.getAttribute());
     }
 
     public Predicate getPredicate() {

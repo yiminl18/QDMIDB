@@ -17,6 +17,7 @@ public class ImputeFactory {
         Field imputedValue = new IntField(1);
         imputationTimes ++;
         Statistics.getAttribute(attribute.toString()).incrementNumOfImputed();
+        tuple.addImputedField(attribute.getAttribute());//ihe: check if changes
         if(imputationMethod == "REGRESSION_TREE"){
             return RegressionTree(attribute, tuple);
         }else if(imputationMethod == "HOTDECK"){
@@ -34,9 +35,9 @@ public class ImputeFactory {
         return imputationTimes;
     }
 
-    public Integer getEstimateTime(){
+    public double getEstimateTime(){
         //this function estimate the time of each imputation method
-        Integer time = 0;
+        double time = 0;
         if(this.imputationMethod == "REGRESSION_TREE"){
 
         }else if(this.imputationMethod == "HOTDECK"){

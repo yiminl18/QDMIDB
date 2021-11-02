@@ -1,11 +1,9 @@
 package simpledb;
 
+import QMIDB.Statistics;
+
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Tuple maintains information about the contents of a tuple. Tuples have a
@@ -17,10 +15,23 @@ public class Tuple implements Serializable {
     private static final long serialVersionUID = 1L;
     
     private Field[] fields;
-    
+    private List<String> outerAttribute = new ArrayList<>();//size > 0 -> this tuple is outer join tuple due to the attributes in outerAttribute
+
     private TupleDesc schema;
     private RecordId rid;
+    private List<Integer> PAfield;//store the fields of attributes in predicate
+    private List<String> imputedField = new ArrayList<>();//store the name of attribute whose value is imputed in this tuple
     private boolean mergeBit = false;//this bit is used to indicate if this tuple has been already merged in any join operator
+
+    public void addOuterAttribute(String attribute){
+        if(outerAttribute.indexOf(attribute) == -1){
+            outerAttribute.add(attribute);
+        }
+    }
+
+    public void setPAfield(List<Integer> PAfield){
+        this.PAfield = PAfield;
+    }
 
     public boolean isMergeBit() {
         return mergeBit;
@@ -28,6 +39,31 @@ public class Tuple implements Serializable {
 
     public void setMergeBit(boolean mergeBit) {
         this.mergeBit = mergeBit;
+    }
+
+    public void addImputedField(String attribute){//update one time in imputation function
+        imputedField.add(attribute);
+    }
+
+    public void countImputedJoinBy(int offset){//add the number of join test for imputed values by offset
+        for(int i=0;i<imputedField.size();i++){
+            Statistics.getAttribute(imputedField.get(i)).addNumOfImputedJoinBy(offset);
+        }
+    }
+
+    public void countMissingValueBy(int offset){//add the number of join test for missing values by offset
+        for(int i=0;i<PAfield.size();i++){
+            String fieldName = schema.getFieldName(PAfield.get(i));
+            if(fields[PAfield.get(i)].isMissing()){
+                Statistics.getAttribute(fieldName).addNumOfJoinForMissingBy(offset);
+            }
+        }
+    }
+
+    public void countOuterTupleBy(int offset){
+        for(int i=0;i<outerAttribute.size();i++){
+            Statistics.getAttribute(outerAttribute.get(i)).addNumOfOuterJoinTestBy(offset);
+        }
     }
 
     /**

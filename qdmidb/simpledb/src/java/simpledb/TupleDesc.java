@@ -194,7 +194,7 @@ public class TupleDesc implements Serializable, Iterable<TDItem> {
         	}
         	index++;
         }*/
-        //new code: O(1) search
+        //new code: O(1) search ihe: to check
         return schemaName.get(name);
     }
 

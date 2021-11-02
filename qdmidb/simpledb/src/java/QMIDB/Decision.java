@@ -27,4 +27,20 @@ public class Decision {
         JoinDecision = new Pair<>(false, false);
         return JoinDecision;
     }
+
+    public boolean Decide(String attribute){//true -> clean now
+        Attribute attr = Statistics.getAttribute(attribute);
+        double Prob = attr.getProb();
+        double imputeCost = ImputeFactory.getImputationTimes();
+        double evaluateVc = attr.getEvaluateVc();
+        double evaluateVd = attr.getEvaluateVd();
+        double expectedClean = imputeCost + evaluateVc;
+        double expectedDelay = Prob*(imputeCost+evaluateVd)+(1-Prob)*evaluateVd;
+        if(expectedClean > expectedDelay){
+            return false;
+        }
+        else{
+            return true;
+        }
+    }
 }

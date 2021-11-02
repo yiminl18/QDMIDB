@@ -1,5 +1,7 @@
 package QMIDB;
 
+import simpledb.TupleDesc;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,12 +39,27 @@ public class Statistics {
         }
     }
 
+    public static List<Integer> computePAfield(TupleDesc td){//update in each predicate to save overhead
+        List<Integer> PAfield = new ArrayList<>();
+        for(int i=0;i<attributesString.size();i++){
+            int index = td.fieldNameToIndex(attributesString.get(i));
+            if(index != -1){
+                PAfield.add(index);
+            }
+        }
+        return PAfield;
+    }
+
     public static List<String> getAttributesInRelation(String relation){
         return relationToAttributeName.get(relation);
     }
 
     public static List<Attribute> getAttributes(){
         return attributes;
+    }
+
+    public static List<String> getAttributesString() {
+        return attributesString;
     }
 
     public static Attribute getAttribute(String attribute){
