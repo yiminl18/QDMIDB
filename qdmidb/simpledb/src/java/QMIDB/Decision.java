@@ -31,7 +31,7 @@ public class Decision {
     public boolean Decide(String attribute){//true -> clean now
         Attribute attr = Statistics.getAttribute(attribute);
         double Prob = attr.getProb();
-        double imputeCost = ImputeFactory.getImputationTimes();
+        double imputeCost = ImputeFactory.getEstimateTime();
         double evaluateVc = attr.getEvaluateVc();
         double evaluateVd = attr.getEvaluateVd();
         double expectedClean = imputeCost + evaluateVc;

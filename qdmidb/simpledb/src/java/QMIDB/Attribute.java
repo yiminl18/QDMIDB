@@ -63,7 +63,7 @@ public class Attribute {
         if(numOfImputed == 0){
             return -1;
         }
-        this.evaluateVc = numOfImputedJoin/numOfImputed;
+        this.evaluateVc = numOfImputedJoin*Statistics.getTimeOneJoin()/numOfImputed;
         return this.evaluateVc;
     }
 
@@ -75,7 +75,7 @@ public class Attribute {
         if(this.isRight){
             this.evaluateVd += numOfOuterJoinTest;
         }
-        this.evaluateVd = this.evaluateVd/numOfMissingSoFar;
+        this.evaluateVd = this.evaluateVd*Statistics.getTimeOneJoin()/numOfMissingSoFar;
         return this.evaluateVd;
     }
 
@@ -131,5 +131,18 @@ public class Attribute {
 
     public String getRelation(){
         return attribute.split("\\.")[0];
+    }
+
+    public void print(){
+        System.out.println(attribute);
+        System.out.println("numOfJoinForMissing:" + numOfJoinForMissing);
+        System.out.println("numOfMissingSoFar:" + numOfMissingSoFar);
+        System.out.println("numOfImputed:" + numOfImputed);
+        System.out.println("numOfOuterJoinTest:" + numOfOuterJoinTest);
+        System.out.println("numOfImputedJoin:" + numOfImputedJoin);
+        System.out.println("Prob:" + getProb());
+        System.out.println("getEvaluateVc:" + getEvaluateVc());
+        System.out.println("getEvaluateVd:" + getEvaluateVd());
+
     }
 }

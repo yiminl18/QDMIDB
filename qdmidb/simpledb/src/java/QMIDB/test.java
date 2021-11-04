@@ -23,6 +23,13 @@ public class test {
         System.out.println(queriesPath);
     }
 
+    public static void testMap(){
+        Map<String, Integer> m = new HashMap<>();
+        m.put("a",1);
+        m.put("a",2);
+        System.out.println(m.get("a"));
+    }
+
     public static void testComplexQuery() throws Exception{
         Type types1[] = new Type[]{ Type.INT_TYPE, Type.INT_TYPE};
         String names1[] = new String[]{ "R.a", "R.b"};
@@ -89,6 +96,7 @@ public class test {
 
 
         // and run it
+        Statistics.setStartTime(System.currentTimeMillis());
         try {
             sj1.open();
             while (sj1.hasNext()) {

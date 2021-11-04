@@ -12,11 +12,12 @@ import java.util.List;
     *
  */
 public class Statistics {
-    private static int numOfJoin;
+    private static double numOfJoin;
+    private static double startTime, duration, timeOneJoin;
     private static List<Attribute> attributes;
     private static List<String> attributesString; //String format of attributes, used for fast retrieving
     private static HashMap<String, List<String>> relationToAttributeName = new HashMap<>();//from relation to its attributes in predicate
-
+    private static HashMap<String, Boolean> deadAttributes = new HashMap<>();//to indicate if an attribute is dead
 
     public Statistics(List<Attribute> attributeList){
         numOfJoin = 0;
@@ -35,6 +36,12 @@ public class Statistics {
                 List<String> aNames = new ArrayList<>();
                 aNames.add(attributeName);
                 relationToAttributeName.put(relation, aNames);
+            }
+        }
+        //compute deadAttributes
+        for(int i=0;i<attributesString.size();i++){
+            if(RelationshipGraph.hasNonJoinNeighbor(attributesString.get(i))){
+                deadAttributes.put(attributesString.get(i), true);
             }
         }
     }
@@ -74,6 +81,25 @@ public class Statistics {
 
     public static void addJoins(int n){
         numOfJoin += n;
+    }
+
+    public static void setStartTime(double n) {startTime = n;}
+
+    public static double getDuration() {
+        duration = System.currentTimeMillis() - startTime;
+        return duration;
+    }
+
+    public static double getTimeOneJoin(){
+        timeOneJoin = getDuration()/numOfJoin;
+        return timeOneJoin;
+    }
+
+    public static void print(){
+        System.out.println("number of Joins so far:" + numOfJoin);
+        for(int i=0;i<attributes.size();i++){
+            attributes.get(i).print();
+        }
     }
 
 }

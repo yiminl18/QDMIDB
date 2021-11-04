@@ -1,6 +1,10 @@
 package QMIDB;
 
 import simpledb.*;
+import weka.core.Instance;
+import weka.core.Instances;
+import weka.classifiers.Classifier;
+import weka.classifiers.trees.REPTree;
 /*
     * this class is a set of imputation method
  */
@@ -20,6 +24,8 @@ public class ImputeFactory {
         tuple.addImputedField(attribute.getAttribute());//ihe: check if changes
         if(imputationMethod == "REGRESSION_TREE"){
             return RegressionTree(attribute, tuple);
+        }else if(imputationMethod == "Manual"){
+            return Manual(attribute, tuple);
         }else if(imputationMethod == "HOTDECK"){
             return HotDeck(attribute, tuple);
         }else if(imputationMethod == "MEAN"){
@@ -35,21 +41,43 @@ public class ImputeFactory {
         return imputationTimes;
     }
 
-    public double getEstimateTime(){
+    public static double getEstimateTime(){
         //this function estimate the time of each imputation method
-        double time = 0;
-        if(this.imputationMethod == "REGRESSION_TREE"){
+        double time = 10;//ms
+        if(imputationMethod == "REGRESSION_TREE"){
 
-        }else if(this.imputationMethod == "HOTDECK"){
+        }else if(imputationMethod == "HOTDECK"){
 
-        }else if(this.imputationMethod == "MEAN"){
+        }else if(imputationMethod == "MEAN"){
 
-        }else if(this.imputationMethod == "RANDOM"){
+        }else if(imputationMethod == "RANDOM"){
 
         }else{
 
         }
         return time;
+    }
+
+    public static Field Manual(Attribute attribute, Tuple tuple){
+        Field attributeValue = new IntField(0);
+        switch(attribute.getAttribute()){
+            case "R.a":
+                attributeValue = new IntField(1);
+                break;
+            case "R.b":
+                attributeValue = new IntField(5);
+                break;
+            case "S.b":
+                attributeValue = new IntField(6);
+                break;
+            case "S.c":
+                attributeValue = new IntField(2);
+                break;
+            case "T.a":
+                attributeValue = new IntField(3);
+                break;
+        }
+        return attributeValue;
     }
 
     public static Field RegressionTree(Attribute attribute, Tuple tuple){

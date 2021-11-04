@@ -266,6 +266,7 @@ public class SmartJoin extends Operator{
                             t11.countMissingValueBy(1);
                             t11.countOuterTupleBy(1);
                             t11.countImputedJoinBy(1);
+                            Statistics.addJoins(1);
                             t1 = null;
                             if(t11.hasMissingFields() || child2IsMissing){//ihe: check
                                 t11.addOuterAttribute(attribute2.getAttribute());
@@ -279,6 +280,7 @@ public class SmartJoin extends Operator{
                             t11.countMissingValueBy(m.size());
                             t11.countOuterTupleBy(m.size());
                             t11.countImputedJoinBy(m.size());
+                            Statistics.addJoins(m.size());
                             HashTables.getHashTable(attribute2.getAttribute()).setMatchBit(rightField);
                             matches = m.iterator();
                         }
@@ -359,6 +361,8 @@ public class SmartJoin extends Operator{
          */
         Field leftValue = t.getField(t.getTupleDesc().fieldNameToIndex(leftAttribute));
         List<String> activeRightAttributes = RelationshipGraph.findRelatedActiveRightAttributes(leftAttribute);
+
+        Statistics.addJoins(activeRightAttributes.size());
 
         for(int j=0;j<activeRightAttributes.size();j++){
             String rightAttribute = activeRightAttributes.get(j);
@@ -521,6 +525,7 @@ public class SmartJoin extends Operator{
                 t.countMissingValueBy(activeRightAttributes.size());
                 t.countOuterTupleBy(activeRightAttributes.size());
                 t.countImputedJoinBy(activeRightAttributes.size());
+                Statistics.addJoins(activeRightAttributes.size());
 
                 for(int k=0;k<activeRightAttributes.size();k++){
                     String rightAttribute = activeRightAttributes.get(k);

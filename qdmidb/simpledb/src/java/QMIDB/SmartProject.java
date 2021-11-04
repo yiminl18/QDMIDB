@@ -236,6 +236,7 @@ public class SmartProject extends Operator {
                 }
                 //check if non-matching
                 List<String> rightActiveAttributes = RelationshipGraph.findRelatedActiveRightAttributes(attribute);
+                Statistics.addJoins(rightActiveAttributes.size());
                 for(int j=0;j<rightActiveAttributes.size();j++){
                     String rightActiveAttribute = rightActiveAttributes.get(j);
                     if(!HashTables.getHashTable(rightActiveAttribute).getHashMap().containsKey(value)){
@@ -264,6 +265,8 @@ public class SmartProject extends Operator {
             for(int i=0;i<relatedEdges.size();i++){
                 int size = matching.size();
                 t.countImputedJoinBy(size);
+                t.countOuterTupleBy(size);
+                Statistics.addJoins(size);
                 for(int p=0;p<size;p++){
                     String validPred = relatedEdges.get(i).getEndNode().getAttribute().getAttribute();
                     List<Tuple> temporalMatch = HashTables.getHashTable(validPred).getHashMap().get(value);
@@ -325,6 +328,9 @@ public class SmartProject extends Operator {
                         t.setField(index, value);
                     }
                     if(value.isNull()) continue;
+                    Statistics.addJoins(1);
+                    t.countImputedJoinBy(1);
+                    t.countOuterTupleBy(1);
                     if(!HashTables.getHashTable(pickedColumn).getHashMap().containsKey(value)){
                         //remove this tuple
                         flag = true;
@@ -361,6 +367,9 @@ public class SmartProject extends Operator {
                     List<String> activeRightAttributes = RelationshipGraph.findRelatedActiveRightAttributes(leftJoinAttribute);
                     List<Tuple> temporalMatch;
                     tupleMatching.get(k).countImputedJoinBy(activeRightAttributes.size());
+                    Statistics.addJoins(activeRightAttributes.size());
+                    t.countImputedJoinBy(activeRightAttributes.size());
+                    t.countOuterTupleBy(activeRightAttributes.size());
                     for(int p=0;p<activeRightAttributes.size();p++){
                         String rightAttribute = activeRightAttributes.get(p);
                         temporalMatch = HashTables.getHashTable(rightAttribute).getHashMap().get(leftValue);

@@ -10,12 +10,11 @@ import java.util.List;
 /*
     *Relationship graph is used to maintain the status of imputation in query processing
     *It takes input of predicates set of query to initialize the graph
-    *ihe: check if edge information stored in edgeSet and edgeMap is same or not
  */
 public class RelationshipGraph {
     private static Map<String, List<String>> adjNodes = new HashMap<>();//from right to left attribute in join predicates
     private static Map<String, GraphNode> nodeMap = new HashMap<>();//mapping from String attribute to graph node
-    private static Map<String, GraphEdge> edgeMap = new HashMap<>();//mapping from String attribute to graph edge
+    private static Map<String, List<String>> nonJoinNeighbors = new HashMap<>();//mapping from attribute to its non-join neighbors
     private static List<GraphNode> NodeSet = new ArrayList<>();
     private static List<GraphEdge> EdgeSet = new ArrayList<>();
     private static List<String> activeLeftAttribute = new ArrayList<>(), activeRightAttribute = new ArrayList<>(), leftAttribute = new ArrayList<>(), rightAttribute = new ArrayList<>();
@@ -37,7 +36,6 @@ public class RelationshipGraph {
             if(preds.get(i).getIsJoin()){
                 GraphEdge edge = new GraphEdge(0,new GraphNode(preds.get(i).getLeft()), new GraphNode(preds.get(i).getRight()), preds.get(i).transform());
                 EdgeSet.add(edge);
-                edgeMap.put(preds.get(i).getLeft().getAttribute() + preds.get(i).getRight().getAttribute(),edge);
                 addEdge(edge);
                 rightAttribute.add(preds.get(i).getRight().getAttribute());
                 leftAttribute.add(preds.get(i).getLeft().getAttribute());
@@ -46,13 +44,37 @@ public class RelationshipGraph {
         //initialize non-join-edges
         for(int i=0;i<Attributes.size();i++){
             for(int j = i+1; j<Attributes.size(); j++){
+                String left = Attributes.get(i).getAttribute();
+                String right = Attributes.get(j).getAttribute();
                 if(Attributes.get(i).getRelation().equals(Attributes.get(j).getRelation())){//if in same relation
                     GraphEdge edge = new GraphEdge(1, new GraphNode(Attributes.get(i)), new GraphNode(Attributes.get(j)), null);
-                    edgeMap.put(Attributes.get(i).getAttribute(),edge);
                     EdgeSet.add(edge);
+                    if(!nonJoinNeighbors.containsKey(left)){
+                        List<String> neighbors = new ArrayList<>();
+                        neighbors.add(right);
+                        nonJoinNeighbors.put(left, neighbors);
+                    }
+                    else{
+                        nonJoinNeighbors.get(left).add(right);
+                    }
+                    if(!nonJoinNeighbors.containsKey(right)){
+                        List<String> neighbors = new ArrayList<>();
+                        neighbors.add(left);
+                        nonJoinNeighbors.put(right, neighbors);
+                    }
+                    else{
+                        nonJoinNeighbors.get(right).add(left);
+                    }
                 }
             }
         }
+    }
+
+    public static boolean hasNonJoinNeighbor(String attribute){//return if given attribute has non-join neighbors
+        if(nonJoinNeighbors.get(attribute).size() == 0){
+            return false;
+        }
+        return true;
     }
 
     public static boolean isActiveLeft(String attribute){
@@ -105,19 +127,6 @@ public class RelationshipGraph {
         return nodeMap.get(attribute);
     }
 
-    public static GraphEdge getEdge(Attribute attribute1, Attribute attribute2){
-        String key1 = attribute1.getAttribute() + attribute2.getAttribute();
-        String key2 = attribute2.getAttribute() + attribute1.getAttribute();
-        if(edgeMap.containsKey(key1)){
-            return edgeMap.get(key1);
-        }else if(edgeMap.containsKey(key2)){
-            return edgeMap.get(key2);
-        }
-        else{
-            return null;
-        }
-    }
-
     public static String getNextColumn(){//find next column to clean in SmartProject
         int MinNumOfMissingValue = Integer.MAX_VALUE;
         String nextColumn = null;
@@ -131,10 +140,6 @@ public class RelationshipGraph {
             }
         }
         return nextColumn;
-    }
-
-    public static String getRightNode(String leftNode){
-        return edgeMap.get(leftNode).getEndNode().getAttribute().getAttribute();
     }
 
     public static List<GraphEdge> findRelatedEdge(String attribute){//return right (non-left) attribute for each related predicate
@@ -171,14 +176,6 @@ public class RelationshipGraph {
 
     public static List<String> getActiveRightAttribute(){
         return activeRightAttribute;
-    }
-
-    public static int getNumOfActiveEdge(){
-        int count = 0;
-        for(Map.Entry<String, GraphEdge> iter : edgeMap.entrySet()){
-            if(iter.getValue().isActive()) count++;
-        }
-        return count;
     }
 
     public static List<String> getRightJoinAttribute(){
