@@ -98,12 +98,12 @@ public class test {
         // and run it
         Statistics.setStartTime(System.currentTimeMillis());
         try {
-            sj1.open();
-            while (sj1.hasNext()) {
-                Tuple tup = sj1.next();
+            sp.open();
+            while (sp.hasNext()) {
+                Tuple tup = sp.next();
                 System.out.println(tup);
             }
-            sj1.close();
+            sp.close();
             Database.getBufferPool().transactionComplete(tid);
         } catch (Exception e) {
             e.printStackTrace();

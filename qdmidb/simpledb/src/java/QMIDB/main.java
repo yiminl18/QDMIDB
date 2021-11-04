@@ -8,11 +8,11 @@ import simpledb.*;
 
 public class main {
     public static void main(String args[]) throws IOException,Exception {
-        //QueryProcessing QP = new QueryProcessing();
+        QueryProcessing QP = new QueryProcessing();
         //PredicateSet.print();
 
         test t = new test();
-        t.testMap();
+        t.testComplexQuery();
 
         //System.out.println(ImputeFactory.getImputationTimes());
 

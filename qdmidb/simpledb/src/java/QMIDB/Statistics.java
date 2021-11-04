@@ -19,12 +19,12 @@ public class Statistics {
     private static HashMap<String, List<String>> relationToAttributeName = new HashMap<>();//from relation to its attributes in predicate
     private static HashMap<String, Boolean> deadAttributes = new HashMap<>();//to indicate if an attribute is dead
 
-    public Statistics(List<Attribute> attributeList){
+    public static void intStatistics(List<Attribute> attributeList){
         numOfJoin = 0;
         attributes = attributeList;
         attributesString = new ArrayList<>();
         for(int i=0;i<attributes.size();i++){
-            attributesString.add(attributes.get(i).toString());
+            attributesString.add(attributes.get(i).getAttribute());
         }
         for(int i=0;i<attributes.size();i++){
             String relation = attributes.get(i).getRelation();
@@ -46,10 +46,15 @@ public class Statistics {
         }
     }
 
+    public static boolean isDead(String attribute){
+        return deadAttributes.containsKey(attribute);
+    }
+
     public static List<Integer> computePAfield(TupleDesc td){//update in each predicate to save overhead
         List<Integer> PAfield = new ArrayList<>();
         for(int i=0;i<attributesString.size();i++){
             int index = td.fieldNameToIndex(attributesString.get(i));
+            //System.out.println(attributesString.get(i) + " " + index);
             if(index != -1){
                 PAfield.add(index);
             }
@@ -75,10 +80,6 @@ public class Statistics {
         return attributes.get(index);
     }
 
-    public static void addOneJoin(){
-        numOfJoin ++;
-    }
-
     public static void addJoins(int n){
         numOfJoin += n;
     }
@@ -91,6 +92,9 @@ public class Statistics {
     }
 
     public static double getTimeOneJoin(){
+        if(numOfJoin == 0){
+            return -1;
+        }
         timeOneJoin = getDuration()/numOfJoin;
         return timeOneJoin;
     }

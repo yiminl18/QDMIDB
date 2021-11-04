@@ -20,8 +20,7 @@ public class SmartJoin extends Operator{
     private Iterator<Tuple> matches = null, selfJoinResult = null, nullOuterTuple = null;//similar to list
     private List<Tuple> tempOuterNullTuples;//store tuples containing missing values by outer join in right relation
 
-    private List<Integer> PAfieldLeft = Statistics.computePAfield(child1.getTupleDesc());
-    private List<Integer> PAfieldRight = Statistics.computePAfield(child2.getTupleDesc());
+    private List<Integer> PAfieldLeft;
 
     /**
      * Constructor. Accepts to children to join and the predicate to join them
@@ -43,6 +42,7 @@ public class SmartJoin extends Operator{
         attribute2 = new Attribute(getJoinField2Name());
         tempOuterNullTuples = new ArrayList<>();
         Statistics.getAttribute(attribute2.getAttribute()).setRight(true);
+        PAfieldLeft = Statistics.computePAfield(child1.getTupleDesc());
 
         switch(pred.getOperator()) {
             case EQUALS:

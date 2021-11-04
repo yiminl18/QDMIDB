@@ -20,7 +20,7 @@ public class ImputeFactory {
     public static Field Impute(Attribute attribute, Tuple tuple){
         Field imputedValue = new IntField(1);
         imputationTimes ++;
-        Statistics.getAttribute(attribute.toString()).incrementNumOfImputed();
+        Statistics.getAttribute(attribute.getAttribute()).incrementNumOfImputed();
         tuple.addImputedField(attribute.getAttribute());//ihe: check if changes
         if(imputationMethod == "REGRESSION_TREE"){
             return RegressionTree(attribute, tuple);

@@ -71,6 +71,9 @@ public class RelationshipGraph {
     }
 
     public static boolean hasNonJoinNeighbor(String attribute){//return if given attribute has non-join neighbors
+        if(!nonJoinNeighbors.containsKey(attribute)){
+            return false;
+        }
         if(nonJoinNeighbors.get(attribute).size() == 0){
             return false;
         }

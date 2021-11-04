@@ -9,7 +9,7 @@ import java.util.*;
 public class TupleDesc implements Serializable, Iterable<TDItem> {
     //private final TDItem[] schema;
     private List<TDItem> schema;
-    private HashMap<String, Integer> schemaName = new HashMap<>();;//String format of all attributes in this schema, used for O(1) search
+    //private HashMap<String, Integer> schemaName = new HashMap<>();//String format of all attributes in this schema, used for O(1) search
     private int size;
 
     /**
@@ -52,7 +52,6 @@ public class TupleDesc implements Serializable, Iterable<TDItem> {
     	int id = 0;
         for (TDItem i : schema) {
         	s += i.fieldType.length;
-        	schemaName.put(i.fieldName, id);
         	id++;
         }
         size = s;
@@ -79,7 +78,6 @@ public class TupleDesc implements Serializable, Iterable<TDItem> {
     	int id = 0;
         for (TDItem i : schema) {
         	s += i.fieldType.length;
-            schemaName.put(i.fieldName, id);
             id++;
         }
         size = s;
@@ -95,7 +93,6 @@ public class TupleDesc implements Serializable, Iterable<TDItem> {
     	int id = 0;
         for (TDItem i : schema) {
         	s += i.fieldType.length;
-            schemaName.put(i.fieldName, id);
             id++;
         }
         size = s;
@@ -106,7 +103,6 @@ public class TupleDesc implements Serializable, Iterable<TDItem> {
         size = td.size;
         int id = 0;
         for (TDItem i : schema) {
-            schemaName.put(i.fieldName, id);
             id++;
         }
     }
@@ -123,8 +119,10 @@ public class TupleDesc implements Serializable, Iterable<TDItem> {
     	this.schema = schema;
     	
     	int s = 0;
+    	int id = 0;
         for (TDItem i : schema) {
         	s += i.fieldType.length;
+        	id++;
         }
         size = s;
     }
@@ -183,7 +181,7 @@ public class TupleDesc implements Serializable, Iterable<TDItem> {
     	if (name == null) {
     		throw new NoSuchElementException();
     	}
-        /*
+
         //old code -- linear search
         int index = 0;
     	int flag = -1;
@@ -193,9 +191,9 @@ public class TupleDesc implements Serializable, Iterable<TDItem> {
         		return index;
         	}
         	index++;
-        }*/
+        }
+        return -1;
         //new code: O(1) search ihe: to check
-        return schemaName.get(name);
     }
 
     public void print(){

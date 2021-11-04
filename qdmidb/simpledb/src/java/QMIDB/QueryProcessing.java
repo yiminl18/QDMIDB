@@ -17,6 +17,8 @@ public class QueryProcessing {
         //RelationshipGraph.printJoinEdge();
         PredicateSet.initPredicateSet(predicates);
         Schema.setSchema(schema);
+        Statistics.intStatistics(schema);
+        ImputeFactory.setImputationMethod("Manual");
     }
 
     public DbIterator constructQueryPlan(List<PredicateUnit> preds){
