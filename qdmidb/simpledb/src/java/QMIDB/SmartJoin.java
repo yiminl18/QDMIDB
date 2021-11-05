@@ -407,11 +407,11 @@ public class SmartJoin extends Operator{
         for(int i=0;i<activeLeftAttributes.size();i++){//one left could correspond to multiple right attributes
             String leftAttribute = activeLeftAttributes.get(i);
             int index = t.getTupleDesc().fieldNameToIndex(leftAttribute);
-            //skip missing values
+            //skip non-exist values in this tuple
             if(index == -1){
                 continue;
             }
-            if(t.getField(index).isMissing()){
+            if(t.getField(index).isMissing() || t.getField(index).isNull()){
                 continue;
             }
             flag = isRemove(t, leftAttribute);
@@ -483,7 +483,7 @@ public class SmartJoin extends Operator{
                                 }
                             }
                             break;
-                        case "Filter":
+                        case "Filter"://Filter would always appear before Join
                             Decision decideFilter = new Decision(predicates.get(j).toPredicate());
                             boolean CleanFilter = decideFilter.Decide(predicates.get(j).getFilterAttribute().getAttribute());
                             if(CleanFilter){
@@ -525,6 +525,10 @@ public class SmartJoin extends Operator{
             for(int j=0;j<size;j++){
                 String leftAttribute = activeLeftAttributes.get(i);
                 Field leftValue = t.getField(t.getTupleDesc().fieldNameToIndex(leftAttribute));
+                if(leftValue.isNull()){
+                    //preserve this tuple
+                    continue;
+                }
                 List<String> activeRightAttributes = RelationshipGraph.findRelatedActiveRightAttributes(leftAttribute);
                 List<Tuple> temporalMatch;
                 //ihe:merge
@@ -600,7 +604,6 @@ public class SmartJoin extends Operator{
     }
 
     public void updateGraph(String attribute){
-        System.out.println("should not be here - join!");
         RelationshipGraph.getNode(attribute).NumOfNullValuesMinusOne();
         RelationshipGraph.trigger(new Attribute(attribute));
     }

@@ -95,7 +95,7 @@ public class SmartProject extends Operator {
             if(!flag){
                 if(child.hasNext()){
                     Tuple t = child.next();
-                    System.out.println("Project: " + t);
+                    //System.out.println("Project: " + t);
                     selfJoin(t);
                     if(matching.size() == 0){
                         continue;
@@ -109,9 +109,9 @@ public class SmartProject extends Operator {
             }
             while(matchingResult.hasNext()){
                 Tuple matchTuple = matchingResult.next();
-                System.out.println("match tuple: " + matchTuple);
+                //System.out.println("match tuple: " + matchTuple);
                 Tuple newTuple = Project(matchTuple);
-                System.out.println("new tuple: " + newTuple);
+                //System.out.println("new tuple: " + newTuple);
                 if(newTuple == null){
                     continue;
                 }else{
@@ -125,8 +125,8 @@ public class SmartProject extends Operator {
             if(!flagCandidateMatch){
                 matching.clear();
                 System.out.println("candidate Mathcing:");
-                for(int i=0;i<candidateMatching.size();i++){
-                    candidateMatchingBits.add(false);
+                for(int i=0;i<candidateMatching.size();i++) {
+                    candidateMatchingBits.add(false);//true: this tuple has been filtered away
                     System.out.println(candidateMatching.get(i));
                 }
                 getNextFromCandidateMatching();
@@ -227,6 +227,9 @@ public class SmartProject extends Operator {
 
         for (int i = 0; i< t.getTupleDesc().numFields(); i++) {
             Field value = t.getField(i);
+            if(value.isNull()){
+                continue;
+            }
             String attribute = t.getTupleDesc().getFieldName(i);
 
             //if this attribute is in the left attribute of an active join predicate
@@ -261,6 +264,9 @@ public class SmartProject extends Operator {
         //if codes go here, then this tuple should be merged and returned
         for (int j = 0; j< t.getTupleDesc().numFields(); j++) {
             Field value = t.getField(j);
+            if(value.isNull()){
+                continue;
+            }
             String attribute = t.getTupleDesc().getFieldName(j);
             relatedEdges = RelationshipGraph.findRelatedEdge(attribute);
 
@@ -417,7 +423,6 @@ public class SmartProject extends Operator {
     }
 
     public void updateGraph(String attribute){
-        System.out.println("should not be here - project!");
         RelationshipGraph.getNode(attribute).NumOfNullValuesMinusOne();
         RelationshipGraph.trigger(new Attribute(attribute));
     }

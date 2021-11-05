@@ -16,6 +16,7 @@ public class PredicateSet {
 
     public static void initPredicateSet(List<PredicateUnit> predicateSET){
         predicateSet = predicateSET;
+        //must put Filter first in predicateSET
         //build hashMap from attribute to its predicate
         //one attribute could be involved in multiple predicates, but each predicates will not contain same attributes
         predicateMap = new HashMap<>();
