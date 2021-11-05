@@ -13,12 +13,13 @@ public class QueryProcessing {
         //List<Attribute> schema = ManualSchema();
         //List<PredicateUnit> predicates = fH.readPredicates();
         List<PredicateUnit> predicates = ManualPredicates();
-        RelationshipGraph.initGraph(schema, predicates);
+        RelationshipGraph.initGraph(predicates);
         //RelationshipGraph.printJoinEdge();
         PredicateSet.initPredicateSet(predicates);
         Schema.setSchema(schema);
-        Statistics.intStatistics(schema);
+        Statistics.initStatistics();
         ImputeFactory.setImputationMethod("Manual");
+        //RelationshipGraph.printNonJoinNeighbor();
     }
 
     public DbIterator constructQueryPlan(List<PredicateUnit> preds){
@@ -48,4 +49,6 @@ public class QueryProcessing {
         schema.add(new Attribute("T.d"));
         return schema;
     }
+
+
 }

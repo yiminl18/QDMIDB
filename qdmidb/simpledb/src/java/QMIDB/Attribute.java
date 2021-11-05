@@ -79,6 +79,33 @@ public class Attribute {
         return this.evaluateVd;
     }
 
+    public boolean getDecision(){
+        //if this attribute is dead, clean now
+        if(Statistics.isDead(attribute)){
+            System.out.println(attribute + " is dead!");
+            return true;
+        }
+        this.Prob = getProb();
+        this.evaluateVd = getEvaluateVd();
+        this.evaluateVc = getEvaluateVc();
+        double imputeCost = ImputeFactory.getEstimateTime();
+
+        //when statistics is not enough to make decision, always delay
+        if(this.Prob == -1 || this.evaluateVd == -1 || this.evaluateVc == -1){
+            System.out.println("Statistics not enough! Delay imputation!");
+            return false;
+        }
+        double expectedClean = imputeCost + this.evaluateVc;
+        double expectedDelay = this.Prob*(imputeCost+this.evaluateVd)+(1-this.Prob)*this.evaluateVd;
+        System.out.println("clean vs delay expected cost: " + expectedClean + " " + expectedDelay);
+        if(expectedClean > expectedDelay){
+            return false;
+        }
+        else{
+            return true;
+        }
+    }
+
     public double getNumOfImputed() { return numOfImputed; }
 
     public double getNumOfJoinTest() {
@@ -143,6 +170,6 @@ public class Attribute {
         System.out.println("Prob:" + getProb());
         System.out.println("getEvaluateVc:" + getEvaluateVc());
         System.out.println("getEvaluateVd:" + getEvaluateVd());
-
+        System.out.println("Imputation Decision: " + getDecision());
     }
 }

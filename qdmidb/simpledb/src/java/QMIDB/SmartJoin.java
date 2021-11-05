@@ -10,7 +10,7 @@ public class SmartJoin extends Operator{
     private final JoinPredicate pred;
     private DbIterator child1, child2;
     private Attribute attribute1, attribute2;
-    private boolean CleanNow1, CleanNow2;//ask decision node if we need to clean missing values in this join operator
+    private boolean CleanNow2;//ask decision node if we need to clean missing values in this join operator
     private Tuple t1 = null, t11 = null, rightTuple = null;//t11 stores selfJoinResult
     private final Type type;
     private boolean selfJoinFlag = false;
@@ -102,7 +102,6 @@ public class SmartJoin extends Operator{
     public void open() throws DbException, NoSuchElementException,
             TransactionAbortedException, Exception {
         Decision decide = new Decision(pred);
-        CleanNow1 = decide.Decide(this.attribute1.getAttribute());
         CleanNow2 = decide.Decide(this.attribute2.getAttribute());
         super.open();
         child1.open();
@@ -122,6 +121,10 @@ public class SmartJoin extends Operator{
                 int joinAttrIdx = pred.getField2();
                 while (child2.hasNext()) {
                     Tuple t = child2.next();
+                    //ihe:print
+                    System.out.println(t);
+                    pred.toPredicateUnit().print();
+                    Statistics.print();
                     //check cleaning for right relation : child 2
                     if (pred.isMissingRight(t) && CleanNow2) {
                         //clean this tuple
@@ -212,6 +215,10 @@ public class SmartJoin extends Operator{
                             }
                         }else if(child1.hasNext()){
                             t1 = child1.next();
+                            //ihe:print
+                            System.out.println(t1);
+                            pred.toPredicateUnit().print();
+                            Statistics.print();
                             //System.out.println("Join: " + t1);
                             List<Tuple> joinResult = selfJoin(t1);
                             if(joinResult == null){

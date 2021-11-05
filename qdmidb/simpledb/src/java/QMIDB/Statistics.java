@@ -5,6 +5,7 @@ import simpledb.TupleDesc;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /*
     * this class is used to store global statistics used for decision function
@@ -19,9 +20,9 @@ public class Statistics {
     private static HashMap<String, List<String>> relationToAttributeName = new HashMap<>();//from relation to its attributes in predicate
     private static HashMap<String, Boolean> deadAttributes = new HashMap<>();//to indicate if an attribute is dead
 
-    public static void intStatistics(List<Attribute> attributeList){
+    public static void initStatistics(){
         numOfJoin = 0;
-        attributes = attributeList;
+        attributes = RelationshipGraph.getNodes();
         attributesString = new ArrayList<>();
         for(int i=0;i<attributes.size();i++){
             attributesString.add(attributes.get(i).getAttribute());
@@ -48,6 +49,14 @@ public class Statistics {
 
     public static boolean isDead(String attribute){
         return deadAttributes.containsKey(attribute);
+    }
+
+    public static void printDeadAttribute(){
+        System.out.println("dead attributes");
+        for(Map.Entry<String, Boolean> entry : deadAttributes.entrySet()){
+            System.out.print(entry.getKey() + " ");
+        }
+        System.out.println("");
     }
 
     public static List<Integer> computePAfield(TupleDesc td){//update in each predicate to save overhead

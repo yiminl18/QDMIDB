@@ -35,6 +35,7 @@ public class SmartProject extends Operator {
 
     public SmartProject(List<Attribute> attributes, Type[] types,
                    DbIterator child) {
+        //attributes are projected attributes
         this.child = child;
         TupleDesc childtd = child.getTupleDesc();
         outFieldIds = new ArrayList<>();

@@ -19,9 +19,37 @@ public class RelationshipGraph {
     private static List<GraphEdge> EdgeSet = new ArrayList<>();
     private static List<String> activeLeftAttribute = new ArrayList<>(), activeRightAttribute = new ArrayList<>(), leftAttribute = new ArrayList<>(), rightAttribute = new ArrayList<>();
     private static List<PredicateUnit> preds;
+    private static List<Attribute> Attributes = new ArrayList<>();//attributes in predicate set
 
-    public static void initGraph(List<Attribute> Attributes, List<PredicateUnit> Preds) {
+    public static void initGraph(List<PredicateUnit> Preds) {
+        List<String> AttributesNames = new ArrayList<>();
         preds = Preds;
+        //find node set: attributes in Preds
+        for(int i=0;i<Preds.size();i++) {
+            switch (Preds.get(i).getType()) {
+                case "Filter":
+                    String filterAttribute = Preds.get(i).getFilterAttribute().getAttribute();
+                    if (AttributesNames.indexOf(filterAttribute) == -1) {
+                        AttributesNames.add(filterAttribute);
+                    }
+                    break;
+                case "Join":
+                    String leftAttribute = Preds.get(i).getLeft().getAttribute();
+                    String rightAttribute = Preds.get(i).getRight().getAttribute();
+                    if (AttributesNames.indexOf(leftAttribute) == -1) {
+                        AttributesNames.add(leftAttribute);
+                    }
+                    if (AttributesNames.indexOf(rightAttribute) == -1) {
+                        AttributesNames.add(rightAttribute);
+                    }
+                    break;
+            }
+        }
+
+        for(int i=0;i<AttributesNames.size();i++){
+            Attributes.add(new Attribute(AttributesNames.get(i)));
+        }
+
         //initialize nodes
         for(int i=0;i<Attributes.size();i++){
             GraphNode node = new GraphNode(Attributes.get(i));
@@ -70,14 +98,30 @@ public class RelationshipGraph {
         }
     }
 
+    public static List<Attribute> getNodes(){
+        return Attributes;
+    }
+
+    public static void printNonJoinNeighbor(){
+        System.out.println("print nonJoinNeighbors");
+        for(Map.Entry<String, List<String>> entry : nonJoinNeighbors.entrySet()){
+            System.out.println("--" + entry.getKey());
+            for(int i=0;i<entry.getValue().size();i++){
+                System.out.print(entry.getValue().get(i) + " ");
+            }
+            System.out.println("");
+        }
+    }
+
     public static boolean hasNonJoinNeighbor(String attribute){//return if given attribute has non-join neighbors
+        //true -> dead
         if(!nonJoinNeighbors.containsKey(attribute)){
-            return false;
+            return true;
         }
         if(nonJoinNeighbors.get(attribute).size() == 0){
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     public static boolean isActiveLeft(String attribute){
