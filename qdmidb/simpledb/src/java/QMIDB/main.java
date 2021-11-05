@@ -12,7 +12,7 @@ public class main {
         //PredicateSet.print();
 
         test t = new test();
-        //t.testComplexQuery();
+        t.testComplexQuery();
 
         //System.out.println(ImputeFactory.getImputationTimes());
 

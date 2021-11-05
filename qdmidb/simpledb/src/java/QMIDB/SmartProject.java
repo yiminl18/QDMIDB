@@ -417,6 +417,7 @@ public class SmartProject extends Operator {
     }
 
     public void updateGraph(String attribute){
+        System.out.println("should not be here - project!");
         RelationshipGraph.getNode(attribute).NumOfNullValuesMinusOne();
         RelationshipGraph.trigger(new Attribute(attribute));
     }

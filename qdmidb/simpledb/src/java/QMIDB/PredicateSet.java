@@ -24,10 +24,16 @@ public class PredicateSet {
                 case "Join":
                     String left = predicateSet.get(i).getLeft().getAttribute();
                     String right = predicateSet.get(i).getRight().getAttribute();
+
                     if(!predicateMap.containsKey(left)){
                         predicateMap.put(left, new ArrayList<PredicateUnit>());
                     }
                     predicateMap.get(left).add(predicateSet.get(i));
+
+                    if(!predicateMap.containsKey(right)){
+                        predicateMap.put(right, new ArrayList<PredicateUnit>());
+                    }
+                    predicateMap.get(right).add(predicateSet.get(i));
                     break;
                 case "Filter":
                     String attribute = predicateSet.get(i).getFilterAttribute().getAttribute();
