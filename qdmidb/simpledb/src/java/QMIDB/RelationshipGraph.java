@@ -21,7 +21,7 @@ public class RelationshipGraph {
     private static List<PredicateUnit> preds;
     private static List<Attribute> Attributes = new ArrayList<>();//attributes in predicate set
 
-    public static void initGraph(List<PredicateUnit> Preds) {
+    public static void initGraph(List<Attribute> AllAttributes, List<PredicateUnit> Preds) {
         List<String> AttributesNames = new ArrayList<>();
         preds = Preds;
         //find node set: attributes in Preds
@@ -47,7 +47,11 @@ public class RelationshipGraph {
         }
 
         for(int i=0;i<AttributesNames.size();i++){
-            Attributes.add(new Attribute(AttributesNames.get(i)));
+            for(int j=0;j<AllAttributes.size();j++){
+                if(AllAttributes.get(j).getAttribute().equals(AttributesNames.get(i))){
+                    Attributes.add(AllAttributes.get(j));
+                }
+            }
         }
 
         //initialize nodes

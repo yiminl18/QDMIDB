@@ -13,6 +13,7 @@ public class Attribute {
     private int schemaWidth;//number of attributes in this relation
 
     //store statistics
+    //numOfNullValue: number of NULL/missing values in original data set under this column
     private int cardinality, numOfNullValue;
 
     //numOfJoinForMissing: number of joins for those tuples which have missing values in this attribute

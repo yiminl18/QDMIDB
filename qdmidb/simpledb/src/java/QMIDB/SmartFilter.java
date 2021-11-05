@@ -75,12 +75,12 @@ public class SmartFilter extends Operator{
             TransactionAbortedException, DbException, Exception {
         while (child.hasNext()) {
             Tuple t = child.next();
-            System.out.println(t);
-            pred.toPredicateUnit().print();
+            //System.out.println(t);
+            //pred.toPredicateUnit().print();
             if(pred.isMissing(t)){
                 //ask decision function if clean now
                 isClean = this.decideNode.Decide(this.attribute.getAttribute());
-                Statistics.print();
+                //Statistics.print();
                 if(isClean){
                     //clean this tuple
                     t = pred.updateTuple(t,ImputeFactory.Impute(attribute, t));
@@ -90,7 +90,7 @@ public class SmartFilter extends Operator{
                 return t;
             }
             else if (pred.filter(t)) {
-                System.out.println("no missing values in " + this.attribute.getAttribute());
+                //System.out.println("no missing values in " + this.attribute.getAttribute());
                 return t;
             }
         }

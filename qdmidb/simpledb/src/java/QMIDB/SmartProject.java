@@ -10,7 +10,7 @@ public class SmartProject extends Operator {
     private static final long serialVersionUID = 1L;
     private DbIterator child;
     private TupleDesc td;//projected schema
-    private List<Integer> outFieldIds;
+    private List<Integer> outFieldIds;//projected attributes ids
 
     private List<Tuple> matching = new ArrayList<>();
     private Iterator<Tuple> matchingResult, candidateMatchIterator, candidateResult = null;
@@ -95,7 +95,7 @@ public class SmartProject extends Operator {
             if(!flag){
                 if(child.hasNext()){
                     Tuple t = child.next();
-                    //System.out.println("Project: " + t);
+                    System.out.println("Project: " + t);
                     selfJoin(t);
                     if(matching.size() == 0){
                         continue;
@@ -109,8 +109,9 @@ public class SmartProject extends Operator {
             }
             while(matchingResult.hasNext()){
                 Tuple matchTuple = matchingResult.next();
-                //System.out.println("match tuple: " + matchTuple);
+                System.out.println("match tuple: " + matchTuple);
                 Tuple newTuple = Project(matchTuple);
+                System.out.println("new tuple: " + newTuple);
                 if(newTuple == null){
                     continue;
                 }else{
@@ -123,16 +124,16 @@ public class SmartProject extends Operator {
         while(true){
             if(!flagCandidateMatch){
                 matching.clear();
-                //System.out.println("candidate Mathcing:");
+                System.out.println("candidate Mathcing:");
                 for(int i=0;i<candidateMatching.size();i++){
                     candidateMatchingBits.add(false);
-                    //System.out.println(candidateMatching.get(i));
+                    System.out.println(candidateMatching.get(i));
                 }
                 getNextFromCandidateMatching();
-                /*System.out.println("final tuples");
+                System.out.println("final tuples");
                 for(int i=0;i<matchedTuples.size();i++){
                     System.out.println(matchedTuples.get(i));
-                }*/
+                }
                 candidateMatchIterator = matchedTuples.iterator();
                 flagCandidateMatch = true;
             }

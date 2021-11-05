@@ -122,9 +122,9 @@ public class SmartJoin extends Operator{
                 while (child2.hasNext()) {
                     Tuple t = child2.next();
                     //ihe:print
-                    System.out.println(t);
-                    pred.toPredicateUnit().print();
-                    Statistics.print();
+                    //System.out.println(t);
+                    //pred.toPredicateUnit().print();
+                    //Statistics.print();
                     //check cleaning for right relation : child 2
                     if (pred.isMissingRight(t) && CleanNow2) {
                         //clean this tuple
@@ -216,9 +216,9 @@ public class SmartJoin extends Operator{
                         }else if(child1.hasNext()){
                             t1 = child1.next();
                             //ihe:print
-                            System.out.println(t1);
-                            pred.toPredicateUnit().print();
-                            Statistics.print();
+                            //System.out.println(t1);
+                            //pred.toPredicateUnit().print();
+                            //Statistics.print();
                             //System.out.println("Join: " + t1);
                             List<Tuple> joinResult = selfJoin(t1);
                             if(joinResult == null){

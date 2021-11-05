@@ -13,13 +13,15 @@ public class QueryProcessing {
         //List<Attribute> schema = ManualSchema();
         //List<PredicateUnit> predicates = fH.readPredicates();
         List<PredicateUnit> predicates = ManualPredicates();
-        RelationshipGraph.initGraph(predicates);
+        RelationshipGraph.initGraph(schema, predicates);
         //RelationshipGraph.printJoinEdge();
         PredicateSet.initPredicateSet(predicates);
         Schema.setSchema(schema);
         Statistics.initStatistics();
         ImputeFactory.setImputationMethod("Manual");
         //RelationshipGraph.printNonJoinNeighbor();
+        //System.out.println(Statistics.getAttribute("R.b").getNumOfNullValue());
+        //System.out.println(Statistics.getAttribute("S.b").getNumOfNullValue());
     }
 
     public DbIterator constructQueryPlan(List<PredicateUnit> preds){

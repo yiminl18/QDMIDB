@@ -65,16 +65,16 @@ public class ImputeFactory {
                 attributeValue = new IntField(1);
                 break;
             case "R.b":
-                attributeValue = new IntField(5);
+                attributeValue = new IntField(5);//5
                 break;
             case "S.b":
-                attributeValue = new IntField(6);
+                attributeValue = new IntField(1);//6
                 break;
             case "S.c":
                 attributeValue = new IntField(2);
                 break;
             case "T.a":
-                attributeValue = new IntField(3);
+                attributeValue = new IntField(1);//3
                 break;
         }
         return attributeValue;
