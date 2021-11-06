@@ -13,7 +13,7 @@ public class SmartProject extends Operator {
     private List<Integer> outFieldIds;//projected attributes ids
 
     private List<Tuple> matching = new ArrayList<>();
-    private Iterator<Tuple> matchingResult, candidateMatchIterator, candidateResult = null;
+    private Iterator<Tuple> candidateMatchIterator, candidateResult = null;
     private List<Tuple> candidateMatching =  new ArrayList<>(), matchedTuples = new ArrayList<>();
     private List<Boolean> candidateMatchingBits = new ArrayList<>();//it is used to indicate which tuple in candidateMatching has been filtered away
     private boolean flag, flagCandidateMatch = false;
@@ -91,34 +91,11 @@ public class SmartProject extends Operator {
      */
     protected Tuple fetchNext() throws NoSuchElementException,
             TransactionAbortedException, DbException, Exception {
-        while (true) {
-            if(!flag){
-                if(child.hasNext()){
-                    Tuple t = child.next();
-                    System.out.println("Project: " + t);
-                    selfJoin(t);
-                    if(matching.size() == 0){
-                        continue;
-                    }
-                    flag = true;
-                    matchingResult = matching.iterator();
-                }
-                else{
-                    break;
-                }
-            }
-            while(matchingResult.hasNext()){
-                Tuple matchTuple = matchingResult.next();
-                //System.out.println("match tuple: " + matchTuple);
-                Tuple newTuple = Project(matchTuple);
-                //System.out.println("new tuple: " + newTuple);
-                if(newTuple == null){
-                    continue;
-                }else{
-                    return newTuple;
-                }
-            }
-            flag = false;
+        //filter all tuple t using current active predicates in selfJoin, and add tuples to candidateMatching
+        while (child.hasNext()) {
+            Tuple t = child.next();
+            System.out.println("Project: " + t);
+            selfJoin(t);
         }
         //getNext from CandidateMatching
         while(true){
@@ -200,20 +177,72 @@ public class SmartProject extends Operator {
         return subT;
     }
 
+    boolean isRemove(Tuple t, String leftAttribute)throws Exception{
+        /*
+         * given a tuple t and some active leftAttribute
+         * return if t will be removed by this triggered predicate
+         * true: can be removed
+         */
+        if(t.getApplied_bit(leftAttribute)){//if leftAttribute has been applied before, skip
+            return false;
+        }
+        Field leftValue = t.getField(t.getTupleDesc().fieldNameToIndex(leftAttribute));
+        List<String> activeRightAttributes = RelationshipGraph.findRelatedActiveRightAttributes(leftAttribute);
+
+        Statistics.addJoins(activeRightAttributes.size());
+
+        for(int j=0;j<activeRightAttributes.size();j++){
+            String rightAttribute = activeRightAttributes.get(j);
+            if(!HashTables.ifExistHashTable(rightAttribute)){
+                throw new Exception("HashTable Not Found!");
+            }
+            else{
+                if(!HashTables.getHashTable(rightAttribute).getHashMap().containsKey(leftValue)){//non-matching
+                    return true;
+                }
+            }
+        }
+        t.setApplied_Bit(leftAttribute);
+        return false;
+    }
+
     /*
         *Logic of selfJoin and project, see implementation/note 53
      */
     public void selfJoin(Tuple t) throws Exception{//t must be in the left relation
         matching.clear();
 
-        boolean isSelfJoin = false;
+        //check all current active predicates to see if t can be removed
+        List<String> activeLeftAttributes = RelationshipGraph.getActiveLeftAttribute();
 
-        List<GraphEdge> relatedEdges;
+        boolean flag = false; //fast check first
+        for(int i=0;i<activeLeftAttributes.size();i++){//one left could correspond to multiple right attributes
+            String leftAttribute = activeLeftAttributes.get(i);
+            int index = t.getTupleDesc().fieldNameToIndex(leftAttribute);
+            //skip non-exist values in this tuple
+            if(index == -1){
+                continue;
+            }
+            if(t.getField(index).isMissing() || t.getField(index).isNull()){
+                continue;
+            }
+            flag = isRemove(t, leftAttribute);
+            if(flag) break;
+        }
 
-        List<String> leftActiveAttributes = RelationshipGraph.getActiveLeftAttribute();
-        List<String> inactiveLeftAttributes = copyList(RelationshipGraph.getLeftJoinAttribute());
-        inactiveLeftAttributes.removeAll(leftActiveAttributes);
+        //if flag = true, tuple t will be removed
+        if(flag){
+            //if now a missing value is removed, update relationship graph
+            for(int i=0;i<t.getTupleDesc().numFields();i++){
+                if(t.getField(i).isMissing()){
+                    String attribute = (t.getTupleDesc().getFieldName(i));
+                    updateGraph(attribute);
+                }
+            }
+            return ;
+        }
 
+        //if codes go here, t passes the test of all current active predicates
         //clean missing attribute value in pickedColumn
         int index = t.getTupleDesc().fieldNameToIndex(pickedColumn);
         Field pickedValue = t.getField(index);
@@ -224,91 +253,7 @@ public class SmartProject extends Operator {
             updateHashTable(pickedColumn, pickedValue, subTuple(pickedColumn, t));
         }
 
-        //next use clean picked column to filter current tuples for the first pass
-
-        for (int i = 0; i< t.getTupleDesc().numFields(); i++) {
-            Field value = t.getField(i);
-            String attribute = t.getTupleDesc().getFieldName(i);
-
-            //if this attribute is in the left attribute of an active join predicate
-            if(leftActiveAttributes.contains(attribute) && !value.isNull()){
-                isSelfJoin = true;
-                if(value.isMissing()){
-                    value = ImputeFactory.Impute(new Attribute(attribute),t);//ihe: null should be the corresponding active join predicate
-                    t.setField(i, value);
-                }
-                //check if non-matching
-                List<String> rightActiveAttributes = RelationshipGraph.findRelatedActiveRightAttributes(attribute);
-                Statistics.addJoins(rightActiveAttributes.size());
-                for(int j=0;j<rightActiveAttributes.size();j++){
-                    String rightActiveAttribute = rightActiveAttributes.get(j);
-                    if(!HashTables.getHashTable(rightActiveAttribute).getHashMap().containsKey(value)){
-                        //at least one attribute value in this tuple is violated with at least one predicate
-                        return ;
-                    }
-                }
-            }
-            //if this attribute is left join attribute and in an inactive predicate, add to candidateMatching
-            if(inactiveLeftAttributes.contains(attribute)){
-                candidateMatching.add(t);
-                return;
-            }
-        }
-
-        matching.add(t);
-        if(!isSelfJoin){//selfJoin is not triggered
-            return ;
-        }
-        //if codes go here, then this tuple should be merged and returned
-        for (int j = 0; j< t.getTupleDesc().numFields(); j++) {
-            Field value = t.getField(j);
-            if(value.isNull()){
-                continue;
-            }
-            String attribute = t.getTupleDesc().getFieldName(j);
-            relatedEdges = RelationshipGraph.findRelatedEdge(attribute);
-
-            for(int i=0;i<relatedEdges.size();i++){
-                int size = matching.size();
-                t.countImputedJoinBy(size);
-                t.countOuterTupleBy(size);
-                Statistics.addJoins(size);
-                for(int p=0;p<size;p++){
-                    String validPred = relatedEdges.get(i).getEndNode().getAttribute().getAttribute();
-                    List<Tuple> temporalMatch = HashTables.getHashTable(validPred).getHashMap().get(value);
-                    int tupleSize = temporalMatch.get(0).getTupleDesc().numFields();
-                    String firstFieldName = temporalMatch.get(0).getTupleDesc().getFieldName(0);
-                    int firstFieldIndex = t.getTupleDesc().fieldNameToIndex(firstFieldName);
-                    if(firstFieldIndex == -1){//attributes of right tuple is not included in left tuple
-                        break;//jump to next predicate
-                    }
-                    for(int k=0;k<temporalMatch.size();k++){//iterate all the matching tuples
-                        Tuple tt = new Tuple(matching.get(p).getTupleDesc(), matching.get(p).getFields());
-                        if(!temporalMatch.get(k).isMergeBit()){
-                            for(int kk=0;kk<tupleSize;kk++){
-                                tt.setField(firstFieldIndex+kk, temporalMatch.get(k).getField(kk));
-                            }
-                            temporalMatch.get(k).setMergeBit(true);
-                            matching.add(tt);
-                        }
-                        else{
-                            boolean hasNuLL = false;
-                            for(int kk=0;kk<tupleSize;kk++){
-                                Field rawValue = tt.getField(firstFieldIndex+kk);
-                                if(rawValue.isNull()){
-                                    hasNuLL = true;
-                                    tt.setField(firstFieldIndex+kk, temporalMatch.get(k).getField(kk));
-                                }
-                            }
-                            if(hasNuLL){
-                                temporalMatch.get(k).setMergeBit(true);
-                                matching.add(tt);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        candidateMatching.add(t);
     }
 
     public void getNextFromCandidateMatching(){
@@ -340,7 +285,7 @@ public class SmartProject extends Operator {
                         break;
                     }
                 }
-                if(!flag){//if codes go here, then clean nextcolumn of this tuple
+                if(!flag){//if codes go here, meaning tuple t passes pickedColumn, then clean nextcolumn of this tuple
                     int index = t.getTupleDesc().fieldNameToIndex(nextColumn);
                     Field value = t.getField(index);
                     if(value.isMissing()){
@@ -351,6 +296,8 @@ public class SmartProject extends Operator {
                     }
                 }
             }
+            //complete this iteration
+            pickedColumn = nextColumn;
         }
         //the codes are here, merge and update tuples
         for(int i=0;i<candidateMatching.size();i++){
@@ -383,35 +330,47 @@ public class SmartProject extends Operator {
                         }
                         for(int q=0;q<temporalMatch.size();q++){//iterate all the matching tuples
                             Tuple tt = new Tuple(tupleMatching.get(k).getTupleDesc(), tupleMatching.get(k).getFields());
-                            if(!temporalMatch.get(q).isMergeBit()){
-                                for(int kk=0;kk<tupleSize;kk++){
-                                    tt.setField(firstFieldIndex+kk, temporalMatch.get(q).getField(kk));
-                                }
-                                temporalMatch.get(q).setMergeBit(true);
-                                tupleMatching.add(tt);
+                            for(int kk=0;kk<tupleSize;kk++){
+                                tt.setField(firstFieldIndex+kk, temporalMatch.get(q).getField(kk));
                             }
-                            else{
-                                boolean hasNull = false;
-                                for(int kk=0;kk<tupleSize;kk++){
-                                    Field tempValue = temporalMatch.get(q).getField(kk);
-                                    Field rawValue = tt.getField(firstFieldIndex+kk);
-                                    if(rawValue.isNull()){
-                                        hasNull = true;
-                                        tt.setField(firstFieldIndex+kk, tempValue);
-                                    }
-                                }
-                                if(hasNull){
-                                    temporalMatch.get(q).setMergeBit(true);
-                                    tupleMatching.add(tt);
-                                }
-                            }
+                            tupleMatching.add(tt);
                         }
                     }
                 }
             }
             //add final results to MatchedTuples
             for(int j=0;j<tupleMatching.size();j++){
-                matchedTuples.add(tupleMatching.get(j));
+                //handle filter operator
+                Tuple tt = tupleMatching.get(j);
+                boolean filterFlag = false;
+                //iterate all filter attributes
+                for(int k=0;k<Schema.getFilterAttributeNames().size();k++){
+                    String filterAttribute = Schema.getFilterAttributeNames().get(k);
+                    int index = tt.getTupleDesc().fieldNameToIndex(filterAttribute);
+                    if(tt.getField(index).isMissing()){
+                        Field value = ImputeFactory.Impute(new Attribute(filterAttribute), tt);
+                        //if satisfy filter predicate, then update the tuple
+                        List<PredicateUnit> filterPredicates = PredicateSet.getFilterPredicates(filterAttribute);
+                        //one attribute could have multiple filter predicates
+                        boolean flag = false;
+                        for(int p=0;p<filterPredicates.size();p++){
+                            if(!value.compare(filterPredicates.get(p).getOp(), filterPredicates.get(p).getOperand())){
+                                flag = true;
+                                break;
+                            }
+                        }
+                        if(!flag){
+                            tt.setField(index,value);
+                        }
+                        else{
+                            filterFlag = true;
+                            break;
+                        }
+                    }
+                }
+                if(!filterFlag){//this tuple passes all filter predicates
+                    matchedTuples.add(tupleMatching.get(j));
+                }
             }
         }
     }

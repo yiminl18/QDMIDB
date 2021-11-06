@@ -13,6 +13,7 @@ import java.util.Map;
 public class PredicateSet {
     private static List<PredicateUnit> predicateSet;
     private static HashMap<String, List<PredicateUnit>> predicateMap;
+    private static HashMap<String, List<PredicateUnit>> filterPredicateMap;
 
     public static void initPredicateSet(List<PredicateUnit> predicateSET){
         predicateSet = predicateSET;
@@ -20,6 +21,7 @@ public class PredicateSet {
         //build hashMap from attribute to its predicate
         //one attribute could be involved in multiple predicates, but each predicates will not contain same attributes
         predicateMap = new HashMap<>();
+        filterPredicateMap = new HashMap<>();
         for(int i=0;i<predicateSet.size();i++){
             switch (predicateSet.get(i).getType()){
                 case "Join":
@@ -42,11 +44,22 @@ public class PredicateSet {
                         predicateMap.put(attribute, new ArrayList<PredicateUnit>());
                     }
                     predicateMap.get(attribute).add(predicateSet.get(i));
+                    if(!filterPredicateMap.containsKey(attribute)){
+                        filterPredicateMap.put(attribute, new ArrayList<PredicateUnit>());
+                    }
+                    filterPredicateMap.get(attribute).add(predicateSet.get(i));
                     break;
                 default:
                     break;
             }
         }
+    }
+
+    public static List<PredicateUnit> getFilterPredicates(String attribute){
+        if(filterPredicateMap.containsKey(attribute)){
+            return filterPredicateMap.get(attribute);
+        }
+        return null;
     }
 
     public static boolean isExist(String attribute){

@@ -22,6 +22,19 @@ public class Tuple implements Serializable {
     private List<Integer> PAfield;//store the fields of attributes in predicate
     private List<String> imputedField = new ArrayList<>();//store the name of attribute whose value is imputed in this tuple
     private boolean mergeBit = false;//this bit is used to indicate if this tuple has been already merged in any join operator
+    //applied_bit is used to store those attributes that have been already applied for testing
+    //these attributes are either left attribute in join or the one in filter
+    private HashMap<String, Boolean> applied_bit = new HashMap<>();
+
+    public void setApplied_Bit(String attribute){
+        if(!applied_bit.containsKey(attribute)){
+            applied_bit.put(attribute, true);
+        }
+    }
+
+    public boolean getApplied_bit(String attribute){
+        return applied_bit.containsKey(attribute);
+    }
 
     public void addOuterAttribute(String attribute){
         if(outerAttribute.indexOf(attribute) == -1){

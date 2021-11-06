@@ -1,5 +1,6 @@
 package QMIDB;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -8,10 +9,11 @@ import java.util.List;
  */
 public class Schema {
     private static List<Attribute> schema;
+    private static List<String> filterAttributeNames = new ArrayList<>();//store name of attributes in filter predicate
     private static HashMap<String, Integer> schemaWidthMap = new HashMap<>();
     private static HashMap<String, String> firstAttribute = new HashMap<>();//return the first attribute of the schema
 
-    public static void setSchema(List<Attribute> Schema){
+    public static void setSchema(List<Attribute> Schema, List<PredicateUnit> predicateSET){
         schema = Schema;
         String preAttribute = "null", currentAttribute;
         String first = null;
@@ -23,7 +25,18 @@ public class Schema {
             }
             firstAttribute.put(currentAttribute, first);
             preAttribute = currentAttribute;
+            String attribute = Schema.get(i).getAttribute();
+            for(int j=0;j<predicateSET.size();j++){
+                if(predicateSET.get(j).getType().equals("Filter") && predicateSET.get(j).getFilterAttribute().getAttribute().equals(attribute)){
+                    filterAttributeNames.add(attribute);
+                    break;
+                }
+            }
         }
+    }
+
+    public static List<String> getFilterAttributeNames(){
+        return filterAttributeNames;
     }
 
     public static List<Attribute> getSchema(){

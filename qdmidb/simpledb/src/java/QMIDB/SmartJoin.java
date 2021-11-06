@@ -296,13 +296,7 @@ public class SmartJoin extends Operator{
                     while (true) {
                         if (matches.hasNext()) {
                             Tuple t22 = matches.next();
-                            //System.out.println("matches: " + t11 + " || " + t22 + " " + t22.isMergeBit());
-                            //if there is no project, this is always correct
-                            //merge can happen in smart project first due to pipeline processing
-                            if(!t22.isMergeBit()) {
-                                t22.setMergeBit(true);
-                                return new Tuple(t11, t22);
-                            }
+                            return new Tuple(t11, t22);
                         } else {
                             t1 = null;
                             matches = null;
@@ -366,6 +360,9 @@ public class SmartJoin extends Operator{
             * return if t will be removed by this triggered predicate
             * true: can be removed
          */
+        if(t.getApplied_bit(leftAttribute)){//if leftAttribute has been applied before, skip
+            return false;
+        }
         Field leftValue = t.getField(t.getTupleDesc().fieldNameToIndex(leftAttribute));
         List<String> activeRightAttributes = RelationshipGraph.findRelatedActiveRightAttributes(leftAttribute);
 
@@ -382,6 +379,7 @@ public class SmartJoin extends Operator{
                 }
             }
         }
+        t.setApplied_Bit(leftAttribute);
         return false;
     }
 
@@ -393,15 +391,12 @@ public class SmartJoin extends Operator{
         * predicate trigger condition is that there are no missing values in their columns
         * ask if clean now
         * if clean, update hash tables and relationship graph
-        *
     */
 
     public List<Tuple> selfJoin(Tuple t) throws Exception{//t must be in the left relation
 
         //check all current active predicates to see if t can be removed
         List<String> activeLeftAttributes = RelationshipGraph.getActiveLeftAttribute();
-
-        //System.out.println("first " + t);
 
         boolean flag = false; //fast check first
         for(int i=0;i<activeLeftAttributes.size();i++){//one left could correspond to multiple right attributes

@@ -17,7 +17,7 @@ public class QueryProcessing {
         RelationshipGraph.initGraph(schema, predicates);
         //RelationshipGraph.printJoinEdge();
         PredicateSet.initPredicateSet(predicates);
-        Schema.setSchema(schema);
+        Schema.setSchema(schema, predicates);
         Statistics.initStatistics();
         ImputeFactory.setImputationMethod("Manual");
         //RelationshipGraph.printNonJoinNeighbor();
