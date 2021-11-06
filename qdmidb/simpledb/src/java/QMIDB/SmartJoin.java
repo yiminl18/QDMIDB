@@ -505,75 +505,8 @@ public class SmartJoin extends Operator{
         //System.out.println("third " + t);
 
         matching.add(t);
-
-        /*
-            * if codes go here, two things can happen
-            * 1) t remains same as before when there are no active predicates and decision node decides to delay
-            * 2) there are some active predicate and t has matched tuples - merge and update
-         */
-
-        activeLeftAttributes = RelationshipGraph.getActiveLeftAttribute();
-        if(activeLeftAttributes.size() == 0){
-            return matching;
-        }
-
         t.setPAfield(PAfieldLeft);
 
-        //update tuples and construct matching
-        for(int i=0;i<activeLeftAttributes.size();i++){
-            int size = matching.size();
-            for(int j=0;j<size;j++){
-                String leftAttribute = activeLeftAttributes.get(i);
-                Field leftValue = t.getField(t.getTupleDesc().fieldNameToIndex(leftAttribute));
-                if(leftValue.isNull()){
-                    //preserve this tuple
-                    continue;
-                }
-                List<String> activeRightAttributes = RelationshipGraph.findRelatedActiveRightAttributes(leftAttribute);
-                List<Tuple> temporalMatch;
-                //ihe:merge
-                //update join test times for missing value for all predicate attributes values in t
-                t.countMissingValueBy(activeRightAttributes.size());
-                t.countOuterTupleBy(activeRightAttributes.size());
-                t.countImputedJoinBy(activeRightAttributes.size());
-                Statistics.addJoins(activeRightAttributes.size());
-
-                for(int k=0;k<activeRightAttributes.size();k++){
-                    String rightAttribute = activeRightAttributes.get(k);
-                    temporalMatch = HashTables.getHashTable(rightAttribute).getHashMap().get(leftValue);
-                    int tupleSize = temporalMatch.get(0).getTupleDesc().numFields();
-                    String firstFieldName = temporalMatch.get(0).getTupleDesc().getFieldName(0);
-                    int firstFieldIndex = t.getTupleDesc().fieldNameToIndex(firstFieldName);
-                    if(firstFieldIndex == -1){//attributes of right tuple is not included in left tuple
-                        break;//jump to next predicate
-                    }
-                    for(int p=0;p<temporalMatch.size();p++){//iterate all the matching tuples
-                        Tuple tt = new Tuple(matching.get(j).getTupleDesc(), matching.get(j).getFields());
-                        if(!temporalMatch.get(p).isMergeBit()){
-                            for(int kk=0;kk<tupleSize;kk++){
-                                tt.setField(firstFieldIndex+kk, temporalMatch.get(p).getField(kk));
-                            }
-                            temporalMatch.get(p).setMergeBit(true);
-                            matching.add(tt);
-                        }
-                        else{
-                            boolean hasNULL = false;
-                            for(int kk=0;kk<tupleSize;kk++){
-                                Field rawValue = tt.getField(firstFieldIndex+kk);
-                                if(rawValue.isNull()){
-                                    hasNULL = true;
-                                    tt.setField(firstFieldIndex+kk, temporalMatch.get(p).getField(kk));
-                                }
-                            }
-                            if(hasNULL){
-                                temporalMatch.get(p).setMergeBit(true);
-                                matching.add(tt);
-                            }
-                        }
-                    }
-                }
-            }
-        }
         return matching;
     }
 

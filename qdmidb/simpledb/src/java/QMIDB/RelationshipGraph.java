@@ -179,6 +179,7 @@ public class RelationshipGraph {
     }
 
     public static String getNextColumn(){//find next column to clean in SmartProject
+        //the next column should be inactive, have current minimum number of missing values and not picked before
         int MinNumOfMissingValue = Integer.MAX_VALUE;
         String nextColumn = null;
         for(int i=0;i<rightAttribute.size();i++){

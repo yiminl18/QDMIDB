@@ -95,7 +95,7 @@ public class SmartProject extends Operator {
             if(!flag){
                 if(child.hasNext()){
                     Tuple t = child.next();
-                    //System.out.println("Project: " + t);
+                    System.out.println("Project: " + t);
                     selfJoin(t);
                     if(matching.size() == 0){
                         continue;
@@ -124,7 +124,7 @@ public class SmartProject extends Operator {
         while(true){
             if(!flagCandidateMatch){
                 matching.clear();
-                System.out.println("candidate Mathcing:");
+                System.out.println("candidate Matching:");
                 for(int i=0;i<candidateMatching.size();i++) {
                     candidateMatchingBits.add(false);//true: this tuple has been filtered away
                     System.out.println(candidateMatching.get(i));
@@ -207,7 +207,6 @@ public class SmartProject extends Operator {
         matching.clear();
 
         boolean isSelfJoin = false;
-        boolean isAdd = false;
 
         List<GraphEdge> relatedEdges;
 
@@ -215,7 +214,7 @@ public class SmartProject extends Operator {
         List<String> inactiveLeftAttributes = copyList(RelationshipGraph.getLeftJoinAttribute());
         inactiveLeftAttributes.removeAll(leftActiveAttributes);
 
-        //clean attribute value in pickedColumn is missing
+        //clean missing attribute value in pickedColumn
         int index = t.getTupleDesc().fieldNameToIndex(pickedColumn);
         Field pickedValue = t.getField(index);
         if(pickedValue.isMissing()){
@@ -225,11 +224,10 @@ public class SmartProject extends Operator {
             updateHashTable(pickedColumn, pickedValue, subTuple(pickedColumn, t));
         }
 
+        //next use clean picked column to filter current tuples for the first pass
+
         for (int i = 0; i< t.getTupleDesc().numFields(); i++) {
             Field value = t.getField(i);
-            if(value.isNull()){
-                continue;
-            }
             String attribute = t.getTupleDesc().getFieldName(i);
 
             //if this attribute is in the left attribute of an active join predicate
@@ -312,10 +310,6 @@ public class SmartProject extends Operator {
             }
         }
     }
-
-    /*
-
-     */
 
     public void getNextFromCandidateMatching(){
         while(true){
