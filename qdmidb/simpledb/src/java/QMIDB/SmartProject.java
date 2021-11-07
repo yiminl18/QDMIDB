@@ -243,7 +243,8 @@ public class SmartProject extends Operator {
         }
 
         //if codes go here, t passes the test of all current active predicates
-        //clean missing attribute value in pickedColumn
+        //clean missing attribute value in pickedColumn, which is in right join attribute, then we can remove this tuple
+        //because its information is stored in hash table
         int index = t.getTupleDesc().fieldNameToIndex(pickedColumn);
         Field pickedValue = t.getField(index);
         if(pickedValue.isMissing()){
@@ -299,10 +300,67 @@ public class SmartProject extends Operator {
             //complete this iteration
             pickedColumn = nextColumn;
         }
+
+        //handle filter operator
+        for(int i=0;i<candidateMatching.size();i++){
+            if(candidateMatchingBits.get(i)) continue;
+            Tuple tt = candidateMatching.get(i);
+            boolean filterFlag = false;
+            //iterate all filter attributes
+            for(int k=0;k<Schema.getFilterAttributeNames().size();k++){
+                String filterAttribute = Schema.getFilterAttributeNames().get(k);
+                int index = tt.getTupleDesc().fieldNameToIndex(filterAttribute);
+                if(tt.getField(index).isMissing()){
+                    Field value = ImputeFactory.Impute(new Attribute(filterAttribute), tt);
+                    //if satisfy filter predicate, then update the tuple
+                    List<PredicateUnit> filterPredicates = PredicateSet.getFilterPredicates(filterAttribute);
+                    //one attribute could have multiple filter predicates
+                    boolean flag = false;
+                    for(int p=0;p<filterPredicates.size();p++){
+                        if(!value.compare(filterPredicates.get(p).getOp(), filterPredicates.get(p).getOperand())){
+                            flag = true;
+                            break;
+                        }
+                    }
+                    if(!flag){
+                        tt.setField(index,value);
+                        //update to hash table and graph using correct right join attribute
+                        List<String> rightAttributes = RelationshipGraph.findRightJoinAttributesInSameRelation(new Attribute(filterAttribute));
+                        for(int p=0;p<rightAttributes.size();p++){
+                            updateGraph(rightAttributes.get(p));
+                            int fieldIndex = tt.getTupleDesc().fieldNameToIndex(rightAttributes.get(p));
+                            if(fieldIndex == -1){
+                                continue;
+                            }
+                            Field rightField = tt.getField(fieldIndex);
+                            updateHashTable(rightAttributes.get(p),rightField, tt);
+                        }
+                    }
+                    else{
+                        filterFlag = true;
+                        break;
+                    }
+                }
+            }
+            if(filterFlag) {//this tuple failed any filter predicate
+                candidateMatchingBits.set(i, true);
+            }
+        }
+        System.out.println("HashTables:");
+        HashTables.print();
+
+        System.out.println("after all self joins!!!");
+        for(int i=0;i<candidateMatching.size();i++){
+            if(candidateMatchingBits.get(i)) continue;
+            System.out.println(candidateMatching.get(i));
+        }
+        System.out.println("end!!!");
+
         //the codes are here, merge and update tuples
         for(int i=0;i<candidateMatching.size();i++){
             if(candidateMatchingBits.get(i)) continue;
             Tuple t = candidateMatching.get(i);
+            System.out.println("tuple in this round:" + t);
 
             List<Tuple> tupleMatching = new ArrayList<>();
             tupleMatching.add(t);
@@ -329,48 +387,38 @@ public class SmartProject extends Operator {
                             break;//jump to next predicate
                         }
                         for(int q=0;q<temporalMatch.size();q++){//iterate all the matching tuples
-                            Tuple tt = new Tuple(tupleMatching.get(k).getTupleDesc(), tupleMatching.get(k).getFields());
-                            for(int kk=0;kk<tupleSize;kk++){
-                                tt.setField(firstFieldIndex+kk, temporalMatch.get(q).getField(kk));
+                            Tuple tt = new Tuple(tupleMatching.get(k).getTupleDesc(), tupleMatching.get(k).getFields());//tt is a copy of tupleMatching.get(k)
+                            if(!temporalMatch.get(q).isMergeBit()){
+                                for(int kk=0;kk<tupleSize;kk++){
+                                    tt.setField(firstFieldIndex+kk, temporalMatch.get(q).getField(kk));
+                                }
+                                temporalMatch.get(q).setMergeBit(true);
+                                tupleMatching.add(tt);
                             }
-                            tupleMatching.add(tt);
+                            else{
+                                boolean hasNull = false;
+                                for(int kk=0;kk<tupleSize;kk++){
+                                    Field tempValue = temporalMatch.get(q).getField(kk);
+                                    Field rawValue = tt.getField(firstFieldIndex+kk);
+                                    if(rawValue.isNull()){
+                                        hasNull = true;
+                                        tt.setField(firstFieldIndex+kk, tempValue);
+                                    }
+                                }
+                                if(hasNull){
+                                    temporalMatch.get(q).setMergeBit(true);
+                                    tupleMatching.add(tt);
+                                }
+                            }
                         }
                     }
                 }
             }
+            System.out.println("final tuples in this round!");
             //add final results to MatchedTuples
             for(int j=0;j<tupleMatching.size();j++){
-                //handle filter operator
-                Tuple tt = tupleMatching.get(j);
-                boolean filterFlag = false;
-                //iterate all filter attributes
-                for(int k=0;k<Schema.getFilterAttributeNames().size();k++){
-                    String filterAttribute = Schema.getFilterAttributeNames().get(k);
-                    int index = tt.getTupleDesc().fieldNameToIndex(filterAttribute);
-                    if(tt.getField(index).isMissing()){
-                        Field value = ImputeFactory.Impute(new Attribute(filterAttribute), tt);
-                        //if satisfy filter predicate, then update the tuple
-                        List<PredicateUnit> filterPredicates = PredicateSet.getFilterPredicates(filterAttribute);
-                        //one attribute could have multiple filter predicates
-                        boolean flag = false;
-                        for(int p=0;p<filterPredicates.size();p++){
-                            if(!value.compare(filterPredicates.get(p).getOp(), filterPredicates.get(p).getOperand())){
-                                flag = true;
-                                break;
-                            }
-                        }
-                        if(!flag){
-                            tt.setField(index,value);
-                        }
-                        else{
-                            filterFlag = true;
-                            break;
-                        }
-                    }
-                }
-                if(!filterFlag){//this tuple passes all filter predicates
-                    matchedTuples.add(tupleMatching.get(j));
-                }
+                System.out.println(tupleMatching.get(j));
+                matchedTuples.add(tupleMatching.get(j));
             }
         }
     }

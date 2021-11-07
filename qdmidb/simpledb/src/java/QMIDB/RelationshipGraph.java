@@ -17,6 +17,7 @@ public class RelationshipGraph {
     private static Map<String, List<String>> nonJoinNeighbors = new HashMap<>();//mapping from attribute to its non-join neighbors
     private static List<GraphNode> NodeSet = new ArrayList<>();
     private static List<GraphEdge> EdgeSet = new ArrayList<>();
+    //leftAttribute, rightAttribute are those attributes in the left and right side of join predicates
     private static List<String> activeLeftAttribute = new ArrayList<>(), activeRightAttribute = new ArrayList<>(), leftAttribute = new ArrayList<>(), rightAttribute = new ArrayList<>();
     private static List<PredicateUnit> preds;
     private static List<Attribute> Attributes = new ArrayList<>();//attributes in predicate set
@@ -178,8 +179,22 @@ public class RelationshipGraph {
         return nodeMap.get(attribute);
     }
 
+    public static List<String> getRightAttributes(){
+        return rightAttribute;
+    }
+
+    public static List<String> findRightJoinAttributesInSameRelation(Attribute attribute){
+        List<String> rightAttributes = new ArrayList<>();
+        for(int i=0;i<rightAttribute.size();i++){
+            if(new Attribute(rightAttribute.get(i)).getRelation().equals(attribute.getRelation())){//in same relation
+                rightAttributes.add(rightAttribute.get(i));
+            }
+        }
+        return rightAttributes;
+    }
+
     public static String getNextColumn(){//find next column to clean in SmartProject
-        //the next column should be inactive, have current minimum number of missing values and not picked before
+        //the next column should be inactive right join attribute, have current minimum number of missing values and not picked before
         int MinNumOfMissingValue = Integer.MAX_VALUE;
         String nextColumn = null;
         for(int i=0;i<rightAttribute.size();i++){
@@ -239,6 +254,8 @@ public class RelationshipGraph {
     }
 
     public static void trigger(Attribute right){
+        //only right join attribute will be updated
+        //other attributes will not be triggered, so it is safe
         //first find all relevant join edges which have connected to given attribute
         //and then trigger them if they are active
         for(int i=0;i<EdgeSet.size();i++){

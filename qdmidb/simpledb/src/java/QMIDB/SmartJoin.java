@@ -296,7 +296,10 @@ public class SmartJoin extends Operator{
                     while (true) {
                         if (matches.hasNext()) {
                             Tuple t22 = matches.next();
-                            return new Tuple(t11, t22);
+                            if(!t22.isMergeBit()) {
+                                t22.setMergeBit(true);
+                                return new Tuple(t11, t22);
+                            }
                         } else {
                             t1 = null;
                             matches = null;
@@ -447,48 +450,51 @@ public class SmartJoin extends Operator{
                 List<PredicateUnit> predicates = PredicateSet.getPredicateUnits(field);
                 for(int j=0;j<predicates.size();j++){
                     String type = predicates.get(j).getType();
-                    switch (type){
-                        case "Join":
-                            Decision decideJoin = new Decision(predicates.get(j).toJoinPredicate());
-                            Attribute left = predicates.get(j).getLeft();
-                            Attribute right = predicates.get(j).getRight();
-                            boolean CleanLeft = decideJoin.Decide(left.getAttribute());
-                            boolean CleanRight = decideJoin.Decide(right.getAttribute());
-                            boolean isUpdate = false;
-                            if(left.getAttribute().equals(field) && CleanLeft){//left relation
-                                isUpdate = true;
-                                //clean tuple
-                                t.setField(i,ImputeFactory.Impute(left, t));
-                            }else if(right.getAttribute().equals(field) && CleanRight){
-                                isUpdate = true;
-                                //clean tuple
-                                Field newValue = ImputeFactory.Impute(right, t);
+                    if(type == "Join") {
+                        Decision decideJoin = new Decision(predicates.get(j).toJoinPredicate());
+                        Attribute left = predicates.get(j).getLeft();
+                        Attribute right = predicates.get(j).getRight();
+                        boolean CleanLeft = decideJoin.Decide(left.getAttribute());
+                        boolean CleanRight = decideJoin.Decide(right.getAttribute());
+                        boolean isUpdate = false;
+                        if(left.getAttribute().equals(field) && CleanLeft){//left relation
+                            isUpdate = true;
+                            //clean tuple
+                            t.setField(i,ImputeFactory.Impute(left, t));
+                        }else if(right.getAttribute().equals(field) && CleanRight){
+                            isUpdate = true;
+                            //clean tuple
+                            Field newValue = ImputeFactory.Impute(right, t);
+                            t.setField(i,newValue);
+                            //update hashTables
+                            updateHashTable(right.getAttribute(), newValue, subTuple(right.getAttribute(), t));
+                        }
+                        if(isUpdate){
+                            //update graph
+                            updateGraph(right.getAttribute());
+                            //check now if current attribute active or not, if yes, check if this tuple can be removed
+                            if(RelationshipGraph.isActiveLeft(field)){
+                                if(isRemove(t, field)){
+                                    flag1 = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    else if(type == "Filter") {//Filter would always appear before Join
+                        Decision decideFilter = new Decision(predicates.get(j).toPredicate());
+                        boolean CleanFilter = decideFilter.Decide(predicates.get(j).getFilterAttribute().getAttribute());
+                        if(CleanFilter){
+                            Field newValue = ImputeFactory.Impute(predicates.get(j).getFilterAttribute(),t);
+                            //if satisfy filter predicate, then update the tuple
+                            if(newValue.compare(predicates.get(j).getOp(),predicates.get(j).getOperand())){
                                 t.setField(i,newValue);
-                                //update hashTables
-                                updateHashTable(right.getAttribute(), newValue, subTuple(right.getAttribute(), t));
                             }
-                            if(isUpdate){
-                                //update graph
-                                updateGraph(right.getAttribute());
-                                //check now if current attribute active or not, if yes, check if this tuple can be removed
-                                if(RelationshipGraph.isActiveLeft(field)){
-                                    if(isRemove(t, field)){
-                                        flag1 = true;
-                                    }
-                                }
+                            else{//not satisfied, remove this tuple
+                                flag1 = true;
+                                break;
                             }
-                            break;
-                        case "Filter"://Filter would always appear before Join
-                            Decision decideFilter = new Decision(predicates.get(j).toPredicate());
-                            boolean CleanFilter = decideFilter.Decide(predicates.get(j).getFilterAttribute().getAttribute());
-                            if(CleanFilter){
-                                Field newValue = ImputeFactory.Impute(predicates.get(j).getFilterAttribute(),t);
-                                //if satisfy filter predicate, then update the tuple
-                                if(newValue.compare(predicates.get(j).getOp(),predicates.get(j).getOperand())){
-                                    t.setField(i,newValue);
-                                }
-                            }
-                            break;
+                        }
                     }
                 }
             }
