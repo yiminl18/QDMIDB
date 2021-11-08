@@ -94,7 +94,7 @@ public class SmartProject extends Operator {
         //filter all tuple t using current active predicates in selfJoin, and add tuples to candidateMatching
         while (child.hasNext()) {
             Tuple t = child.next();
-            System.out.println("Project: " + t);
+            //System.out.println("Project: " + t);
             selfJoin(t);
         }
         //getNext from CandidateMatching
@@ -263,6 +263,8 @@ public class SmartProject extends Operator {
     }
 
     public void getNextFromCandidateMatching(){
+        System.out.println("HashTables before filter and self join");
+        HashTables.print();
         while(true){
             String nextColumn = RelationshipGraph.getNextColumn();
             if(nextColumn == null) break;
@@ -307,6 +309,15 @@ public class SmartProject extends Operator {
             //complete this iteration
             pickedColumn = nextColumn;
         }
+
+
+
+        System.out.println("after all self joins but before filter!!!");
+        for(int i=0;i<candidateMatching.size();i++){
+            if(candidateMatchingBits.get(i)) continue;
+            System.out.println(candidateMatching.get(i));
+        }
+        System.out.println("end!!!");
 
         //handle filter operator
         for(int i=0;i<candidateMatching.size();i++){

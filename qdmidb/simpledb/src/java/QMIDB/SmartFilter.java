@@ -75,6 +75,7 @@ public class SmartFilter extends Operator{
             TransactionAbortedException, DbException, Exception {
         while (child.hasNext()) {
             Tuple t = child.next();
+            //System.out.println("***filter tuples: " + t);
             if(pred.isMissing(t)){
                 //ask decision function if clean now
                 isClean = this.decideNode.Decide(this.attribute.getAttribute());
@@ -82,9 +83,11 @@ public class SmartFilter extends Operator{
                 if(isClean){
                     //clean this tuple
                     t = pred.updateTuple(t,ImputeFactory.Impute(attribute, t));
-                    //update numofNullValue for corresponding node
+                    //update numOfNullValue for corresponding node
                     RelationshipGraph.getNode(attribute.getAttribute()).NumOfNullValuesMinusOne();
                     Buffer.updateTuple(t);
+                }else{//accepts missing values in filter attribute
+                    return t;
                 }
             }
             if (!pred.filter(t)) {
@@ -92,6 +95,7 @@ public class SmartFilter extends Operator{
                 Buffer.removeTuple(t);
                 continue;
             }else{
+                //System.out.println("***after filter tuples: " + t);
                 return  t;
             }
         }

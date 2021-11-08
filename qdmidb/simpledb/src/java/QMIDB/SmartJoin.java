@@ -123,6 +123,9 @@ public class SmartJoin extends Operator{
                 while (child2.hasNext()) {
                     Tuple t = child2.next();
 
+                    //System.out.println("hash tables before: *******8");
+                    //System.out.println(t);
+
                     if (pred.isMissingRight(t) && CleanNow2) {
                         //clean right join attribute in this tuple
                         t = pred.updateTupleRight(t, ImputeFactory.Impute(attribute2, t));
@@ -146,7 +149,10 @@ public class SmartJoin extends Operator{
                         if (!table.containsKey(joinAttr)) {
                             table.put(joinAttr, new ArrayList<Integer>());
                         }
+                        //in left deep tree, right join relation always gets raw tuple from its relation
                         table.get(joinAttr).add(t.getTID());
+                        //System.out.println("*****tuples in hash tables");
+                        //System.out.println(attribute2.getAttribute() + " " + t);
                     }
                 }
                 //update table to HashTable
