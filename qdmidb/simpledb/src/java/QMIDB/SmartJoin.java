@@ -140,6 +140,7 @@ public class SmartJoin extends Operator{
                     if (t.hasMissingFieldInPredicateAttribute()) {
                         //create temp null values for outer join purpose
                         Tuple tt = new Tuple(constructNullTuple(child1), t);
+                        tt.setRawBit(false);
                         Buffer.addTuple(tt);
                         tempOuterNullTuples.add(tt);
                     }
@@ -285,6 +286,8 @@ public class SmartJoin extends Operator{
                                 t11.addOuterAttribute(attribute2.getAttribute());
                                 Tuple t2 = new Tuple(t11, constructNullTuple(child2));
                                 Buffer.addTuple(t2);
+                                t2.setRawBit(false);
+                                t2.setAttribute2TID(t11.getAttribute2TID());
                                 return t2;
                             }
                             else{
@@ -307,8 +310,10 @@ public class SmartJoin extends Operator{
                             if(!t22.isMergeBit()) {
                                 t22.setMergeBit(true);
                                 Tuple tn = new Tuple(t11, t22);
-                                tn.mergeAttribute2TID(t11.getAttribute2TID(),t22.getAttribute2TID());
                                 Buffer.addTuple(tn);
+                                tn.mergeAttribute2TID(t11.getAttribute2TID(),t22.getAttribute2TID());
+                                tn.setMergeBit(true);
+                                tn.setRawBit(false);
                                 return tn;
                             }
                         } else {

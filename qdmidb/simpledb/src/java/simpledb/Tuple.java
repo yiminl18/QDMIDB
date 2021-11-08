@@ -22,10 +22,23 @@ public class Tuple implements Serializable {
     private List<Integer> PAfield;//store the fields of attributes in predicate
     private List<String> imputedField = new ArrayList<>();//store the name of attribute whose value is imputed in this tuple
     private boolean mergeBit = false;//this bit is used to indicate if this tuple has been already merged in any join operator
+    private boolean isRaw = true;//this bit is used to indicate if this tuple is raw tuple. Its opposite can be joined by other tuples or outer-joined by NULL values
     //applied_bit is used to store those attributes that have been already applied for testing
     //these attributes are either left attribute in join or the one in filter
     private HashMap<String, Boolean> applied_bit = new HashMap<>();
     private HashMap<String, Integer> attribute2TID = new HashMap<>();//from attribute name to its TID
+
+    public void setRawBit(boolean bit){
+        this.isRaw = bit;
+    }
+
+    public void computeAttribute2TID(){
+        if(this.isRaw){//only compute for raw tuple
+            for(int i=0;i<schema.getSize();i++){
+                attribute2TID.put(schema.getFieldName(i), TID);
+            }
+        }
+    }
 
     public HashMap<String, Integer> getAttribute2TID(){
         return this.attribute2TID;

@@ -263,8 +263,8 @@ public class SmartProject extends Operator {
     }
 
     public void getNextFromCandidateMatching(){
-        System.out.println("HashTables before filter and self join");
-        HashTables.print();
+        //System.out.println("HashTables before filter and self join");
+        //HashTables.print();
         while(true){
             String nextColumn = RelationshipGraph.getNextColumn();
             if(nextColumn == null) break;
@@ -309,8 +309,6 @@ public class SmartProject extends Operator {
             //complete this iteration
             pickedColumn = nextColumn;
         }
-
-
 
         System.out.println("after all self joins but before filter!!!");
         for(int i=0;i<candidateMatching.size();i++){
@@ -377,10 +375,10 @@ public class SmartProject extends Operator {
                 }
             }
         }
-        System.out.println("HashTables:");
+        System.out.println("HashTables -- after self joins and filters:");
         HashTables.print();
 
-        System.out.println("after all self joins!!!");
+        System.out.println("after self joins and filters!!!");
         for(int i=0;i<candidateMatching.size();i++){
             if(candidateMatchingBits.get(i)) continue;
             System.out.println(candidateMatching.get(i));
@@ -505,6 +503,7 @@ public class SmartProject extends Operator {
         }else{//raw tuple
             tid = t.getTID();
         }
+        System.out.println("$$$modified tuple-- " +Buffer.getTuple(tid) + " " + t);//should be 5,2
         //update buffer pool without touching hash table because tid is same
         Buffer.updateTupleByTID(t, tid);
     }

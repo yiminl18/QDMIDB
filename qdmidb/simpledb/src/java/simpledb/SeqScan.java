@@ -108,6 +108,7 @@ public class SeqScan implements DbIterator {
         List<String> attributes = Statistics.getAttributesInRelation(tableAlias);
         Tuple tuple = tuples.next();
         Buffer.addTuple(tuple);
+        tuple.computeAttribute2TID();
         for(int i=0;i<attributes.size();i++){
             int index = tuple.getTupleDesc().fieldNameToIndex(attributes.get(i));
             if(tuple.getField(index).isMissing()){
