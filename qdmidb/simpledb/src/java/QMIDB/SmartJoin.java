@@ -137,13 +137,6 @@ public class SmartJoin extends Operator{
                     else if (pred.isMissingRight(t) && !CleanNow2){
                         child2IsMissing = true;
                     }
-                    if (t.hasMissingFieldInPredicateAttribute()) {
-                        //create temp null values for outer join purpose
-                        Tuple tt = new Tuple(constructNullTuple(child1), t);
-                        tt.setRawBit(false);
-                        Buffer.addTuple(tt);
-                        tempOuterNullTuples.add(tt);
-                    }
                     if(!pred.isMissingRight(t)){
                         Field joinAttr = t.getField(joinAttrIdx);
                         if(joinAttr == new IntField(simpledb.Type.NULL_INTEGER)){continue;}
@@ -152,8 +145,14 @@ public class SmartJoin extends Operator{
                         }
                         //in left deep tree, right join relation always gets raw tuple from its relation
                         table.get(joinAttr).add(t.getTID());
-                        //System.out.println("*****tuples in hash tables");
-                        //System.out.println(attribute2.getAttribute() + " " + t);
+                    }else{
+                        //t has missing value in right join attribute
+                        //generate outer join tuple to preserve this missing value
+                        Tuple tt = new Tuple(constructNullTuple(child1), t);
+                        tt.setRawBit(false);
+                        Buffer.addTuple(tt);
+                        tt.setAttribute2TID(t.getAttribute2TID());
+                        tempOuterNullTuples.add(tt);
                     }
                 }
                 //update table to HashTable

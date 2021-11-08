@@ -34,7 +34,8 @@ public class Tuple implements Serializable {
 
     public void computeAttribute2TID(){
         if(this.isRaw){//only compute for raw tuple
-            for(int i=0;i<schema.getSize();i++){
+            for(int i=0;i<schema.numFields();i++){
+                //System.out.println("&&&&&&&&&& " + schema.getSize() + " " + schema.getFieldName(i));
                 attribute2TID.put(schema.getFieldName(i), TID);
             }
         }
