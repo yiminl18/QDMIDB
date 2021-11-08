@@ -113,7 +113,7 @@ public class test {
     }
 
     public static void testHashTable(){
-        Type types[] = new Type[]{Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE};
+        /*Type types[] = new Type[]{Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE};
         String names[] = new String[]{"field0", "field1", "field2"};
         TupleDesc descriptor = new TupleDesc(types, names);
         Field fields[] = new Field[]{new IntField(1),new IntField(2),new IntField(3)};
@@ -144,11 +144,11 @@ public class test {
         HashTables.addHashTable(attribute2,new HashTable(attribute2, table1));
 
         System.out.println("hash table 2: ");
-        HashTables.print();
+        HashTables.print();*/
     }
 
     public static void testHashMap(){
-        HashMap<String, HashMap<Integer, Integer>> hashmap = new HashMap<>();
+        /*HashMap<String, HashMap<Integer, Integer>> hashmap = new HashMap<>();
         HashMap<Integer, Integer> subhash = new HashMap<>();
         subhash.put(1,1);
         subhash.put(2,4);
@@ -173,12 +173,17 @@ public class test {
             for(Map.Entry<Integer, Integer> iter1: iter.getValue().entrySet()){
                 System.out.println(iter1.getKey() + " " + iter1.getValue());
             }
-        }
+        }*/
+
+        HashMap<String, Integer> hmap = new HashMap<>();
+        hmap.put("a",1);
+        hmap.put("a",2);
+        System.out.println(hmap.get("a"));
 
     }
 
     public static void testList(){
-        List<Tuple> matching = new ArrayList<>();
+        /*List<Tuple> matching = new ArrayList<>();
         List<Tuple> matching1 = new ArrayList<>();
 
         Type types[] = new Type[]{Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE};
@@ -201,6 +206,15 @@ public class test {
 
         for(int i=0;i<matching1.size();i++){
             System.out.println(matching1.get(i));
+        }*/
+
+        List<Integer> l = new ArrayList<>();
+        l.add(10);
+        l.add(2);
+        l.add(5);
+        l.remove(new Integer(10));
+        for(int i =0;i<l.size();i++){
+            System.out.println(l.get(i));
         }
     }
 

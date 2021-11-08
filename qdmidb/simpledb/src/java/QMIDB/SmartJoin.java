@@ -16,9 +16,10 @@ public class SmartJoin extends Operator{
     private boolean selfJoinFlag = false;
     private boolean child2IsMissing = false;//if right relation has missing values on predicate attribute (attribute2)
 
-    private HashMap<Field, List<Tuple>> table;//table stores the hashTable for child2 in join operator
-    private Iterator<Tuple> matches = null, selfJoinResult = null, nullOuterTuple = null;//similar to list
-    private List<Tuple> tempOuterNullTuples;//store tuples containing missing values by outer join in right relation
+    private HashMap<Field, List<Integer>> table;//table stores the hashTable for child2 in join operator
+    private Iterator<Tuple> selfJoinResult = null, nullOuterTuple = null;//similar to list
+    private Iterator<Integer> matches = null;
+    private List<Tuple> tempOuterNullTuples; //store tuples containing missing values by outer join in right relation
 
     private List<Integer> PAfieldLeft;
 
@@ -121,32 +122,31 @@ public class SmartJoin extends Operator{
                 int joinAttrIdx = pred.getField2();
                 while (child2.hasNext()) {
                     Tuple t = child2.next();
-                    //ihe:print
-                    //System.out.println(t);
-                    //pred.toPredicateUnit().print();
-                    //Statistics.print();
-                    //check cleaning for right relation : child 2
+
                     if (pred.isMissingRight(t) && CleanNow2) {
-                        //clean this tuple
+                        //clean right join attribute in this tuple
                         t = pred.updateTupleRight(t, ImputeFactory.Impute(attribute2, t));
                         //update NumOfNullValue for corresponding graph node
                         RelationshipGraph.getNode(this.attribute2.getAttribute()).NumOfNullValuesMinusOne();
                         RelationshipGraph.trigger(this.attribute2);
+                        Buffer.updateTuple(t);
                     }
                     else if (pred.isMissingRight(t) && !CleanNow2){
                         child2IsMissing = true;
                     }
-                    if (t.hasMissingFields()) {
+                    if (t.hasMissingFieldInPredicateAttribute()) {
                         //create temp null values for outer join purpose
-                        tempOuterNullTuples.add(new Tuple(constructNullTuple(child1), t));
+                        Tuple tt = new Tuple(constructNullTuple(child1), t);
+                        Buffer.addTuple(tt);
+                        tempOuterNullTuples.add(tt);
                     }
                     if(!pred.isMissingRight(t)){
                         Field joinAttr = t.getField(joinAttrIdx);
                         if(joinAttr == new IntField(simpledb.Type.NULL_INTEGER)){continue;}
                         if (!table.containsKey(joinAttr)) {
-                            table.put(joinAttr, new ArrayList<Tuple>());
+                            table.put(joinAttr, new ArrayList<Integer>());
                         }
-                        table.get(joinAttr).add(t);
+                        table.get(joinAttr).add(t.getTID());
                     }
                 }
                 //update table to HashTable
@@ -247,7 +247,7 @@ public class SmartJoin extends Operator{
                         //System.out.println("* " + rightField + " " + attribute1.getAttribute() + " " + attribute2.getAttribute());
                         //ihe:ifmatch
                         t11.setPAfield(PAfieldLeft);
-                        List<Tuple> m = table.get(rightField);
+                        List<Integer> m = table.get(rightField);
 
                         /*if(m!=null){
                             System.out.println("printf hash table");
@@ -277,7 +277,9 @@ public class SmartJoin extends Operator{
                             t1 = null;
                             if(t11.hasMissingFields() || child2IsMissing){//ihe: check
                                 t11.addOuterAttribute(attribute2.getAttribute());
-                                return new Tuple(t11, constructNullTuple(child2));
+                                Tuple t2 = new Tuple(t11, constructNullTuple(child2));
+                                Buffer.addTuple(t2);
+                                return t2;
                             }
                             else{
                                 continue;
@@ -295,10 +297,13 @@ public class SmartJoin extends Operator{
 
                     while (true) {
                         if (matches.hasNext()) {
-                            Tuple t22 = matches.next();
+                            Tuple t22 = Buffer.getTuple(matches.next());
                             if(!t22.isMergeBit()) {
                                 t22.setMergeBit(true);
-                                return new Tuple(t11, t22);
+                                Tuple tn = new Tuple(t11, t22);
+                                tn.mergeAttribute2TID(t11.getAttribute2TID(),t22.getAttribute2TID());
+                                Buffer.addTuple(tn);
+                                return tn;
                             }
                         } else {
                             t1 = null;
@@ -378,6 +383,7 @@ public class SmartJoin extends Operator{
             }
             else{
                 if(!HashTables.getHashTable(rightAttribute).getHashMap().containsKey(leftValue)){//non-matching
+                    Buffer.removeTuple(t);
                     return true;
                 }
             }
@@ -418,6 +424,7 @@ public class SmartJoin extends Operator{
 
         //if flag = true, tuple t will be removed
         if(flag){
+            Buffer.removeTuple(t);
             //if now a missing value is removed, update relationship graph
             for(int i=0;i<t.getTupleDesc().numFields();i++){
                 if(t.getField(i).isMissing()){
@@ -461,13 +468,15 @@ public class SmartJoin extends Operator{
                             isUpdate = true;
                             //clean tuple
                             t.setField(i,ImputeFactory.Impute(left, t));
+                            Buffer.updateTuple(t);
                         }else if(right.getAttribute().equals(field) && CleanRight){
                             isUpdate = true;
                             //clean tuple
                             Field newValue = ImputeFactory.Impute(right, t);
                             t.setField(i,newValue);
-                            //update hashTables
-                            updateHashTable(right.getAttribute(), newValue, subTuple(right.getAttribute(), t));
+                            //t must not be in the hash table of right attribute as it has missing right join attribute value before
+                            //in updateHashTable: first update corresponding tuple in buffer pool, then add tid into hash table
+                            addEntryInHashTable(right.getAttribute(), newValue, subTuple(right.getAttribute(), t));
                         }
                         if(isUpdate){
                             //update graph
@@ -475,6 +484,7 @@ public class SmartJoin extends Operator{
                             //check now if current attribute active or not, if yes, check if this tuple can be removed
                             if(RelationshipGraph.isActiveLeft(field)){
                                 if(isRemove(t, field)){
+                                    Buffer.removeTuple(t);
                                     flag1 = true;
                                     break;
                                 }
@@ -489,9 +499,11 @@ public class SmartJoin extends Operator{
                             //if satisfy filter predicate, then update the tuple
                             if(newValue.compare(predicates.get(j).getOp(),predicates.get(j).getOperand())){
                                 t.setField(i,newValue);
+                                Buffer.updateTuple(t);
                             }
                             else{//not satisfied, remove this tuple
                                 flag1 = true;
+                                Buffer.removeTuple(t);
                                 break;
                             }
                         }
@@ -517,6 +529,9 @@ public class SmartJoin extends Operator{
         int width = Schema.getWidth(attribute);
         TupleDesc subTD = t.getTupleDesc().SubTupleDesc(start, width);
         Tuple subT = new Tuple(subTD);
+        subT.setTID(t.getTID());
+        subT.setMergeBit(t.isMergeBit());
+        subT.setAttribute2TID(t.getAttribute2TID());
         for(int i=0;i<width;i++){
             subT.setField(i, t.getField(i+start));
         }
@@ -542,18 +557,29 @@ public class SmartJoin extends Operator{
         RelationshipGraph.trigger(new Attribute(attribute));
     }
 
-    public void updateHashTable(String attribute, Field value, Tuple t){
+    public void addEntryInHashTable(String attribute, Field value, Tuple t){
+        //in updateHashTable: first update corresponding tuple in buffer pool, then add tid into hash table
+        int tid;
+        //the content of t will always be raw tuple, but its source is not decided yet
+        //first update corresponding tuple in buffer pool
+        if(t.isMergeBit()){//joined tuple
+            tid = t.findTID(attribute);
+        }else{//raw tuple
+            tid = t.getTID();
+        }
+        Buffer.updateTupleByTID(t, tid);
+        //add tid into hash table
         if(!HashTables.ifExistHashTable(attribute)){
-            HashMap<Field, List<Tuple>> hashMap = new HashMap<>();
+            HashMap<Field, List<Integer>> hashMap = new HashMap<>();
             hashMap.put(value, new ArrayList<>());
-            hashMap.get(value).add(t);
+            hashMap.get(value).add(tid);
             HashTables.addHashTable(attribute, new HashTable(attribute, hashMap));
         }
         else{
             if(!HashTables.getHashTable(attribute).hasKey(value)){
                 HashTables.getHashTable(attribute).getHashMap().put(value, new ArrayList<>());
             }
-            HashTables.getHashTable(attribute).getHashMap().get(value).add(t);
+            HashTables.getHashTable(attribute).getHashMap().get(value).add(tid);
         }
     }
 }

@@ -1,4 +1,5 @@
 package QMIDB;
+import simpledb.Buffer;
 import simpledb.Field;
 import simpledb.Tuple;
 
@@ -9,7 +10,7 @@ import java.util.*;
 public class HashTable {
     private String attribute;
     //map from attribute value to its corresponding tuple
-    private HashMap<Field, List<Tuple>> hashMap;
+    private HashMap<Field, List<Integer>> hashMap;//store TIDs of tuples
     private HashMap<Field, Boolean> matchBits;//to indicate if an entry in hashMap is matched in join operator
     private int meanValue;//maintained for Mean imputation method
 
@@ -19,7 +20,7 @@ public class HashTable {
         matchBits = new HashMap<>();
     }
 
-    public HashTable(String attributeName, HashMap<Field, List<Tuple>> table){
+    public HashTable(String attributeName, HashMap<Field, List<Integer>> table){
         attribute = attributeName;
         hashMap = table;
         matchBits = new HashMap<>();
@@ -35,7 +36,7 @@ public class HashTable {
         return matchBits.containsKey(field);
     }
 
-    public List<Tuple> getHashTable(Field field){
+    public List<Integer> getHashTable(Field field){
         return hashMap.get(field);
     }
 
@@ -53,11 +54,11 @@ public class HashTable {
         return attribute;
     }
 
-    public HashMap<Field, List<Tuple>> getHashMap() {
+    public HashMap<Field, List<Integer>> getHashMap() {
         return hashMap;
     }
 
-    public void setHashMaps(HashMap<Field, List<Tuple>> hashmap) {
+    public void setHashMaps(HashMap<Field, List<Integer>> hashmap) {
         hashMap = hashmap;
     }
 
@@ -65,11 +66,11 @@ public class HashTable {
 
     public void print(){
         //printing hashtable for debugging purpose
-        for(Map.Entry<Field, List<Tuple>> iter : hashMap.entrySet()){
+        for(Map.Entry<Field, List<Integer>> iter : hashMap.entrySet()){
             System.out.println("Field: " + iter.getKey());
-            List<Tuple> match = iter.getValue();
+            List<Integer> match = iter.getValue();
             for(int i=0;i<match.size();i++){
-                System.out.println("Matching Tuple: " + match.get(i));
+                System.out.println("Matching Tuple: " + Buffer.getTuple(match.get(i)));
             }
         }
     }

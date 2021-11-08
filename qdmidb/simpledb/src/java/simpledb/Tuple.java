@@ -16,7 +16,7 @@ public class Tuple implements Serializable {
     
     private Field[] fields;
     private List<String> outerAttribute = new ArrayList<>();//size > 0 -> this tuple is outer join tuple due to the attributes in outerAttribute
-
+    private int TID;//ID of this tuple in buffer pool
     private TupleDesc schema;
     private RecordId rid;
     private List<Integer> PAfield;//store the fields of attributes in predicate
@@ -25,6 +25,41 @@ public class Tuple implements Serializable {
     //applied_bit is used to store those attributes that have been already applied for testing
     //these attributes are either left attribute in join or the one in filter
     private HashMap<String, Boolean> applied_bit = new HashMap<>();
+    private HashMap<String, Integer> attribute2TID = new HashMap<>();//from attribute name to its TID
+
+    public HashMap<String, Integer> getAttribute2TID(){
+        return this.attribute2TID;
+    }
+
+    public void mergeAttribute2TID(HashMap<String, Integer> mp1, HashMap<String, Integer> mp2){
+        if(this.mergeBit){//to prevent operations for outer join tuple
+            //only deal with matched join tuple
+            //note that keys in mp1 and mp2 must be different because they are joined from two non-overlapping relation set
+            //thus self join will not be considered for now
+            this.attribute2TID = mp1;
+            this.attribute2TID.putAll(mp2);
+        }
+    }
+
+    public void setAttribute2TID(HashMap<String, Integer> attribute2TID){
+        this.attribute2TID = attribute2TID;
+    }
+
+    public int findTID(String attribute){
+        if(attribute2TID.containsKey(attribute)){
+            return attribute2TID.get(attribute);
+        }else{
+            return -1;
+        }
+    }
+
+    public int getTID(){
+        return this.TID;
+    }
+
+    public void setTID(int TID){
+        this.TID = TID;
+    }
 
     public void setApplied_Bit(String attribute){
         if(!applied_bit.containsKey(attribute)){
@@ -211,6 +246,15 @@ public class Tuple implements Serializable {
     public boolean hasMissingFields() {
         for(Field field : fields) {
             if (field.isMissing()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean hasMissingFieldInPredicateAttribute(){
+        for(int i=0;i<fields.length;i++){
+            if(fields[i].isMissing() && Statistics.isPredicateAttribute(schema.getFieldName(i))){
                 return true;
             }
         }

@@ -107,6 +107,7 @@ public class SeqScan implements DbIterator {
         //update statistics for the number of missing values seen so far for attributes in predicate set
         List<String> attributes = Statistics.getAttributesInRelation(tableAlias);
         Tuple tuple = tuples.next();
+        Buffer.addTuple(tuple);
         for(int i=0;i<attributes.size();i++){
             int index = tuple.getTupleDesc().fieldNameToIndex(attributes.get(i));
             if(tuple.getField(index).isMissing()){

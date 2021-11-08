@@ -171,6 +171,9 @@ public class SmartProject extends Operator {
         int width = Schema.getWidth(attribute);
         TupleDesc subTD = t.getTupleDesc().SubTupleDesc(start, width);
         Tuple subT = new Tuple(subTD);
+        subT.setTID(t.getTID());
+        subT.setMergeBit(t.isMergeBit());
+        subT.setAttribute2TID(t.getAttribute2TID());
         for(int i=0;i<width;i++){
             subT.setField(i, t.getField(i+start));
         }
@@ -198,6 +201,7 @@ public class SmartProject extends Operator {
             }
             else{
                 if(!HashTables.getHashTable(rightAttribute).getHashMap().containsKey(leftValue)){//non-matching
+                    Buffer.removeTuple(t);
                     return true;
                 }
             }
@@ -243,18 +247,19 @@ public class SmartProject extends Operator {
         }
 
         //if codes go here, t passes the test of all current active predicates
-        //clean missing attribute value in pickedColumn, which is in right join attribute, then we can remove this tuple
-        //because its information is stored in hash table
+        //pickedColumn is right join attribute
         int index = t.getTupleDesc().fieldNameToIndex(pickedColumn);
         Field pickedValue = t.getField(index);
         if(pickedValue.isMissing()){
+            //this tuple must not in hash table before because its right join attribute value, pickedValue, is missing before
+            //then update tuples in buffer pool and add this entry to hash table
             pickedValue = ImputeFactory.Impute(new Attribute(pickedColumn),t);
             t.setField(index, pickedValue);
             updateGraph(pickedColumn);
-            updateHashTable(pickedColumn, pickedValue, subTuple(pickedColumn, t));
+            addEntryInHashTable(pickedColumn, pickedValue, subTuple(pickedColumn, t));
         }
-
         candidateMatching.add(t);
+
     }
 
     public void getNextFromCandidateMatching(){
@@ -283,6 +288,7 @@ public class SmartProject extends Operator {
                         //remove this tuple
                         flag = true;
                         candidateMatchingBits.set(i, true);
+                        Buffer.removeTuple(t);
                         break;
                     }
                 }
@@ -290,10 +296,11 @@ public class SmartProject extends Operator {
                     int index = t.getTupleDesc().fieldNameToIndex(nextColumn);
                     Field value = t.getField(index);
                     if(value.isMissing()){
+                        //value is right join attribute, so t must not be in hash table before, add it
                         value = ImputeFactory.Impute(new Attribute(nextColumn),t);
                         t.setField(index, value);
                         updateGraph(nextColumn);
-                        updateHashTable(nextColumn, value, subTuple(nextColumn, t));
+                        addEntryInHashTable(nextColumn, value, subTuple(nextColumn, t));
                     }
                 }
             }
@@ -324,7 +331,7 @@ public class SmartProject extends Operator {
                     }
                     if(!flag){
                         tt.setField(index,value);
-                        //update to hash table and graph using correct right join attribute
+                        //update hash table and graph using correct right join attribute
                         List<String> rightAttributes = RelationshipGraph.findRightJoinAttributesInSameRelation(new Attribute(filterAttribute));
                         for(int p=0;p<rightAttributes.size();p++){
                             updateGraph(rightAttributes.get(p));
@@ -332,8 +339,8 @@ public class SmartProject extends Operator {
                             if(fieldIndex == -1){
                                 continue;
                             }
-                            Field rightField = tt.getField(fieldIndex);
-                            updateHashTable(rightAttributes.get(p),rightField, tt);
+                            Field rightField = tt.getField(fieldIndex);//attribute value of this right join attribute
+                            modifyEntryInHashTable(rightAttributes.get(p),rightField, subTuple(filterAttribute, tt));
                         }
                     }
                     else{
@@ -342,8 +349,21 @@ public class SmartProject extends Operator {
                     }
                 }
             }
-            if(filterFlag) {//this tuple failed any filter predicate
+            if(filterFlag) {//this tuple failed some filter predicate
                 candidateMatchingBits.set(i, true);
+                Buffer.removeTuple(tt);
+                //update hash table by removing tt entry if exist
+                //first find right join attributes in relation where tuple tt is in
+                String firstAttribute = tt.getTupleDesc().getFieldName(0);
+                List<String> rightAttributes = RelationshipGraph.findRightJoinAttributesInSameRelation(new Attribute(firstAttribute));
+                for(int p=0;p<rightAttributes.size();p++){
+                    int fieldIndex = tt.getTupleDesc().fieldNameToIndex(rightAttributes.get(p));
+                    if(fieldIndex == -1){
+                        continue;
+                    }
+                    Field rightField = tt.getField(fieldIndex);//attribute value of this right join attribute
+                    removeEntryInHashTable(rightAttributes.get(p),rightField, tt);
+                }
             }
         }
         System.out.println("HashTables:");
@@ -372,7 +392,7 @@ public class SmartProject extends Operator {
                         continue;
                     }
                     List<String> activeRightAttributes = RelationshipGraph.findRelatedActiveRightAttributes(leftJoinAttribute);
-                    List<Tuple> temporalMatch;
+                    List<Integer> temporalMatch;
                     tupleMatching.get(k).countImputedJoinBy(activeRightAttributes.size());
                     Statistics.addJoins(activeRightAttributes.size());
                     t.countImputedJoinBy(activeRightAttributes.size());
@@ -380,25 +400,26 @@ public class SmartProject extends Operator {
                     for(int p=0;p<activeRightAttributes.size();p++){
                         String rightAttribute = activeRightAttributes.get(p);
                         temporalMatch = HashTables.getHashTable(rightAttribute).getHashMap().get(leftValue);
-                        int tupleSize = temporalMatch.get(0).getTupleDesc().numFields();
-                        String firstFieldName = temporalMatch.get(0).getTupleDesc().getFieldName(0);
+                        int tupleSize = Buffer.getTuple(temporalMatch.get(0)).getTupleDesc().numFields();
+                        String firstFieldName = Buffer.getTuple(temporalMatch.get(0)).getTupleDesc().getFieldName(0);
                         int firstFieldIndex = t.getTupleDesc().fieldNameToIndex(firstFieldName);
                         if(firstFieldIndex == -1){//attributes of right tuple is not included in left tuple
                             break;//jump to next predicate
                         }
                         for(int q=0;q<temporalMatch.size();q++){//iterate all the matching tuples
                             Tuple tt = new Tuple(tupleMatching.get(k).getTupleDesc(), tupleMatching.get(k).getFields());//tt is a copy of tupleMatching.get(k)
-                            if(!temporalMatch.get(q).isMergeBit()){
+                            Tuple tTemp = Buffer.getTuple(temporalMatch.get(q));
+                            if(!tTemp.isMergeBit()){
                                 for(int kk=0;kk<tupleSize;kk++){
-                                    tt.setField(firstFieldIndex+kk, temporalMatch.get(q).getField(kk));
+                                    tt.setField(firstFieldIndex+kk, tTemp.getField(kk));
                                 }
-                                temporalMatch.get(q).setMergeBit(true);
+                                tTemp.setMergeBit(true);
                                 tupleMatching.add(tt);
                             }
                             else{
                                 boolean hasNull = false;
                                 for(int kk=0;kk<tupleSize;kk++){
-                                    Field tempValue = temporalMatch.get(q).getField(kk);
+                                    Field tempValue = tTemp.getField(kk);
                                     Field rawValue = tt.getField(firstFieldIndex+kk);
                                     if(rawValue.isNull()){
                                         hasNull = true;
@@ -406,7 +427,7 @@ public class SmartProject extends Operator {
                                     }
                                 }
                                 if(hasNull){
-                                    temporalMatch.get(q).setMergeBit(true);
+                                    tTemp.setMergeBit(true);
                                     tupleMatching.add(tt);
                                 }
                             }
@@ -428,18 +449,52 @@ public class SmartProject extends Operator {
         RelationshipGraph.trigger(new Attribute(attribute));
     }
 
-    public void updateHashTable(String attribute, Field value, Tuple t){
+    public void addEntryInHashTable(String attribute, Field value, Tuple t){
+        int tid;
+        //the content of t will always be raw tuple, but its source is not decided yet
+        //first update corresponding tuple in buffer pool
+        if(t.isMergeBit()){//joined tuple
+            tid = t.findTID(attribute);
+        }else{//raw tuple
+            tid = t.getTID();
+        }
+        Buffer.updateTupleByTID(t, tid);
+        //add tid into hash table
         if(!HashTables.ifExistHashTable(attribute)){
-            HashMap<Field, List<Tuple>> hashMap = new HashMap<>();
+            HashMap<Field, List<Integer>> hashMap = new HashMap<>();
             hashMap.put(value, new ArrayList<>());
-            hashMap.get(value).add(t);
+            hashMap.get(value).add(tid);
             HashTables.addHashTable(attribute, new HashTable(attribute, hashMap));
         }
         else{
             if(!HashTables.getHashTable(attribute).hasKey(value)){
                 HashTables.getHashTable(attribute).getHashMap().put(value, new ArrayList<>());
             }
-            HashTables.getHashTable(attribute).getHashMap().get(value).add(t);
+            HashTables.getHashTable(attribute).getHashMap().get(value).add(tid);
         }
+    }
+
+    public void removeEntryInHashTable(String attribute, Field value, Tuple t){
+        //find tid of raw tuple
+        int tid;
+        if(t.isMergeBit()){//joined tuple
+            tid = t.findTID(attribute);
+        }else{//raw tuple
+            tid = t.getTID();
+        }
+        //remove tid entry from hash table
+        HashTables.getHashTable(attribute).getHashMap().get(value).remove(new Integer(tid));
+    }
+
+    public void modifyEntryInHashTable(String attribute, Field value, Tuple t){
+        //find tid of raw tuple
+        int tid;
+        if(t.isMergeBit()){//joined tuple
+            tid = t.findTID(attribute);
+        }else{//raw tuple
+            tid = t.getTID();
+        }
+        //update buffer pool without touching hash table because tid is same
+        Buffer.updateTupleByTID(t, tid);
     }
 }
