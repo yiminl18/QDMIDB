@@ -173,7 +173,7 @@ public class SmartProject extends Operator {
         Tuple subT = new Tuple(subTD);
         subT.setTID(t.getTID());
         //subT.setTID(t.findTID(attribute));
-        subT.setMergeBit(t.isMergeBit());
+        //subT.setMergeBit(t.isMergeBit());
         subT.setAttribute2TID(t.getAttribute2TID());
         for(int i=0;i<width;i++){
             subT.setField(i, t.getField(i+start));
@@ -326,14 +326,15 @@ public class SmartProject extends Operator {
         for(int i=0;i<candidateMatching.size();i++){
             if(candidateMatchingBits.get(i)) continue;
             Tuple t = candidateMatching.get(i);
-
             List<Tuple> tupleMatching = new ArrayList<>();
             tupleMatching.add(t);
+            int k = 0;//cursor to current tuple in tupleMatching
             for(int j=0;j<leftJoinAttributes.size();j++){
                 String leftJoinAttribute = leftJoinAttributes.get(j);
-                for(int k=0;k<tupleMatching.size();k++){
+                while(k < tupleMatching.size()){
                     Field leftValue = tupleMatching.get(k).getField(tupleMatching.get(k).getTupleDesc().fieldNameToIndex(leftJoinAttribute));
                     if(leftValue.isNull()){
+                        k++;
                         continue;
                     }
                     List<String> activeRightAttributes = RelationshipGraph.findRelatedActiveRightAttributes(leftJoinAttribute);
@@ -342,51 +343,35 @@ public class SmartProject extends Operator {
                     Statistics.addJoins(activeRightAttributes.size());
                     t.countImputedJoinBy(activeRightAttributes.size());
                     t.countOuterTupleBy(activeRightAttributes.size());
-                    for(int p=0;p<activeRightAttributes.size();p++){
+                    for(int p=0;p<activeRightAttributes.size();p++){//iterate right join attributes corresponding to current leftJoinAttribute
                         String rightAttribute = activeRightAttributes.get(p);
                         temporalMatch = HashTables.getHashTable(rightAttribute).getHashMap().get(leftValue);
                         int tupleSize = Buffer.getTuple(temporalMatch.get(0)).getTupleDesc().numFields();
                         String firstFieldName = Buffer.getTuple(temporalMatch.get(0)).getTupleDesc().getFieldName(0);
                         int firstFieldIndex = t.getTupleDesc().fieldNameToIndex(firstFieldName);
                         if(firstFieldIndex == -1){//attributes of right tuple is not included in left tuple
-                            break;//jump to next predicate
+                            continue;//jump to next predicate
                         }
                         for(int q=0;q<temporalMatch.size();q++){//iterate all the matching tuples
                             Tuple tt = new Tuple(tupleMatching.get(k).getTupleDesc(), tupleMatching.get(k).getFields());//tt is a copy of tupleMatching.get(k)
                             tt.copyTidSource(tupleMatching.get(k).getTidSource());
                             Tuple tTemp = Buffer.getTuple(temporalMatch.get(q));
                             if(!tt.isTidSource(temporalMatch.get(q))){//tTemp has not been merged to tt before
-                                for(int kk=0;kk<tupleSize;kk++){
-                                    tt.setField(firstFieldIndex+kk, tTemp.getField(kk));
-                                }
-                                tt.mergeTidSource(tt.getTidSource(), tTemp.getTidSource());
-                                tupleMatching.add(tt);
-                            }
-
-                            /*if(!tTemp.isMergeBit()){
-                                for(int kk=0;kk<tupleSize;kk++){
-                                    tt.setField(firstFieldIndex+kk, tTemp.getField(kk));
-                                }
-                                tTemp.setMergeBit(true);
-                                tupleMatching.add(tt);
-                            }
-                            else{
-                                boolean hasNull = false;
-                                for(int kk=0;kk<tupleSize;kk++){
-                                    Field tempValue = tTemp.getField(kk);
-                                    Field rawValue = tt.getField(firstFieldIndex+kk);
-                                    if(rawValue.isNull()){
-                                        hasNull = true;
-                                        tt.setField(firstFieldIndex+kk, tempValue);
+                                //merged part is NULL, can be imputed
+                                if(tt.getField(firstFieldIndex).isNull()){
+                                    for(int kk=0;kk<tupleSize;kk++){
+                                        tt.setField(firstFieldIndex+kk, tTemp.getField(kk));
                                     }
-                                }
-                                if(hasNull){
-                                    tTemp.setMergeBit(true);
+                                    tt.mergeTidSource(tt.getTidSource(), tTemp.getTidSource());
                                     tupleMatching.add(tt);
+                                }else{
+                                    break;//try another activeRightAttribute to merge
                                 }
-                            }*/
+                            }
                         }
                     }
+                    k++;
+                    break;//one join attribute is done, jump to next
                 }
             }
             //System.out.println("final tuples in this round!");

@@ -313,7 +313,7 @@ public class SmartJoin extends Operator{
                             Buffer.addTuple(tn);
                             tn.mergeAttribute2TID(t11.getAttribute2TID(),t22.getAttribute2TID());
                             tn.mergeTidSource(t11.getTidSource(), t22.getTidSource());
-                            tn.setMergeBit(true);
+                            //tn.setMergeBit(true);
                             tn.setRawBit(false);
                             return tn;
                         } else {
@@ -541,7 +541,7 @@ public class SmartJoin extends Operator{
         TupleDesc subTD = t.getTupleDesc().SubTupleDesc(start, width);
         Tuple subT = new Tuple(subTD);
         subT.setTID(t.getTID());
-        subT.setMergeBit(t.isMergeBit());
+        //subT.setMergeBit(t.isMergeBit());
         subT.setAttribute2TID(t.getAttribute2TID());
         for(int i=0;i<width;i++){
             subT.setField(i, t.getField(i+start));
