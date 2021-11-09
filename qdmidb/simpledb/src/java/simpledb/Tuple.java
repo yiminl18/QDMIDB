@@ -26,7 +26,29 @@ public class Tuple implements Serializable {
     //applied_bit is used to store those attributes that have been already applied for testing
     //these attributes are either left attribute in join or the one in filter
     private HashMap<String, Boolean> applied_bit = new HashMap<>();
+    private HashMap<Integer, Boolean> tidSource = new HashMap<>();//store the set of TIDs composing this tuple
     private HashMap<String, Integer> attribute2TID = new HashMap<>();//from attribute name to its TID
+
+    public void setTidSource(){
+        tidSource.put(TID, true);
+    }
+
+    public void copyTidSource(HashMap<Integer, Boolean> source){
+        tidSource = source;
+    }
+
+    public void mergeTidSource(HashMap<Integer, Boolean> source1, HashMap<Integer, Boolean> source2){
+        this.tidSource = source1;
+        this.tidSource.putAll(source2);
+    }
+
+    public boolean isTidSource(int tid){
+        return tidSource.containsKey(tid);
+    }
+
+    public HashMap<Integer, Boolean> getTidSource(){
+        return tidSource;
+    }
 
     public void setRawBit(boolean bit){
         this.isRaw = bit;

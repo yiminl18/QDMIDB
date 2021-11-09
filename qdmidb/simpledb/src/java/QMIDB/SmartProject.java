@@ -94,6 +94,7 @@ public class SmartProject extends Operator {
         //filter all tuple t using current active predicates in selfJoin, and add tuples to candidateMatching
         while (child.hasNext()) {
             Tuple t = child.next();
+            System.out.println("Project: " + t);
             selfJoin(t);
         }
         //getNext from CandidateMatching
@@ -309,12 +310,12 @@ public class SmartProject extends Operator {
             pickedColumn = nextColumn;
         }
 
-        /*System.out.println("after all self joins but before filter!!!");
+        System.out.println("after all self joins but before filter!!!");
         for(int i=0;i<candidateMatching.size();i++){
             if(candidateMatchingBits.get(i)) continue;
             System.out.println(candidateMatching.get(i));
         }
-        System.out.println("end!!!");*/
+        System.out.println("end!!!");
 
 
         //the codes are here, merge and update tuples
@@ -348,8 +349,17 @@ public class SmartProject extends Operator {
                         }
                         for(int q=0;q<temporalMatch.size();q++){//iterate all the matching tuples
                             Tuple tt = new Tuple(tupleMatching.get(k).getTupleDesc(), tupleMatching.get(k).getFields());//tt is a copy of tupleMatching.get(k)
+                            tt.copyTidSource(tupleMatching.get(k).getTidSource());
                             Tuple tTemp = Buffer.getTuple(temporalMatch.get(q));
-                            if(!tTemp.isMergeBit()){
+                            if(!tt.isTidSource(temporalMatch.get(q))){//tTemp has not been merged to tt before
+                                for(int kk=0;kk<tupleSize;kk++){
+                                    tt.setField(firstFieldIndex+kk, tTemp.getField(kk));
+                                }
+                                tTemp.setMergeBit(true);
+                                tupleMatching.add(tt);
+                            }
+
+                            /*if(!tTemp.isMergeBit()){
                                 for(int kk=0;kk<tupleSize;kk++){
                                     tt.setField(firstFieldIndex+kk, tTemp.getField(kk));
                                 }
@@ -370,7 +380,7 @@ public class SmartProject extends Operator {
                                     tTemp.setMergeBit(true);
                                     tupleMatching.add(tt);
                                 }
-                            }
+                            }*/
                         }
                     }
                 }

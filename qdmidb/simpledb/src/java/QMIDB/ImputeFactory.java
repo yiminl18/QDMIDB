@@ -62,16 +62,16 @@ public class ImputeFactory {
         Field attributeValue = new IntField(0);
         switch(attribute.getAttribute()){
             case "R.a":
-                attributeValue = new IntField(1);
+                attributeValue = new IntField(5);
                 break;
             case "R.b":
                 attributeValue = new IntField(5);//5
                 break;
             case "S.b":
-                attributeValue = new IntField(1);//6
+                attributeValue = new IntField(6);//6
                 break;
             case "S.c":
-                attributeValue = new IntField(2);
+                attributeValue = new IntField(1);
                 break;
             case "T.a":
                 attributeValue = new IntField(1);//3

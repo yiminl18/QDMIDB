@@ -160,6 +160,7 @@ public class SmartJoin extends Operator{
             }else{
                 table = HashTables.getHashTable(getJoinField2Name()).getHashMap();
             }
+            //System.out.println("print hashTable in " +attribute2);
             //HashTables.print();
         }
     }
@@ -306,15 +307,13 @@ public class SmartJoin extends Operator{
                     while (true) {
                         if (matches.hasNext()) {
                             Tuple t22 = Buffer.getTuple(matches.next());
-                            if(!t22.isMergeBit()) {
-                                t22.setMergeBit(true);
-                                Tuple tn = new Tuple(t11, t22);
-                                Buffer.addTuple(tn);
-                                tn.mergeAttribute2TID(t11.getAttribute2TID(),t22.getAttribute2TID());
-                                tn.setMergeBit(true);
-                                tn.setRawBit(false);
-                                return tn;
-                            }
+                            Tuple tn = new Tuple(t11, t22);
+                            Buffer.addTuple(tn);
+                            tn.mergeAttribute2TID(t11.getAttribute2TID(),t22.getAttribute2TID());
+                            tn.mergeTidSource(t11.getTidSource(), t22.getTidSource());
+                            tn.setMergeBit(true);
+                            tn.setRawBit(false);
+                            return tn;
                         } else {
                             t1 = null;
                             matches = null;
