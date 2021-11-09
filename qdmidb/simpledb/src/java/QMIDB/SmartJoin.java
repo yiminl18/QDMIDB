@@ -152,6 +152,7 @@ public class SmartJoin extends Operator{
                         tt.setRawBit(false);
                         Buffer.addTuple(tt);
                         tt.setAttribute2TID(t.getAttribute2TID());
+                        tt.copyTidSource(t.getTidSource());
                         tempOuterNullTuples.add(tt);
                     }
                 }

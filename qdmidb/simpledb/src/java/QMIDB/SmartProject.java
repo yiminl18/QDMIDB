@@ -172,6 +172,7 @@ public class SmartProject extends Operator {
         TupleDesc subTD = t.getTupleDesc().SubTupleDesc(start, width);
         Tuple subT = new Tuple(subTD);
         subT.setTID(t.getTID());
+        //subT.setTID(t.findTID(attribute));
         subT.setMergeBit(t.isMergeBit());
         subT.setAttribute2TID(t.getAttribute2TID());
         for(int i=0;i<width;i++){
@@ -263,8 +264,6 @@ public class SmartProject extends Operator {
     }
 
     public void getNextFromCandidateMatching(){
-        //System.out.println("HashTables before filter and self join");
-        //HashTables.print();
         while(true){
             String nextColumn = RelationshipGraph.getNextColumn();
             if(nextColumn == null) break;
@@ -310,6 +309,9 @@ public class SmartProject extends Operator {
             pickedColumn = nextColumn;
         }
 
+        //System.out.println("HashTables after self join but before filter:");
+        //HashTables.print();//the result is correct
+
         System.out.println("after all self joins but before filter!!!");
         for(int i=0;i<candidateMatching.size();i++){
             if(candidateMatchingBits.get(i)) continue;
@@ -318,7 +320,7 @@ public class SmartProject extends Operator {
         System.out.println("end!!!");
 
 
-        //the codes are here, merge and update tuples
+        //if the codes are here, merge and update tuples
         for(int i=0;i<candidateMatching.size();i++){
             if(candidateMatchingBits.get(i)) continue;
             Tuple t = candidateMatching.get(i);
@@ -355,7 +357,7 @@ public class SmartProject extends Operator {
                                 for(int kk=0;kk<tupleSize;kk++){
                                     tt.setField(firstFieldIndex+kk, tTemp.getField(kk));
                                 }
-                                tTemp.setMergeBit(true);
+                                //tTemp.setMergeBit(true);
                                 tupleMatching.add(tt);
                             }
 

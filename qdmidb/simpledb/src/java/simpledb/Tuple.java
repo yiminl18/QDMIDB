@@ -33,6 +33,10 @@ public class Tuple implements Serializable {
         tidSource.put(TID, true);
     }
 
+    public void setTidSource(int tid){
+        tidSource.put(tid, true);
+    }
+
     public void copyTidSource(HashMap<Integer, Boolean> source){
         tidSource = source;
     }
