@@ -578,6 +578,7 @@ public class SmartJoin extends Operator{
         }else{//raw tuple
             tid = t.getTID();
         }
+        t.setTidSource(tid);
         Buffer.updateTupleByTID(t, tid);
         //add tid into hash table
         if(!HashTables.ifExistHashTable(attribute)){
