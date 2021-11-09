@@ -94,7 +94,7 @@ public class SmartProject extends Operator {
         //filter all tuple t using current active predicates in selfJoin, and add tuples to candidateMatching
         while (child.hasNext()) {
             Tuple t = child.next();
-            System.out.println("Project: " + t);
+            //System.out.println("Project: " + t);
             selfJoin(t);
         }
         //getNext from CandidateMatching
@@ -314,12 +314,12 @@ public class SmartProject extends Operator {
         //System.out.println("HashTables after self join but before filter:");
         //HashTables.print();//the result is correct
 
-        System.out.println("after all self joins but before filter!!!");//this is correct now
+        //System.out.println("after all self joins but before filter!!!");//this is correct now
         for(int i=0;i<candidateMatching.size();i++){
             if(candidateMatchingBits.get(i)) continue;
-            System.out.println(candidateMatching.get(i));
+            //System.out.println(candidateMatching.get(i));
         }
-        System.out.println("end!!!");
+        //System.out.println("end!!!");
 
 
         //if the codes are here, merge and update tuples
