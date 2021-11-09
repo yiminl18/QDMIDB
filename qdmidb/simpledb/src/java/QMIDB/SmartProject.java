@@ -266,7 +266,6 @@ public class SmartProject extends Operator {
     public void getNextFromCandidateMatching(){
         while(true){
             String nextColumn = RelationshipGraph.getNextColumn();
-            if(nextColumn == null) break;
             for(int i=0;i<candidateMatching.size();i++){
                 if(candidateMatchingBits.get(i)) continue;//if this tuple has already been filter away, do not consider anymore
                 //use pickedColumn to do self-Join
@@ -294,17 +293,20 @@ public class SmartProject extends Operator {
                     }
                 }
                 if(!flag){//if codes go here, meaning tuple t passes pickedColumn, then clean nextcolumn of this tuple
-                    int index = t.getTupleDesc().fieldNameToIndex(nextColumn);
-                    Field value = t.getField(index);
-                    if(value.isMissing()){
-                        //value is right join attribute, so t must not be in hash table before, add it
-                        value = ImputeFactory.Impute(new Attribute(nextColumn),t);
-                        t.setField(index, value);
-                        updateGraph(nextColumn);
-                        addEntryInHashTable(nextColumn, value, subTuple(nextColumn, t));
+                    if(nextColumn != null){
+                        int index = t.getTupleDesc().fieldNameToIndex(nextColumn);
+                        Field value = t.getField(index);
+                        if(value.isMissing()){
+                            //value is right join attribute, so t must not be in hash table before, add it
+                            value = ImputeFactory.Impute(new Attribute(nextColumn),t);
+                            t.setField(index, value);
+                            updateGraph(nextColumn);
+                            addEntryInHashTable(nextColumn, value, subTuple(nextColumn, t));
+                        }
                     }
                 }
             }
+            if(nextColumn == null) break;
             //complete this iteration
             pickedColumn = nextColumn;
         }
@@ -312,7 +314,7 @@ public class SmartProject extends Operator {
         //System.out.println("HashTables after self join but before filter:");
         //HashTables.print();//the result is correct
 
-        System.out.println("after all self joins but before filter!!!");
+        System.out.println("after all self joins but before filter!!!");//this is correct now
         for(int i=0;i<candidateMatching.size();i++){
             if(candidateMatchingBits.get(i)) continue;
             System.out.println(candidateMatching.get(i));
