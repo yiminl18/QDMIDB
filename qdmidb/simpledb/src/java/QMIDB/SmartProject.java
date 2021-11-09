@@ -359,7 +359,7 @@ public class SmartProject extends Operator {
                                 for(int kk=0;kk<tupleSize;kk++){
                                     tt.setField(firstFieldIndex+kk, tTemp.getField(kk));
                                 }
-                                //tTemp.setMergeBit(true);
+                                tt.mergeTidSource(tt.getTidSource(), tTemp.getTidSource());
                                 tupleMatching.add(tt);
                             }
 
