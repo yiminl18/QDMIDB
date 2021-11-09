@@ -38,10 +38,12 @@ public class Tuple implements Serializable {
     }
 
     public void copyTidSource(HashMap<Integer, Boolean> source){
-        tidSource = source;
+        tidSource = new HashMap<>();
+        tidSource.putAll(source);
     }
 
     public void mergeTidSource(HashMap<Integer, Boolean> source1, HashMap<Integer, Boolean> source2){
+        this.tidSource = new HashMap<>();
         this.tidSource = source1;
         this.tidSource.putAll(source2);
     }

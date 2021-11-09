@@ -183,7 +183,7 @@ public class test {
     }
 
     public static void testList(){
-        /*List<Tuple> matching = new ArrayList<>();
+        List<Tuple> matching = new ArrayList<>();
         List<Tuple> matching1 = new ArrayList<>();
 
         Type types[] = new Type[]{Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE};
@@ -197,25 +197,20 @@ public class test {
 
 
         matching.add(t1);
+        t1.setTID(0);
         matching.add(t2);
+        t2.setTID(1);
 
-        matching1.add(t3);
+        System.out.println(t1.getTID());
 
-        matching1.add(matching.get(0));
-
-
-        for(int i=0;i<matching1.size();i++){
-            System.out.println(matching1.get(i));
-        }*/
-
-        List<Integer> l = new ArrayList<>();
+        /*List<Integer> l = new ArrayList<>();
         l.add(10);
         l.add(2);
         l.add(5);
         l.remove(new Integer(10));
         for(int i =0;i<l.size();i++){
             System.out.println(l.get(i));
-        }
+        }*/
     }
 
     public static void testScan(){
