@@ -28,14 +28,15 @@ public class Connect implements AutoCloseable {
              */
             String user = null, pwd = null;
 
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream("credential.txt")))) {
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream("/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/credential.txt")))) {
                 user = br.readLine();
                 pwd = br.readLine();
+                //System.out.println(user + " " + pwd);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            connection = DriverManager.getConnection(
-                    String.format("jdbc:mysql://sensoria-mysql.ics.uci.edu:3306/%s?useSSL=false&serverTimezone=PST", database), user,
+            connection = DriverManager.getConnection(//&serverTimezone=PST
+                    String.format("jdbc:mysql://sensoria-mysql.ics.uci.edu:3306/%s?useSSL=false", database), user,
                     pwd);
             // }
         } catch (SQLException e) {
