@@ -1,0 +1,8 @@
+1
+3
+F
+Space.building = 'DBH'
+J
+WiFi.mac = Users.mac
+J
+WiFi.room = Space.room

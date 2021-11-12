@@ -15,6 +15,7 @@ public class fileHandles {
     private final String schemaFilePath = "simpledb/metadata/schema.txt";
     private final String predicateFilePath = "simpledb/metadata/predicate.txt";
 
+
     public List<Attribute> readSchema(){
         int N,n;
         List<Attribute> attributes = new ArrayList<>();
@@ -41,7 +42,38 @@ public class fileHandles {
         return attributes;
     }
 
-    public List<PredicateUnit> readPredicates(){
+    public List<PredicateSet> readPredicatesAllQueries(){
+        List<PredicateSet> predicateSets = new ArrayList<>();
+        List<PredicateUnit> predicateUnits = new ArrayList<>();
+        int n;
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(predicateFilePath)))) {
+            String line = br.readLine();
+            n = Integer.valueOf(line);
+            for(int i=0;i<n;i++){
+                String type = br.readLine();
+                String predicate[] = br.readLine().split(" ");
+                switch (type){
+                    case "F":
+                        predicateUnits.add(new PredicateUnit(new Attribute(predicate[0]),getOp(predicate[1]),new IntField(Integer.valueOf(predicate[2]))));//ihe only support int for now
+                        break;
+                    case "J":
+                        predicateUnits.add(new PredicateUnit(new Attribute(predicate[0]),getOp(predicate[1]),new Attribute(predicate[2])));
+                        break;
+                    case "A":
+                        predicateUnits.add(new PredicateUnit(new Attribute(predicate[0]),getAop(predicate[1])));
+                        break;
+                    case "O":
+                        predicateUnits.add(new PredicateUnit(new Attribute(predicate[0]),predicate[1]));
+                        break;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return predicateSets;
+    }
+
+    public List<PredicateUnit> readPredicatesOneQuery(){
         List<PredicateUnit> predicateUnits = new ArrayList<>();
         int n;
         try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(predicateFilePath)))) {

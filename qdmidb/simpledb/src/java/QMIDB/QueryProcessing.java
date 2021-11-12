@@ -12,11 +12,14 @@ public class QueryProcessing {
         List<Attribute> schema = fH.readSchema();
         //List<Attribute> schema = ManualSchema();
         //predicates: must put Filter first
-        //List<PredicateUnit> predicates = fH.readPredicates();
+        //List<PredicateSet> predicates = fH.readPredicatesAllQueries();
+        //for(int i=0;i<predicates.size();i++){
+
+        //}
         List<PredicateUnit> predicates = ManualPredicates();
         RelationshipGraph.initGraph(schema, predicates);
         //RelationshipGraph.printJoinEdge();
-        PredicateSet.initPredicateSet(predicates);
+        PredicateSet.initPredicateSet(predicates,1);
         Schema.setSchema(schema, predicates);
         Statistics.initStatistics();
         ImputeFactory.setImputationMethod("Manual");

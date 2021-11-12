@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="commons-lang3-3.12.0">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/qdmidb/simpledb/lib/commons-lang3-3.12.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/qdmidb/simpledb/lib/commons-lang3-3.12.0-tests.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$PROJECT_DIR$/qdmidb/simpledb/lib/commons-lang3-3.12.0-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/qdmidb/simpledb/lib/commons-lang3-3.12.0-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/qdmidb/simpledb/lib/commons-lang3-3.12.0-test-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
