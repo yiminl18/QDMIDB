@@ -112,41 +112,6 @@ public class test {
         //HashTables.print();
     }
 
-    public static void testHashTable(){
-        /*Type types[] = new Type[]{Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE};
-        String names[] = new String[]{"field0", "field1", "field2"};
-        TupleDesc descriptor = new TupleDesc(types, names);
-        Field fields[] = new Field[]{new IntField(1),new IntField(2),new IntField(3)};
-        Tuple t1 = new Tuple(descriptor, fields);
-        Field fields1[] = new Field[]{new IntField(2),new IntField(4),new IntField(-1)};
-        Tuple t2 = new Tuple(descriptor, fields1);
-        Tuple t3 = new Tuple(t1,t2);
-
-        Field key1 = new IntField(1);
-        String attribute1 = "field0";
-
-        HashMap<Field, List<Tuple>> table = new HashMap<>();
-        table.put(key1, new ArrayList<Tuple>());
-        table.get(key1).add(t1);
-
-        HashTables.addHashTable(attribute1,new HashTable(attribute1, table));
-        System.out.println("hash table 1: ");
-
-        HashTables.print();
-
-        HashMap<Field, List<Tuple>> table1 = new HashMap<>();
-        Field key2 = new IntField(4);
-        String attribute2 = "field1";
-
-        table1.put(key2, new ArrayList<Tuple>());
-        table1.get(key2).add(t2);
-
-        HashTables.addHashTable(attribute2,new HashTable(attribute2, table1));
-
-        System.out.println("hash table 2: ");
-        HashTables.print();*/
-    }
-
     public static void testHashMap(){
         /*HashMap<String, HashMap<Integer, Integer>> hashmap = new HashMap<>();
         HashMap<Integer, Integer> subhash = new HashMap<>();
@@ -259,20 +224,6 @@ public class test {
         System.out.println(fields[1]);
     }
 
-    public static void printSchema(){
-        fileHandles fH = new fileHandles();
-        List<Attribute> schema = fH.readSchema();
-        List<PredicateUnit> predicates = fH.readPredicates();
-        System.out.println("printing schema");
-        for(int i=0;i<schema.size();i++){
-            System.out.println(schema.get(i).getAttribute());
-        }
-        System.out.println("printing predicates");
-        for(int i=0;i<predicates.size();i++){
-            predicates.get(i).print();
-        }
-    }
-
     public static void testSubDesc(){
         Type types[] = new Type[]{Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE};
         String names[] = new String[]{"field0", "field1", "field2"};
@@ -312,5 +263,15 @@ public class test {
             System.out.print(str.get(i) + " ");
         }
         System.out.println("");
+    }
+
+    public static void testPredicate(){
+        fileHandles fH = new fileHandles();
+        List<PredicateUnit> predicates = fH.readPredicatesForGivenQuery(1);
+        for(int i=0;i<predicates.size();i++){
+            predicates.get(i).print();
+        }
+        String a = "DBH";
+        System.out.println(a.hashCode());
     }
 }

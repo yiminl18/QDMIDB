@@ -238,6 +238,11 @@ public class Data {
         String fileUserOut = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/userImputed.txt";
 
         try {
+            File f = new File(fileUser);
+            if(f.exists()){
+                System.out.println(fileUserOut + " exists!");
+                return;
+            }
             BufferedReader csvReader = new BufferedReader(new FileReader(fileUser));
             String row;
             FileWriter out = new FileWriter(fileUserOut);
@@ -278,6 +283,11 @@ public class Data {
         String fileSpaceOut = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/spaceImputed.txt";
         Random rand = new Random();
         try {
+            File f = new File(fileSpaceOut);
+            if(f.exists()){
+                System.out.println(fileSpaceOut + " exists!");
+                return;
+            }
             BufferedReader csvReader = new BufferedReader(new FileReader(fileSpace));
             String row;
             FileWriter out = new FileWriter(fileSpaceOut);
@@ -319,6 +329,11 @@ public class Data {
         String fileWiFi = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/wifi.csv";
         String fileWiFiOut = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/wifiImputed.txt";
         try {
+            File f = new File(fileWiFiOut);
+            if(f.exists()){
+                System.out.println(fileWiFiOut + " exists!");
+                return;
+            }
             BufferedReader csvReader = new BufferedReader(new FileReader(fileWiFi));
             String row;
             FileWriter out = new FileWriter(fileWiFiOut);

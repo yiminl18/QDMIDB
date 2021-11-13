@@ -14,6 +14,7 @@ import java.util.List;
 public class fileHandles {
     private final String schemaFilePath = "simpledb/metadata/schema.txt";
     private final String predicateFilePath = "simpledb/metadata/predicate.txt";
+    private final String AllPredicatesFilePath = "simpledb/wifidataset/predicates.txt";
 
 
     public List<Attribute> readSchema(){
@@ -28,7 +29,7 @@ public class fileHandles {
                 n = Integer.valueOf(line);
                 for(int j=0;j<n;j++){
                     line = br.readLine();
-                    Attribute attribute = new Attribute(line.split("\\,")[1]);
+                    Attribute attribute = new Attribute(line);
                     attribute.setSchemaWidth(n);
                     line = br.readLine();
                     attribute.setCardinality(Integer.valueOf(line.split("\\,")[0]));
@@ -42,35 +43,44 @@ public class fileHandles {
         return attributes;
     }
 
-    public List<PredicateSet> readPredicatesAllQueries(){
-        List<PredicateSet> predicateSets = new ArrayList<>();
+    public List<PredicateUnit> readPredicatesForGivenQuery(int queryID){
+        //read predicates for query with given queryID
         List<PredicateUnit> predicateUnits = new ArrayList<>();
-        int n;
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(predicateFilePath)))) {
+        int n, queryNum, QID;
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(AllPredicatesFilePath)))) {
             String line = br.readLine();
+            queryNum = Integer.valueOf(line);
+            line = br.readLine();
+            QID = Integer.valueOf(line);
+            line = br.readLine();
             n = Integer.valueOf(line);
-            for(int i=0;i<n;i++){
-                String type = br.readLine();
-                String predicate[] = br.readLine().split(" ");
-                switch (type){
-                    case "F":
-                        predicateUnits.add(new PredicateUnit(new Attribute(predicate[0]),getOp(predicate[1]),new IntField(Integer.valueOf(predicate[2]))));//ihe only support int for now
-                        break;
-                    case "J":
-                        predicateUnits.add(new PredicateUnit(new Attribute(predicate[0]),getOp(predicate[1]),new Attribute(predicate[2])));
-                        break;
-                    case "A":
-                        predicateUnits.add(new PredicateUnit(new Attribute(predicate[0]),getAop(predicate[1])));
-                        break;
-                    case "O":
-                        predicateUnits.add(new PredicateUnit(new Attribute(predicate[0]),predicate[1]));
-                        break;
+
+            for(int i=0;i<queryNum;i++){//iterative each query
+                for(int j=0;j<n;j++){
+                    String type = br.readLine();
+                    String predicate[] = br.readLine().split(" ");
+                    if(QID == queryID){
+                        switch (type){
+                            case "F":
+                                predicateUnits.add(new PredicateUnit(new Attribute(predicate[0]),getOp(predicate[1]),new IntField(Integer.valueOf(predicate[2]))));//ihe only support int for now
+                                break;
+                            case "J":
+                                predicateUnits.add(new PredicateUnit(new Attribute(predicate[0]),getOp(predicate[1]),new Attribute(predicate[2])));
+                                break;
+                            case "A":
+                                predicateUnits.add(new PredicateUnit(new Attribute(predicate[0]),getAop(predicate[1])));
+                                break;
+                            case "O":
+                                predicateUnits.add(new PredicateUnit(new Attribute(predicate[0]),predicate[1]));
+                                break;
+                        }
+                    }
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return predicateSets;
+        return predicateUnits;
     }
 
     public List<PredicateUnit> readPredicatesOneQuery(){

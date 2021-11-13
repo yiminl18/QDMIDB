@@ -1,9 +1,9 @@
 Structure of schema should be:
 N
 K1
-T1,A1
+A1
 Cardinality1, numOfNullValues1
-T2,A2
+A2
 ...
 A_K1
 K2
@@ -13,7 +13,6 @@ KN
 ----
 N: number of relations
 Ki: number of attributes in i-relation
-Ti: type of attribute: INT/DOUBLE/STRING
 Ai: attribute name
 Format: relation_name.attribute_name
 

@@ -11,13 +11,11 @@ import java.util.Map;
     also maintain necessary statistics in each predicate during query processing
  */
 public class PredicateSet {
-    private static int queryID;
     private static List<PredicateUnit> predicateSet;
     private static HashMap<String, List<PredicateUnit>> predicateMap;
     private static HashMap<String, List<PredicateUnit>> filterPredicateMap;
 
-    public static void initPredicateSet(List<PredicateUnit> predicateSET, int QID){
-        queryID = QID;
+    public static void initPredicateSet(List<PredicateUnit> predicateSET){
         predicateSet = predicateSET;
         //must put Filter first in predicateSET
         //build hashMap from attribute to its predicate
@@ -55,10 +53,6 @@ public class PredicateSet {
                     break;
             }
         }
-    }
-
-    public Integer getQueryID(){
-        return queryID;
     }
 
     public static List<PredicateUnit> getFilterPredicates(String attribute){

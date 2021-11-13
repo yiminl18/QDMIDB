@@ -1,10 +1,11 @@
 Structure of schema should be:
+MM
 M
 N
 K1
-T1,A1
+A1
 Cardinality1, numOfNullValues1
-T2,A2
+A2
 ...
 A_K1
 K2
@@ -12,10 +13,10 @@ K2
 KN
 ...
 ----
+MM: number of query
 M: id of query
 N: number of relations
 Ki: number of attributes in i-relation
-Ti: type of attribute: INT/DOUBLE/STRING
 Ai: attribute name
 Format: relation_name.attribute_name
 

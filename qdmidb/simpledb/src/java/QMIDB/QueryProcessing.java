@@ -19,7 +19,7 @@ public class QueryProcessing {
         List<PredicateUnit> predicates = ManualPredicates();
         RelationshipGraph.initGraph(schema, predicates);
         //RelationshipGraph.printJoinEdge();
-        PredicateSet.initPredicateSet(predicates,1);
+        PredicateSet.initPredicateSet(predicates);
         Schema.setSchema(schema, predicates);
         Statistics.initStatistics();
         ImputeFactory.setImputationMethod("Manual");

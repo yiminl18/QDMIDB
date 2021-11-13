@@ -11,7 +11,7 @@ public class main {
         //PredicateSet.print();
 
         test t = new test();
-        t.testComplexQuery();
+        t.testPredicate();
 
         //System.out.println(ImputeFactory.getImputationTimes());
 
