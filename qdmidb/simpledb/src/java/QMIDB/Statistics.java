@@ -116,7 +116,7 @@ public class Statistics {
     }
 
     public static void print(){
-        System.out.println("number of Joins so far:" + numOfJoin);
+        //System.out.println("number of Joins so far:" + numOfJoin);
         for(int i=0;i<attributes.size();i++){
             attributes.get(i).print();
         }

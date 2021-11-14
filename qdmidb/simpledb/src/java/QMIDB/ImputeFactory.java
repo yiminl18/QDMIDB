@@ -61,7 +61,7 @@ public class ImputeFactory {
     public static Field Manual(Attribute attribute, Tuple tuple){
         Field attributeValue = new IntField(0);
         switch(attribute.getAttribute()){
-            case "R.a":
+            case "wifi.room":
                 attributeValue = new IntField(1);
                 break;
             case "R.b":

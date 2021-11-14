@@ -53,7 +53,7 @@ public class Schema {
 
     public static void print(){
         for(int i=0;i<schema.size();i++){
-            System.out.println(schema.get(i).getAttribute() + " " + schema.get(i).getCardinality() + schema.get(i).getNumOfNullValue());
+            System.out.println(schema.get(i).getAttribute() + " " + schema.get(i).getCardinality() + " " + schema.get(i).getNumOfNullValue());
         }
     }
 }

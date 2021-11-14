@@ -22,6 +22,7 @@ public class QueryProcessing {
         Schema.print();
 
         Statistics.initStatistics();
+        Statistics.print();
         ImputeFactory.setImputationMethod("Manual");
         //RelationshipGraph.printNonJoinNeighbor();
         //System.out.println(Statistics.getAttribute("R.b").getNumOfNullValue());

@@ -14,14 +14,15 @@ public class Data {
     private static String localDatabase = "enrichdb";
     public static final int NULL_INTEGER = Integer.MIN_VALUE+1;
     public static final int MISSING_INTEGER = Integer.MIN_VALUE;
-    private static final double missingRate = 0.8;
-    private List<String> macPool = new ArrayList<>(), buildingPool = new ArrayList<>();
+    private static final double missingRateRoom = 0.8, missingRateMac = 0.8, missingRateFloor = 0.2, missingRateBuilding = 0.4;
+    private List<String> macPool = new ArrayList<>(), buildingPool = new ArrayList<>(), floorPool = new ArrayList<>();
     private int macLength = 42;
     //first key is tid, starting from 0 for each relation
     //second key is field index to its imputed value
     private HashMap<Integer, HashMap<Integer, Integer>> imputedUser = new HashMap<>();
     private HashMap<Integer, HashMap<Integer, Integer>> imputedSpace = new HashMap<>();
     private HashMap<Integer, HashMap<Integer, Integer>> imputedWiFi = new HashMap<>();
+    //restore hash codes to original values later ihe: to do
 
     public String emailToMac(String email) {
         Connect connectServer = new Connect("server", serverDatabase);// OBSERVATION
@@ -147,7 +148,7 @@ public class Data {
         Random rand = new Random();
         String room;
         int n = rand.nextInt(100);
-        if(n < missingRate*100.0){
+        if(n < missingRateRoom*100.0){
             room = "NULL";
         }
         else{
@@ -218,6 +219,7 @@ public class Data {
     }
 
     public void loadMapForOneTuple(String relationName, int tid, int fieldIndex, int imputedValue){
+        //record imputed values
         HashMap<Integer, Integer> mp = new HashMap<>();
         mp.put(fieldIndex, imputedValue);
         if(relationName.equals("User")){
@@ -231,22 +233,54 @@ public class Data {
         }
     }
 
+    public void writeImputedValues(String filePath, HashMap<Integer, HashMap<Integer, Integer>> imputedValues){
+        //write imputed values to local disk
+        try {
+            FileWriter out = new FileWriter(filePath);
+            BufferedWriter bw = new BufferedWriter(out);
+            for(Map.Entry<Integer, HashMap<Integer, Integer>> entry: imputedValues.entrySet()){
+                bw.write(String.valueOf(entry.getKey()));//write tid
+                bw.newLine();
+                bw.write(String.valueOf(entry.getValue().size()));//write size of imputed values in this tuple
+                bw.newLine();
+                for(Map.Entry<Integer, Integer> entry1: entry.getValue().entrySet()){
+                    //write field index and imputed values
+                    String o = String.valueOf(entry1.getKey()) + "," + String.valueOf(entry1.getValue());
+                    bw.write(o);
+                    bw.newLine();
+                }
+            }
+            bw.flush();
+            bw.close();
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void writeImputedUser(){
         //read raw user data and generate the hash codes of dataset
         //note that hotdeck uses random function inside, so running this function needs to reload dataset to database
-        String fileUser = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/user.csv";
-        String fileUserOut = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/userImputed.txt";
+        String fileUser = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/user.csv";//raw dirty
+        String fileUserOut = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/userClean.txt";//raw clean
+        String fileUserHash = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/userHash.txt";//hash dirty
+        String fileUserImputed = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/userImputedValues.txt";//hash of imputed values
+        Random rand = new Random();
 
         try {
-            File f = new File(fileUser);
+            File f = new File(fileUserOut);
             if(f.exists()){
                 System.out.println(fileUserOut + " exists!");
                 return;
             }
             BufferedReader csvReader = new BufferedReader(new FileReader(fileUser));
             String row;
-            FileWriter out = new FileWriter(fileUserOut);
-            BufferedWriter bw = new BufferedWriter(out);
+
+            FileWriter out1 = new FileWriter(fileUserOut);
+            BufferedWriter rawClean = new BufferedWriter(out1);
+
+            FileWriter out2 = new FileWriter(fileUserHash);
+            BufferedWriter hashDirty = new BufferedWriter(out2);
+
             int count = 0;
             int tid = 0;
             while ((row = csvReader.readLine()) != null) {
@@ -257,30 +291,47 @@ public class Data {
                 String name = data[0];
                 String email = data[1];
                 String mac = emailToMac(data[1]);
+                int macCode = mac.hashCode();
+
+                int n = rand.nextInt(100);
+                if(n < missingRateMac*100.0){
+                    mac = "NULL";
+                }
                 if(mac.equals("NULL")){
+                    macCode = MISSING_INTEGER;
                     mac = HOTDECKnew(macLength);
                     loadMapForOneTuple("User",tid,2,mac.hashCode());
                 }else{
                     macPool.add(mac);
                 }
-                String output = name + "," + email + "," + '"' + mac + '"';
-                bw.write(output);
-                bw.newLine();
+                String rawCleanString = name + "," + email + "," + '"' + mac + '"';
+                rawClean.write(rawCleanString);
+                rawClean.newLine();
+
+                String hashDirtyString = name.hashCode() + "," + email.hashCode() + "," + macCode;
+                hashDirty.write(hashDirtyString);
+                hashDirty.newLine();
                 tid++;
             }
-            bw.flush();
-            bw.close();
+            rawClean.flush();
+            rawClean.close();
+            hashDirty.flush();
+            hashDirty.close();
+
             csvReader.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        writeImputedValues(fileUserImputed, imputedUser);
     }
 
     public void writeImputedSpace(){
         //read raw space data and generate the hash codes of dataset
         //note that hotdeck uses random function inside, so running this function needs to reload dataset to database
-        String fileSpace = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/space.csv";
-        String fileSpaceOut = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/spaceImputed.txt";
+        String fileSpace = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/space.csv";//raw dirty
+        String fileSpaceOut = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/spaceClean.txt";//raw clean
+        String fileSpaceHash = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/spaceHash.txt";//hash dirty
+        String fileSpaceImputed = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/spaceImputedValues.txt";//hash of imputed values
         Random rand = new Random();
         try {
             File f = new File(fileSpaceOut);
@@ -290,8 +341,12 @@ public class Data {
             }
             BufferedReader csvReader = new BufferedReader(new FileReader(fileSpace));
             String row;
-            FileWriter out = new FileWriter(fileSpaceOut);
-            BufferedWriter bw = new BufferedWriter(out);
+            FileWriter out1 = new FileWriter(fileSpaceOut);
+            BufferedWriter rawClean = new BufferedWriter(out1);
+
+            FileWriter out2 = new FileWriter(fileSpaceHash);
+            BufferedWriter hashDirty = new BufferedWriter(out2);
+
             //name, floor, building
             int count = 0;
             int tid = 0;
@@ -303,31 +358,73 @@ public class Data {
                 String room = data[0];
                 String floor = data[1];
                 String building = data[2];
+                int n = rand.nextInt(100);
+                if(n < missingRateBuilding*100.0){
+                    building = "NULL";
+                }
+                int m = rand.nextInt(100);
+                if(m < missingRateFloor*100.0){
+                    floor = "NULL";
+                }
+
+                int buildingCode = building.hashCode();
+                int floorCode = floor.hashCode();
+
                 if(building.equals("NULL")){
-                    building = buildingPool.get(HOTDECKexist(buildingPool.size(),rand));
+                    buildingCode = MISSING_INTEGER;
+                    if(buildingPool.size() == 0){
+                        building = HOTDECKnew(10);
+                    }else{
+                        building = buildingPool.get(HOTDECKexist(buildingPool.size(),rand));
+                    }
+
                     loadMapForOneTuple("Space",tid,2,building.hashCode());
                 }else{
                     buildingPool.add(building);
                 }
-                String output = room + "," + floor + "," + building;
-                bw.write(output);
-                bw.newLine();
+
+                if(floor.equals("NULL")){
+                    floorCode = MISSING_INTEGER;
+                    if(floorPool.size() == 0){
+                        floor = HOTDECKnew(5);
+                    }else{
+                        floor = floorPool.get(HOTDECKexist(floorPool.size(),rand));
+                    }
+                    loadMapForOneTuple("Space",tid,1,floor.hashCode());
+                }else{
+                    floorPool.add(floor);
+                }
+                String rawCleanString = room + "," + floor + "," + building;
+                rawClean.write(rawCleanString);
+                rawClean.newLine();
+
+                String hashDirtyString = room.hashCode() + "," + floorCode + "," + buildingCode;
+                hashDirty.write(hashDirtyString);
+                hashDirty.newLine();
+
                 tid++;
             }
-            bw.flush();
-            bw.close();
+            rawClean.flush();
+            rawClean.close();
+
+            hashDirty.flush();
+            hashDirty.close();
+
             csvReader.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        writeImputedValues(fileSpaceImputed, imputedSpace);
     }
 
     public void writeImputedWiFi(){
         //read raw wifi data and generate the hash codes of dataset
         //note that hotdeck uses random function inside, so running this function needs to reload dataset to database
         AP2Room.load();
-        String fileWiFi = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/wifi.csv";
-        String fileWiFiOut = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/wifiImputed.txt";
+        String fileWiFi = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/wifi.csv";//raw dirty
+        String fileWiFiOut = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/wifiClean.txt";//raw clean
+        String fileWiFiHash = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/wifiHash.txt";//hash dirty
+        String fileWiFiImputed = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/wifiImputedValues.txt";//hash of imputed values
         try {
             File f = new File(fileWiFiOut);
             if(f.exists()){
@@ -336,8 +433,12 @@ public class Data {
             }
             BufferedReader csvReader = new BufferedReader(new FileReader(fileWiFi));
             String row;
-            FileWriter out = new FileWriter(fileWiFiOut);
-            BufferedWriter bw = new BufferedWriter(out);
+            FileWriter out1 = new FileWriter(fileWiFiOut);
+            BufferedWriter rawClean = new BufferedWriter(out1);
+
+            FileWriter out2 = new FileWriter(fileWiFiHash);
+            BufferedWriter hashDirty = new BufferedWriter(out2);
+
             //payload,timeStamp,sensor_id
             int count = 0;
             int tid = 0;
@@ -354,21 +455,29 @@ public class Data {
                 }
                 String mac = payload2Mac(payload);
                 String room = ap2Room(sensorID);
+                int roomCode = room.hashCode();
                 if(room.equals("NULL")){
+                    roomCode = MISSING_INTEGER;
                     room = getImputedRoom(sensorID);
                     loadMapForOneTuple("WiFi",tid,2,room.hashCode());
                 }
-                String output = mac + "," + timeStamp + "," + room;
-                bw.write(output);
-                bw.newLine();
+                String rawCleanString = mac + "," + timeStamp + "," + room;
+                String dirtyHashString = mac.hashCode() + "," + timeStamp.hashCode() + "," + roomCode;
+                rawClean.write(rawCleanString);
+                rawClean.newLine();
+                hashDirty.write(dirtyHashString);
+                hashDirty.newLine();
                 tid ++;
             }
             //System.out.println(count);
-            bw.flush();
-            bw.close();
+            rawClean.flush();
+            rawClean.close();
+            hashDirty.flush();
+            hashDirty.close();
             csvReader.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        writeImputedValues(fileWiFiImputed, imputedWiFi);
     }
 }
