@@ -30,6 +30,25 @@ public class test {
         System.out.println(m.get("a"));
     }
 
+    public static void runWiFi()throws Exception{
+        QueryPlan QP = new QueryPlan();
+        QP.setupWiFiHeapFiles();
+        TransactionId tid = new TransactionId();
+        Operator o = QP.getQueryPlan(1, tid,"WiFi");
+        Statistics.setStartTime(System.currentTimeMillis());
+        try {
+            o.open();
+            while (o.hasNext()) {
+                Tuple tup = o.next();
+                System.out.println(tup);
+            }
+            o.close();
+            Database.getBufferPool().transactionComplete(tid);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void testComplexQuery() throws Exception{
         Type types1[] = new Type[]{ Type.INT_TYPE, Type.INT_TYPE};
         String names1[] = new String[]{ "R.a", "R.b"};

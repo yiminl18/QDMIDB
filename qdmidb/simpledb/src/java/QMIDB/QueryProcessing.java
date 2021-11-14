@@ -12,26 +12,20 @@ public class QueryProcessing {
         List<Attribute> schema = fH.readSchema();
         //List<Attribute> schema = ManualSchema();
         //predicates: must put Filter first
-        //List<PredicateSet> predicates = fH.readPredicatesAllQueries();
-        //for(int i=0;i<predicates.size();i++){
-
-        //}
-        List<PredicateUnit> predicates = ManualPredicates();
+        List<PredicateUnit> predicates = fH.readPredicatesForGivenQuery(1);
+        //List<PredicateUnit> predicates = ManualPredicates();
         RelationshipGraph.initGraph(schema, predicates);
         //RelationshipGraph.printJoinEdge();
         PredicateSet.initPredicateSet(predicates);
         Schema.setSchema(schema, predicates);
+        PredicateSet.print();
+        Schema.print();
+
         Statistics.initStatistics();
         ImputeFactory.setImputationMethod("Manual");
         //RelationshipGraph.printNonJoinNeighbor();
         //System.out.println(Statistics.getAttribute("R.b").getNumOfNullValue());
         //System.out.println(Statistics.getAttribute("S.b").getNumOfNullValue());
-    }
-
-    public DbIterator constructQueryPlan(List<PredicateUnit> preds){
-        DbIterator iterator = null;
-        //construct query plan given preds in order of query plan tree
-        return iterator;
     }
 
     public List<PredicateUnit> ManualPredicates(){//for testing purpose

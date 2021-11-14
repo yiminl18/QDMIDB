@@ -11,7 +11,7 @@ public class main {
         //PredicateSet.print();
 
         test t = new test();
-        t.testPredicate();
+        t.runWiFi();
 
         //System.out.println(ImputeFactory.getImputationTimes());
 

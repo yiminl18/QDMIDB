@@ -1,8 +1,10 @@
 package QMIDB;
 
-import simpledb.DbFileIterator;
-import simpledb.DbIterator;
-import simpledb.TransactionId;
+import simpledb.*;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /*
     This class is used to ingest and store query plan.
@@ -13,55 +15,81 @@ public class QueryPlan {
     private static String dataSet;//{R1,R2,S1,S2}
     private static int queryID;
     private static DbIterator iter = null;
+    private HeapFile WifISpace, WiFiUsers, WiFiWiFi;
 
-    public QueryPlan(String dataset, int queryid){
-        dataSet = dataset;
-        queryID = queryid;
+    public void setupWiFiHeapFiles()
+    {
+        Type types1[] = new Type[]{ Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE};
+        String names1[] = new String[]{ "space.room", "space.floor","space.building"};
+
+        TupleDesc tdSpace = new TupleDesc(types1, names1);
+
+        Type types2[] = new Type[]{ Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE};
+        String names2[] = new String[]{"users.name", "users.email","users.mac"};
+
+        TupleDesc tdUsers = new TupleDesc(types2, names2);
+
+        Type types3[] = new Type[]{ Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE};
+        String names3[] = new String[]{ "wifi.mac", "wifi.time", "wifi.room"};
+
+        TupleDesc tdWiFi = new TupleDesc(types3, names3);
+
+        // create the tables, associate them with the data files
+        // and tell the catalog about the schema the tables.
+        WifISpace = new HeapFile(new File("simpledb/wifidataset/spaceHash.dat"), tdSpace);
+        Database.getCatalog().addTable(WifISpace, "space");
+
+        WiFiUsers = new HeapFile(new File("simpledb/wifidataset/userHash.dat"), tdUsers);
+        Database.getCatalog().addTable(WiFiUsers, "users");
+
+        WiFiWiFi = new HeapFile(new File("simpledb/wifidataset/wifiHash.dat"), tdWiFi);
+        Database.getCatalog().addTable(WiFiWiFi, "wifi");
     }
 
-    public static DbIterator getQueryPlan(){
-        switch (dataSet){
-            case "R1":
-                return getQueryR1();
-            case "R2":
-                return getQueryR2();
-            case "S1":
-                return getQueryS1();
-            case "S2":
-                return getQueryS2();
+    public Operator getQueryPlan(int queryID, TransactionId tid, String dataset)throws Exception{
+        if(dataset.equals("WiFi")){
+            switch (queryID){
+                case 1:
+                    return getWiFiQ1(tid);
+                default:
+                    return null;
+            }
         }
-        return iter;
+        else{
+            System.out.println("No such dataset!");
+        }
+        return null;
     }
 
-    private static DbIterator getQueryR1(){
-        switch (queryID){
-            case 1:
-                break;
-        }
-        return iter;
+    public Operator getWiFiQ1(TransactionId tid)throws Exception{
+
+
+        SeqScan ssSpace = new SeqScan(tid, WifISpace.getId(), "space");
+        SeqScan ssUsers = new SeqScan(tid, WiFiUsers.getId(), "users");
+        SeqScan ssWiFi = new SeqScan(tid, WiFiWiFi.getId(), "wifi");
+
+        //users.mac = wifi.mac
+        JoinPredicate p1 = new JoinPredicate("wifi.mac", Predicate.Op.EQUALS, "users.mac");
+        SmartJoin sj1 = new SmartJoin(p1,ssWiFi,ssUsers);
+
+        //space.building = 'DBH'
+        SmartFilter sf1 = new SmartFilter(
+                new Predicate("Space.building", Predicate.Op.GREATER_THAN, new IntField(67466)), ssSpace);
+
+        //WiFi.room = Space.room
+        JoinPredicate p2 = new JoinPredicate("wifi.room", Predicate.Op.EQUALS, "space.room");
+        SmartJoin sj2 = new SmartJoin(p2,sj1,sf1);
+
+
+        //test smartProject
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("users.name"));
+        attributes.add(new Attribute("wifi.time"));
+        attributes.add(new Attribute("wifi.room"));
+        Type[] types = new Type[]{Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE};
+        SmartProject sp = new SmartProject(attributes,types, sj2);
+
+        return sp;
     }
 
-    private static DbIterator getQueryR2(){
-        switch (queryID){
-            case 1:
-                break;
-        }
-        return iter;
-    }
-
-    private static DbIterator getQueryS1(){
-        switch (queryID){
-            case 1:
-                break;
-        }
-        return iter;
-    }
-
-    private static DbIterator getQueryS2(){
-        switch (queryID){
-            case 1:
-                break;
-        }
-        return iter;
-    }
 }
