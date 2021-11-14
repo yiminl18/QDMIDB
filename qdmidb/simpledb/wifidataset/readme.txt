@@ -35,3 +35,7 @@ J -- pred: attributeLeft op attributeRight
 A -- pred: attribute Type -- MAX/MIN/SUM/COUNT/AVG
 O -- pred: attribute D/A (desc or asc)
 
+Structure of imputedValues
+tid
+number of imputed field
+fieldIndex,imputed values

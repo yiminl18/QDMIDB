@@ -9,6 +9,7 @@ public class QueryProcessing {
     public QueryProcessing() {
         //initialization
         fileHandles fH = new fileHandles();
+        fH.loadWiFiImputations();
         List<Attribute> schema = fH.readSchema();
         //List<Attribute> schema = ManualSchema();
         //predicates: must put Filter first

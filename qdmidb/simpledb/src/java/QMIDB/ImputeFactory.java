@@ -5,12 +5,31 @@ import weka.core.Instance;
 import weka.core.Instances;
 import weka.classifiers.Classifier;
 import weka.classifiers.trees.REPTree;
+
+import java.util.HashMap;
+
 /*
     * this class is a set of imputation method
  */
 public class ImputeFactory {
     private static String imputationMethod;
     private static int imputationTimes;
+
+    //first key is tid, starting from 0 for each relation
+    //second key is field index to its imputed value
+    private static HashMap<Integer, HashMap<Integer, Integer>> imputedUser = new HashMap<>();
+    private static HashMap<Integer, HashMap<Integer, Integer>> imputedSpace = new HashMap<>();
+    private static HashMap<Integer, HashMap<Integer, Integer>> imputedWiFi = new HashMap<>();
+
+    public static void loadImputations(String relation, HashMap<Integer, HashMap<Integer, Integer>> imputedValues){
+        if(relation.equals("users")){
+            imputedUser = imputedValues;
+        }else if(relation.equals("space")){
+            imputedSpace = imputedValues;
+        }else if(relation.equals("wifi")){
+            imputedWiFi = imputedValues;
+        }
+    }
 
     public static void setImputationMethod(String ImputationMethod){
         imputationMethod = ImputationMethod;

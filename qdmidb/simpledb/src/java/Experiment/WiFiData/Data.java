@@ -54,7 +54,6 @@ public class Data {
         return mac;
     }
 
-
     public Integer countFrequency(String mac){
         //count frequency of a device
         Connect connectServer = new Connect("server", serverDatabase);// OBSERVATION
@@ -75,69 +74,6 @@ public class Data {
         }
         connectServer.close();
         return count;
-    }
-
-    public void processUser(){
-        //read raw user data and generate the hash codes of dataset
-        String fileUser = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/user.csv";
-        String fileUserOut = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/userHash.txt";
-
-        try {
-            BufferedReader csvReader = new BufferedReader(new FileReader(fileUser));
-            String row;
-            FileWriter out = new FileWriter(fileUserOut);
-            BufferedWriter bw = new BufferedWriter(out);
-            int count = 0;
-            while ((row = csvReader.readLine()) != null) {
-                count++;
-                if (count == 1)
-                    continue;
-                String[] data = row.split(",");
-                String name = data[0];
-                String email = data[1];
-                String mac = emailToMac(data[1]);
-                System.out.println(name.hashCode() + " " + email.hashCode() + " " + emailToMac(email).hashCode());
-                String output = String.valueOf(name.hashCode()) + "," + String.valueOf(email.hashCode()) + "," + String.valueOf(mac.hashCode());
-                bw.write(output);
-                bw.newLine();
-            }
-            bw.flush();
-            bw.close();
-            csvReader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void processSpace(){
-        //read raw space data and generate the hash codes of dataset
-        String fileSpace = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/space.csv";
-        String fileSpaceOut = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/spaceHash.txt";
-        try {
-            BufferedReader csvReader = new BufferedReader(new FileReader(fileSpace));
-            String row;
-            FileWriter out = new FileWriter(fileSpaceOut);
-            BufferedWriter bw = new BufferedWriter(out);
-            //name, floor, building
-            int count = 0;
-            while ((row = csvReader.readLine()) != null) {
-                count++;
-                if (count == 1)
-                    continue;
-                String[] data = row.split(",");
-                String room = data[0];
-                String floor = data[1];
-                String building = data[2];
-                String output = String.valueOf(room.hashCode()) + "," + String.valueOf(floor.hashCode()) + "," + String.valueOf(building.hashCode());
-                bw.write(output);
-                bw.newLine();
-            }
-            bw.flush();
-            bw.close();
-            csvReader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     public String payload2Mac(String payload) {
@@ -166,48 +102,6 @@ public class Data {
         int m = rand.nextInt(rooms.size());
         room = rooms.get(m);
         return room;
-    }
-
-    public void processWiFiData(){
-        //read raw wifi data and generate the hash codes of dataset
-        AP2Room.load();
-        String fileWiFi = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/wifi.csv";
-        String fileWiFiOut = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/wifiHash.txt";
-        try {
-            BufferedReader csvReader = new BufferedReader(new FileReader(fileWiFi));
-            String row;
-            FileWriter out = new FileWriter(fileWiFiOut);
-            BufferedWriter bw = new BufferedWriter(out);
-            //payload,timeStamp,sensor_id
-            int count = 0;
-            while ((row = csvReader.readLine()) != null) {
-                count++;
-                if (count == 1)
-                    continue;
-                String[] data = row.split(",");
-                String payload = data[0];
-                String timeStamp = data[1];
-                String sensorID = data[2];
-                if(payload.length()-2 < 14){
-                    continue;
-                }
-                String mac = payload2Mac(payload);
-                String room = ap2Room(sensorID);
-                int roomCode = room.hashCode();
-                if(room.equals("NULL")){
-                    roomCode = MISSING_INTEGER;
-                }
-                String output = mac.hashCode() + "," + timeStamp.hashCode() + "," + roomCode;
-                bw.write(output);
-                bw.newLine();
-            }
-            System.out.println(count);
-            bw.flush();
-            bw.close();
-            csvReader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     public int HOTDECKexist(int range, Random seed){

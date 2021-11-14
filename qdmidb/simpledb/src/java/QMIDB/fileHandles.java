@@ -6,6 +6,7 @@ import simpledb.Predicate;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /*
@@ -16,6 +17,8 @@ public class fileHandles {
     private final String WifISchemaFilePath = "simpledb/wifidataset/schema.txt";
     private final String predicateFilePath = "simpledb/metadata/predicate.txt";
     private final String AllPredicatesFilePath = "simpledb/wifidataset/predicates.txt";
+
+
 
 
     public List<Attribute> readSchema(){
@@ -152,5 +155,46 @@ public class fileHandles {
                 System.out.println("predicate aop is invalid");
                 return null;
         }
+    }
+
+    public void loadWiFiImputations(){
+        String fileUserImputed = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/userImputedValues.txt";
+        String fileSpaceImputed = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/spaceImputedValues.txt";
+        String fileWiFiImputed = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/wifiImputedValues.txt";
+        loadImputedValues("users", fileUserImputed);
+        loadImputedValues("space",fileSpaceImputed);
+        loadImputedValues("wifi", fileWiFiImputed);
+    }
+
+    public void loadImputedValues(String relation, String filePath){
+        //first key is tid, starting from 0 for each relation
+        //second key is field index to its imputed value
+        HashMap<Integer, HashMap<Integer, Integer>> imputedValues = new HashMap<>();
+        try {
+            BufferedReader csvReader = new BufferedReader(new FileReader(filePath));
+            String row;
+            while (true) {
+                row = csvReader.readLine();
+                if(row == null){
+                    break;
+                }
+                int tid = Integer.valueOf(row);
+                row = csvReader.readLine();
+                int numOfImputedValues = Integer.valueOf(row);
+                HashMap<Integer, Integer> mp = new HashMap<>();
+                for(int i=0;i<numOfImputedValues;i++){
+                    row = csvReader.readLine();
+                    String[] data = row.split(",");
+                    int fieldIndex = Integer.valueOf(data[0]);
+                    int value = Integer.valueOf(data[1]);
+                    mp.put(fieldIndex, value);
+                }
+                imputedValues.put(tid, mp);
+            }
+            csvReader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        ImputeFactory.loadImputations(relation,imputedValues);
     }
 }
