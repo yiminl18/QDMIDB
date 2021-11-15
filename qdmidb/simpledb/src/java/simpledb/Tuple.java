@@ -16,7 +16,8 @@ public class Tuple implements Serializable {
     
     private Field[] fields;
     private List<String> outerAttribute = new ArrayList<>();//size > 0 -> this tuple is outer join tuple due to the attributes in outerAttribute
-    private int TID;//ID of this tuple in buffer pool
+    private int TID, imputedTID;//ID of this tuple in buffer pool
+    //imputedTID is the TID maintained for raw tuples in each relation, starting from 0
     private TupleDesc schema;
     private RecordId rid;
     private List<Integer> PAfield;//store the fields of attributes in predicate
@@ -28,6 +29,14 @@ public class Tuple implements Serializable {
     private HashMap<String, Boolean> applied_bit = new HashMap<>();
     private HashMap<Integer, Boolean> tidSource = new HashMap<>();//store the set of TIDs composing this tuple
     private HashMap<String, Integer> attribute2TID = new HashMap<>();//from attribute name to its TID
+
+    public void setImputedTID(int tid){
+        this.imputedTID = tid;
+    }
+
+    public String getRelation(){
+        return schema.getFieldName(0).split("\\.")[0];
+    }
 
     public void setTidSource(){
         tidSource.put(TID, true);

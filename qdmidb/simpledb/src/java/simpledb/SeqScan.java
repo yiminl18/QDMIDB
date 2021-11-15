@@ -110,6 +110,7 @@ public class SeqScan implements DbIterator {
         Buffer.addTuple(tuple);
         tuple.computeAttribute2TID();
         tuple.setTidSource();
+        Buffer.setImputedTID(tuple);
         for(int i=0;i<attributes.size();i++){
             int index = tuple.getTupleDesc().fieldNameToIndex(attributes.get(i));
             if(tuple.getField(index).isMissing()){
