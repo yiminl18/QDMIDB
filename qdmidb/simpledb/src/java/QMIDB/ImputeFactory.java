@@ -44,7 +44,7 @@ public class ImputeFactory {
         if(imputationMethod == "REGRESSION_TREE"){
             return RegressionTree(attribute, tuple);
         }else if(imputationMethod == "Manual"){
-            return Manual(attribute, tuple);
+            return ImputeWiFi(attribute, tuple);//replace manual
         }else if(imputationMethod == "HOTDECK"){
             return HotDeck(attribute, tuple);
         }else if(imputationMethod == "MEAN"){
@@ -97,6 +97,40 @@ public class ImputeFactory {
                 break;
         }
         return attributeValue;
+    }
+
+    public static Field ImputeWiFi(Attribute attributeName, Tuple t){
+        String attribute = attributeName.getAttribute();
+        int fieldValue = 0;
+        int rawTID = t.findTID(attribute);
+        int fieldIndex = t.getTupleDesc().fieldNameToIndex(attribute);
+        String relation = new Attribute(attribute).getRelation();
+        if(relation.equals("users")){
+            if(!imputedUser.containsKey(rawTID)){
+                return null;
+            }
+            if(!imputedUser.get(rawTID).containsKey(fieldIndex)){
+                return null;
+            }
+            fieldValue = imputedUser.get(rawTID).get(fieldIndex);
+        }else if(relation.equals("wifi")){
+            if(!imputedWiFi.containsKey(rawTID)){
+                return null;
+            }
+            if(!imputedWiFi.get(rawTID).containsKey(fieldIndex)){
+                return null;
+            }
+            fieldValue = imputedWiFi.get(rawTID).get(fieldIndex);
+        }else if(relation.equals("space")){
+            if(!imputedSpace.containsKey(rawTID)){
+                return null;
+            }
+            if(!imputedSpace.get(rawTID).containsKey(fieldIndex)){
+                return null;
+            }
+            fieldValue = imputedSpace.get(rawTID).get(fieldIndex);
+        }
+        return new IntField(fieldValue);
     }
 
     public static Field RegressionTree(Attribute attribute, Tuple tuple){
