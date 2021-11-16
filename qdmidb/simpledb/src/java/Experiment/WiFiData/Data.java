@@ -77,7 +77,7 @@ public class Data {
     }
 
     public String payload2Mac(String payload) {
-        return payload.substring(14, payload.length()-2);
+        return payload.substring(15, payload.length()-3);
     }
 
     public String ap2Room(String ap){
@@ -361,7 +361,7 @@ public class Data {
                 String payload = data[0];
                 String timeStamp = data[1];
                 String sensorID = data[2];
-                if(payload.length()-2 < 14){
+                if(payload.length()-3 < 15){
                     continue;
                 }
                 String mac = payload2Mac(payload);
