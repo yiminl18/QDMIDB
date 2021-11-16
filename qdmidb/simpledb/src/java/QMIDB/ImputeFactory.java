@@ -104,11 +104,12 @@ public class ImputeFactory {
         int fieldValue = 0;
         int rawTID = t.findTID(attribute);
         String relation = new Attribute(attribute).getRelation();
-        System.out.println(t.getTupleDesc());
-        System.out.println("original t: " + t);
-        System.out.println(attributeName.getAttribute() + " " + rawTID + " " + Buffer.getTuple(rawTID));
-        int imputedTID = Buffer.getTuple(rawTID).getImputedTID();
-        int fieldIndex = t.getTupleDesc().fieldNameToIndex(attribute);
+        //System.out.println(t.getTupleDesc());
+        //System.out.println("original t: " + t);
+        //System.out.println(attributeName.getAttribute() + " " + rawTID + " " + Buffer.getTuple(rawTID));
+        Tuple rawTuple = Buffer.getTuple(rawTID);
+        int imputedTID = rawTuple.getImputedTID();
+        int fieldIndex = rawTuple.getTupleDesc().fieldNameToIndex(attribute);
 
         //System.out.println("inside imputeWiFi: " + rawTID + " " + fieldIndex + " " + relation);
         if(relation.equals("users")){

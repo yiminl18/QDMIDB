@@ -94,7 +94,7 @@ public class SmartProject extends Operator {
         //filter all tuple t using current active predicates in selfJoin, and add tuples to candidateMatching
         while (child.hasNext()) {
             Tuple t = child.next();
-            System.out.println("Project: " + t);
+            //System.out.println("Project: " + t);
             selfJoin(t);
         }
         //getNext from CandidateMatching
