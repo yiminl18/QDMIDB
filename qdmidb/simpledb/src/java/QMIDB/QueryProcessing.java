@@ -14,16 +14,19 @@ public class QueryProcessing {
         //List<Attribute> schema = ManualSchema();
         //predicates: must put Filter first
         List<PredicateUnit> predicates = fH.readPredicatesForGivenQuery(1);
+        Schema.setSchema(schema, predicates);
+        PredicateSet.initPredicateSet(predicates);
         //List<PredicateUnit> predicates = ManualPredicates();
         RelationshipGraph.initGraph(schema, predicates);
-        //RelationshipGraph.printJoinEdge();
-        PredicateSet.initPredicateSet(predicates);
-        Schema.setSchema(schema, predicates);
-        PredicateSet.print();
-        Schema.print();
+        //testing
+        for(int i=0;i<RelationshipGraph.getNodes().size();i++){
+            System.out.println(RelationshipGraph.getNodes().get(i).getAttribute());
+        }
+        PredicateSet.print();//correct
+        Schema.print();//correct
 
         Statistics.initStatistics();
-        Statistics.print();
+        //Statistics.print();
         ImputeFactory.setImputationMethod("Manual");
         //RelationshipGraph.printNonJoinNeighbor();
         //System.out.println(Statistics.getAttribute("R.b").getNumOfNullValue());

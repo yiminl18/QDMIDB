@@ -113,6 +113,10 @@ public class Predicate implements Serializable {
      * @return true if the comparison is true, false otherwise.
      */
     public boolean filter(Tuple t) {
+        //System.out.println( "** " + field + " " + t.getField(0) + " " + t.getField(1) + " " + t.getField(2));
+        //if(t.getField(0).equals(new IntField(1539230))){
+        //    System.out.println("** " + field + " " + t);
+        //}
         return t.getField(field).compare(op, operand);
     }
 
@@ -122,6 +126,7 @@ public class Predicate implements Serializable {
     }
 
     public Tuple updateTuple(Tuple t, Field value){
+        //System.out.println(value);
         t.setField(field, value);
         return t;
     }

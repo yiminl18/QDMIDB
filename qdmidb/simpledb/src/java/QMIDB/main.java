@@ -10,8 +10,8 @@ public class main {
         QueryProcessing QP = new QueryProcessing();
         //PredicateSet.print();
 
-        //test t = new test();
-        //t.runWiFi();
+        test t = new test();
+        t.runWiFi();
 
         //System.out.println(ImputeFactory.getImputationTimes());
 

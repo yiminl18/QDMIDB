@@ -105,6 +105,7 @@ public class ImputeFactory {
         int rawTID = t.findTID(attribute);
         int fieldIndex = t.getTupleDesc().fieldNameToIndex(attribute);
         String relation = new Attribute(attribute).getRelation();
+        System.out.println("inside imputeWiFi: " + rawTID + " " + fieldIndex + " " + relation);
         if(relation.equals("users")){
             if(!imputedUser.containsKey(rawTID)){
                 return null;

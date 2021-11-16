@@ -35,12 +35,13 @@ public class test {
         QP.setupWiFiHeapFiles();
         TransactionId tid = new TransactionId();
         Operator o = QP.getQueryPlan(1, tid,"WiFi");
+        //DbIterator o = QP.test(tid);
         Statistics.setStartTime(System.currentTimeMillis());
         try {
             o.open();
             while (o.hasNext()) {
                 Tuple tup = o.next();
-                System.out.println(tup);
+                //System.out.println(tup);
             }
             o.close();
             Database.getBufferPool().transactionComplete(tid);

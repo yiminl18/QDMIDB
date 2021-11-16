@@ -114,14 +114,31 @@ public class Data {
 
     public void loadMapForOneTuple(String relationName, int tid, int fieldIndex, int imputedValue){
         //record imputed values
-        HashMap<Integer, Integer> mp = new HashMap<>();
-        mp.put(fieldIndex, imputedValue);
+
         if(relationName.equals("User")){
-            imputedUser.put(tid,mp);
+            if(imputedUser.containsKey(tid)){
+                imputedUser.get(tid).put(fieldIndex, imputedValue);
+            }else{
+                HashMap<Integer, Integer> mp = new HashMap<>();
+                mp.put(fieldIndex, imputedValue);
+                imputedUser.put(tid,mp);
+            }
         }else if(relationName.equals("Space")){
-            imputedSpace.put(tid,mp);
+            if(imputedSpace.containsKey(tid)){
+                imputedSpace.get(tid).put(fieldIndex, imputedValue);
+            }else{
+                HashMap<Integer, Integer> mp = new HashMap<>();
+                mp.put(fieldIndex, imputedValue);
+                imputedSpace.put(tid,mp);
+            }
         }else if(relationName.equals("WiFi")){
-            imputedWiFi.put(tid,mp);
+            if(imputedWiFi.containsKey(tid)){
+                imputedWiFi.get(tid).put(fieldIndex, imputedValue);
+            }else{
+                HashMap<Integer, Integer> mp = new HashMap<>();
+                mp.put(fieldIndex, imputedValue);
+                imputedWiFi.put(tid,mp);
+            }
         }else{
             System.out.println("relationName not found!");
         }

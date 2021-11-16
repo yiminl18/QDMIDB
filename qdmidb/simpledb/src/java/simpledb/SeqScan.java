@@ -1,5 +1,7 @@
 package simpledb;
 
+import QMIDB.Attribute;
+import QMIDB.ImputeFactory;
 import QMIDB.Statistics;
 
 import java.util.*;
@@ -111,6 +113,9 @@ public class SeqScan implements DbIterator {
         tuple.computeAttribute2TID();
         tuple.setTidSource();
         Buffer.setImputedTID(tuple);
+        //test imputed values
+        //Field value = ImputeFactory.Impute(new Attribute("space.building"),tuple);
+        //System.out.println("imputed value in space.building is: " + value);
         for(int i=0;i<attributes.size();i++){
             int index = tuple.getTupleDesc().fieldNameToIndex(attributes.get(i));
             if(tuple.getField(index).isMissing()){

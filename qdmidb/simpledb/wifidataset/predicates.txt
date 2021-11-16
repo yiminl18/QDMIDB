@@ -2,8 +2,8 @@
 1
 3
 F
-Space.building = 67466
+space.building = 67466
 J
-WiFi.mac = Users.mac
+wifi.mac = users.mac
 J
-WiFi.room = Space.room
+wifi.room = space.room

@@ -74,7 +74,7 @@ public class QueryPlan {
 
         //space.building = 'DBH'
         SmartFilter sf1 = new SmartFilter(
-                new Predicate("Space.building", Predicate.Op.GREATER_THAN, new IntField(67466)), ssSpace);
+                new Predicate("space.building", Predicate.Op.EQUALS, new IntField(67466)), ssSpace);
 
         //WiFi.room = Space.room
         JoinPredicate p2 = new JoinPredicate("wifi.room", Predicate.Op.EQUALS, "space.room");
@@ -89,7 +89,12 @@ public class QueryPlan {
         Type[] types = new Type[]{Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE};
         SmartProject sp = new SmartProject(attributes,types, sj2);
 
-        return sp;
+        return sf1;
+    }
+
+    public DbIterator test(TransactionId tid){
+        SeqScan ssSpace = new SeqScan(tid, WifISpace.getId(), "space");
+        return ssSpace;
     }
 
 }

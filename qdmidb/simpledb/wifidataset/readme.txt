@@ -39,3 +39,7 @@ Structure of imputedValues
 tid
 number of imputed field
 fieldIndex,imputed values
+
+*Use following command to transform txt file to dat file, which is consumed by codes
+java -jar simpledb.jar convert R.txt N
+where

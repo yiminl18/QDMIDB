@@ -267,6 +267,7 @@ public class Tuple implements Serializable {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < fields.length; i++) {
+            System.out.println("$$ " + fields.length + " " + fields[i].toString());
             sb.append(fields[i].toString());
             if (i < fields.length - 1) {
                 sb.append(",");
