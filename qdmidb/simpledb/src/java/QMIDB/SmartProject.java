@@ -309,6 +309,10 @@ public class SmartProject extends Operator {
             if(nextColumn == null) break;
             //complete this iteration
             pickedColumn = nextColumn;
+            //debugging
+            int IT = ImputeFactory.getImputationTimes();
+            int RN = Statistics.getNumOfRemovedTuples();
+            int aaa=0;
         }
 
         //System.out.println("HashTables after self join but before filter:");

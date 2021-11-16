@@ -18,6 +18,7 @@ public class RelationshipGraph {
     private static List<GraphNode> NodeSet = new ArrayList<>();
     private static List<GraphEdge> EdgeSet = new ArrayList<>();
     //leftAttribute, rightAttribute are those attributes in the left and right side of join predicates
+    //activeRightAttribute: the attribute that does not have missing values in right join predicate
     private static List<String> activeLeftAttribute = new ArrayList<>(), activeRightAttribute = new ArrayList<>(), leftAttribute = new ArrayList<>(), rightAttribute = new ArrayList<>();
     private static List<PredicateUnit> preds;
     private static List<Attribute> Attributes = new ArrayList<>();//attributes in predicate set
@@ -203,9 +204,9 @@ public class RelationshipGraph {
             if(!nodeMap.get(right).isPicked() && nodeMap.get(right).getNumOfNullValues() < MinNumOfMissingValue){
                 MinNumOfMissingValue = nodeMap.get(right).getNumOfNullValues();
                 nextColumn = right;
-                nodeMap.get(right).setPicked(true);
             }
         }
+        nodeMap.get(nextColumn).setPicked(true);
         return nextColumn;
     }
 

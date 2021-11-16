@@ -1,5 +1,7 @@
 package simpledb;
 
+import QMIDB.Statistics;
+
 import java.util.HashMap;
 
 public class Buffer {
@@ -44,6 +46,7 @@ public class Buffer {
     }
 
     public static void removeTuple(Tuple t){
+        Statistics.addNumOfRemovedTuples(1);
         int tid = t.getTID();
         if(buffers.containsKey(tid)){
             buffers.remove(tid);

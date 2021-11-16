@@ -15,6 +15,7 @@ import java.util.Map;
 public class Statistics {
     private static double numOfJoin;
     private static double startTime, duration, timeOneJoin;
+    private static int numOfRemovedTuples = 0;
     private static List<Attribute> attributes;//attributes in predicate set
     private static List<String> attributesString; //String format of attributes, used for fast retrieving
     private static HashMap<String, List<String>> relationToAttributeName = new HashMap<>();//from relation to its attributes in predicate
@@ -45,6 +46,14 @@ public class Statistics {
                 deadAttributes.put(attributesString.get(i), true);
             }
         }
+    }
+
+    public static void addNumOfRemovedTuples(int offset){
+        numOfRemovedTuples += offset;
+    }
+
+    public static int getNumOfRemovedTuples(){
+        return numOfRemovedTuples;
     }
 
     public static boolean isDead(String attribute){
