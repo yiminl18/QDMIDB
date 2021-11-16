@@ -40,7 +40,7 @@ public class test {
             o.open();
             while (o.hasNext()) {
                 Tuple tup = o.next();
-                System.out.println(tup);
+                //System.out.println(tup);
             }
             o.close();
             Database.getBufferPool().transactionComplete(tid);

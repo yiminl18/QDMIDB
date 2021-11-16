@@ -13,6 +13,7 @@ import java.util.List;
  */
 public class RelationshipGraph {
     private static Map<String, List<String>> adjNodes = new HashMap<>();//from right to left attribute in join predicates
+    private static HashMap<String, String> right2LeftJoin = new HashMap<>();//one-to-one mapping
     private static Map<String, GraphNode> nodeMap = new HashMap<>();//mapping from String attribute to graph node
     private static Map<String, List<String>> nonJoinNeighbors = new HashMap<>();//mapping from attribute to its non-join neighbors
     private static List<GraphNode> NodeSet = new ArrayList<>();
@@ -165,6 +166,9 @@ public class RelationshipGraph {
     public static void addEdge(GraphEdge edge){
         String startNode = edge.getStartNode().getAttribute().getAttribute();
         String endNode = edge.getEndNode().getAttribute().getAttribute();
+        if(!right2LeftJoin.containsKey(endNode)){
+            right2LeftJoin.put(endNode, startNode);
+        }
         if(adjNodes.get(endNode) == null){
             adjNodes.put(endNode, new ArrayList<>());
             adjNodes.get(endNode).add(startNode);
@@ -194,19 +198,34 @@ public class RelationshipGraph {
         return rightAttributes;
     }
 
+    public static String findLeftJoinAttribute(String right){
+        if(right2LeftJoin.containsKey(right)){
+            return right2LeftJoin.get(right);
+        }
+        return null;
+    }
+
     public static String getNextColumn(){//find next column to clean in SmartProject
         //the next column should be inactive right join attribute, have current minimum number of missing values and not picked before
         int MinNumOfMissingValue = Integer.MAX_VALUE;
         String nextColumn = null;
         for(int i=0;i<rightAttribute.size();i++){
             String right = rightAttribute.get(i);
+            String left = findLeftJoinAttribute(right);
+            if(left == null){
+                System.out.println("Join predicate error!");
+                continue;
+            }
             if(activeRightAttribute.contains(right)) continue;
-            if(!nodeMap.get(right).isPicked() && nodeMap.get(right).getNumOfNullValues() < MinNumOfMissingValue){
-                MinNumOfMissingValue = nodeMap.get(right).getNumOfNullValues();
+            int TotalMissingValues = nodeMap.get(right).getNumOfNullValues() + nodeMap.get(left).getNumOfNullValues();
+            if(!nodeMap.get(right).isPicked() && TotalMissingValues < MinNumOfMissingValue){
+                MinNumOfMissingValue = TotalMissingValues;
                 nextColumn = right;
             }
         }
-        nodeMap.get(nextColumn).setPicked(true);
+        if(nextColumn != null){
+            nodeMap.get(nextColumn).setPicked(true);
+        }
         return nextColumn;
     }
 
