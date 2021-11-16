@@ -82,9 +82,9 @@ public class SmartFilter extends Operator{
                 //Statistics.print();
                 if(isClean){
                     //clean this tuple
-                    System.out.println("before " + t);
+                    //System.out.println("before " + t);
                     t = pred.updateTuple(t,ImputeFactory.Impute(attribute, t));
-                    System.out.println(t.getField(0) + " " + t.getField(1) + " " +  t.getField(2));
+                    //System.out.println(t.getField(0) + " " + t.getField(1) + " " +  t.getField(2));
                     //update numOfNullValue for corresponding node
                     RelationshipGraph.getNode(attribute.getAttribute()).NumOfNullValuesMinusOne();
                     Buffer.updateTuple(t);

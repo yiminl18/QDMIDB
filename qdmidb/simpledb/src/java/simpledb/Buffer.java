@@ -16,15 +16,15 @@ public class Buffer {
 
     public static void setImputedTID(Tuple t){//set only in scan operator
         String relation = t.getRelation();
-        if(relation.equals("users")){
+        if(relation.equalsIgnoreCase("users")){
             t.setImputedTID(usersTID);
             usersTID++;
         }
-        else if(relation.equals("space")){
+        else if(relation.equalsIgnoreCase("space")){
             t.setImputedTID(spaceTID);
             spaceTID++;
         }
-        else if(relation.equals("wifi")){
+        else if(relation.equalsIgnoreCase("wifi")){
             t.setImputedTID(wifiTID);
             wifiTID++;
         }

@@ -34,6 +34,10 @@ public class Tuple implements Serializable {
         this.imputedTID = tid;
     }
 
+    public int getImputedTID(){
+        return imputedTID;
+    }
+
     public String getRelation(){
         return schema.getFieldName(0).split("\\.")[0];
     }
@@ -96,7 +100,7 @@ public class Tuple implements Serializable {
         this.attribute2TID = attribute2TID;
     }
 
-    public int findTID(String attribute){
+    public int findTID(String attribute){//find the tid of the raw tuple in this tuple given attribute name
         if(attribute2TID.containsKey(attribute)){
             return attribute2TID.get(attribute);
         }else{
@@ -267,7 +271,7 @@ public class Tuple implements Serializable {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < fields.length; i++) {
-            System.out.println("$$ " + fields.length + " " + fields[i].toString());
+            //System.out.println("$$ " + fields.length + " " + fields[i].toString());
             sb.append(fields[i].toString());
             if (i < fields.length - 1) {
                 sb.append(",");

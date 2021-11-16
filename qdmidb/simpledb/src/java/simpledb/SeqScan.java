@@ -113,6 +113,7 @@ public class SeqScan implements DbIterator {
         tuple.computeAttribute2TID();
         tuple.setTidSource();
         Buffer.setImputedTID(tuple);
+        //System.out.println("---- " + tuple.getRelation() + " "  +tuple + " " + tuple.getImputedTID());
         //test imputed values
         //Field value = ImputeFactory.Impute(new Attribute("space.building"),tuple);
         //System.out.println("imputed value in space.building is: " + value);

@@ -89,7 +89,7 @@ public class QueryPlan {
         Type[] types = new Type[]{Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE};
         SmartProject sp = new SmartProject(attributes,types, sj2);
 
-        return sf1;
+        return sp;
     }
 
     public DbIterator test(TransactionId tid){

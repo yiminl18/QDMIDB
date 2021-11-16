@@ -103,33 +103,35 @@ public class ImputeFactory {
         String attribute = attributeName.getAttribute();
         int fieldValue = 0;
         int rawTID = t.findTID(attribute);
+        int imputedTID = Buffer.getTuple(rawTID).getImputedTID();
         int fieldIndex = t.getTupleDesc().fieldNameToIndex(attribute);
         String relation = new Attribute(attribute).getRelation();
-        System.out.println("inside imputeWiFi: " + rawTID + " " + fieldIndex + " " + relation);
+        //System.out.println("inside imputeWiFi: " + rawTID + " " + fieldIndex + " " + relation);
         if(relation.equals("users")){
-            if(!imputedUser.containsKey(rawTID)){
-                return null;
+            if(!imputedUser.containsKey(imputedTID)){
+                System.out.println("imputed values users file is wrong!");
             }
-            if(!imputedUser.get(rawTID).containsKey(fieldIndex)){
-                return null;
+            if(!imputedUser.get(imputedTID).containsKey(fieldIndex)){
+                System.out.println("imputed values users file is wrong!");
             }
-            fieldValue = imputedUser.get(rawTID).get(fieldIndex);
+            fieldValue = imputedUser.get(imputedTID).get(fieldIndex);
         }else if(relation.equals("wifi")){
-            if(!imputedWiFi.containsKey(rawTID)){
-                return null;
+            if(!imputedWiFi.containsKey(imputedTID)){
+                System.out.println("imputed values wifi file is wrong!");
             }
-            if(!imputedWiFi.get(rawTID).containsKey(fieldIndex)){
-                return null;
+            if(!imputedWiFi.get(imputedTID).containsKey(fieldIndex)){
+                System.out.println("imputed values wifi file is wrong!");
             }
-            fieldValue = imputedWiFi.get(rawTID).get(fieldIndex);
+            fieldValue = imputedWiFi.get(imputedTID).get(fieldIndex);
         }else if(relation.equals("space")){
-            if(!imputedSpace.containsKey(rawTID)){
-                return null;
+            if(!imputedSpace.containsKey(imputedTID)){
+                System.out.println("imputed values space file is wrong!");
             }
-            if(!imputedSpace.get(rawTID).containsKey(fieldIndex)){
-                return null;
+            if(!imputedSpace.get(imputedTID).containsKey(fieldIndex)){
+                //System.out.println(t);
+                System.out.println(imputedTID + " " + fieldIndex + " imputed values space file is wrong!");
             }
-            fieldValue = imputedSpace.get(rawTID).get(fieldIndex);
+            fieldValue = imputedSpace.get(imputedTID).get(fieldIndex);
         }
         return new IntField(fieldValue);
     }
