@@ -22,7 +22,9 @@ public class Tuple implements Serializable {
     private RecordId rid;
     private List<Integer> PAfield;//store the fields of attributes in predicate
     private List<String> imputedField = new ArrayList<>();//store the name of attribute whose value is imputed in this tuple
-    private boolean mergeBit = false;//this bit is used to indicate if this tuple has been already merged in any join operator
+    //mergeBit is used to indicate if this tuple has been already merged in any join operator
+    //either matched join tuple or outer join tuple with NULL values
+    private boolean mergeBit = false;
     private boolean isRaw = true;//this bit is used to indicate if this tuple is raw tuple. Its opposite can be joined by other tuples or outer-joined by NULL values
     //applied_bit is used to store those attributes that have been already applied for testing
     //these attributes are either left attribute in join or the one in filter
@@ -76,7 +78,6 @@ public class Tuple implements Serializable {
     public void computeAttribute2TID(){
         if(this.isRaw){//only compute for raw tuple
             for(int i=0;i<schema.numFields();i++){
-                //System.out.println("&&&&&&&&&& " + schema.getSize() + " " + schema.getFieldName(i));
                 attribute2TID.put(schema.getFieldName(i), TID);
             }
         }
@@ -87,13 +88,14 @@ public class Tuple implements Serializable {
     }
 
     public void mergeAttribute2TID(HashMap<String, Integer> mp1, HashMap<String, Integer> mp2){
-        if(this.mergeBit){//to prevent operations for outer join tuple
-            //only deal with matched join tuple
+        //to prevent operations for outer join tuple
+            //only deal with matched join tuple -> old code uses merged_bit to recognize matched join tuple
+        //however, it is not necessary because this function is called only one time for joined matched tuple
             //note that keys in mp1 and mp2 must be different because they are joined from two non-overlapping relation set
             //thus self join will not be considered for now
-            this.attribute2TID = mp1;
-            this.attribute2TID.putAll(mp2);
-        }
+        this.attribute2TID = mp1;
+        this.attribute2TID.putAll(mp2);
+
     }
 
     public void setAttribute2TID(HashMap<String, Integer> attribute2TID){
@@ -271,7 +273,6 @@ public class Tuple implements Serializable {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < fields.length; i++) {
-            //System.out.println("$$ " + fields.length + " " + fields[i].toString());
             sb.append(fields[i].toString());
             if (i < fields.length - 1) {
                 sb.append(",");

@@ -23,7 +23,7 @@ public class QueryProcessing {
 //            System.out.println(RelationshipGraph.getNodes().get(i).getAttribute());
 //        }
         //PredicateSet.print();//correct
-        //Schema.print();//correct
+        Schema.print();//correct
 
         Statistics.initStatistics();
         //Statistics.print();

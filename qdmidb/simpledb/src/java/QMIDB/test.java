@@ -47,6 +47,8 @@ public class test {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        System.out.println("Total number of missing values in datasets: "+ Schema.getTotalNumberOfMissingValues());
+        System.out.println("Total number of imputation times -- lazy cleaning: " + ImputeFactory.getImputationTimes());
     }
 
     public static void testComplexQuery() throws Exception{

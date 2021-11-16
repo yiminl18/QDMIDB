@@ -51,6 +51,14 @@ public class Schema {
         return schemaWidthMap.get(attributeName);
     }
 
+    public static int getTotalNumberOfMissingValues(){
+        int NumOfMissingValues = 0;
+        for(int i=0;i<schema.size();i++){
+            NumOfMissingValues += schema.get(i).getNumOfNullValue();
+        }
+        return NumOfMissingValues;
+    }
+
     public static void print(){
         for(int i=0;i<schema.size();i++){
             System.out.println(schema.get(i).getAttribute() + " " + schema.get(i).getCardinality() + " " + schema.get(i).getNumOfNullValue());
