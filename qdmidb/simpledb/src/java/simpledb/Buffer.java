@@ -75,6 +75,10 @@ public class Buffer {
         return TID;
     }
 
+    public static List<Integer> getBufferCDCValues(String attribute){
+        return bufferedValues.get(attribute);
+    }
+
     public static void bufferCDCValues(List<Attribute> schema){
         for(int i=0;i<schema.size();i++){
             List<Integer> list = new ArrayList<>();

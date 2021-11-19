@@ -1,6 +1,7 @@
 package QMIDB;
 
 import simpledb.*;
+import java.util.*;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.classifiers.Classifier;
@@ -14,6 +15,7 @@ import java.util.HashMap;
 public class ImputeFactory {
     private static String imputationMethod;
     private static int imputationTimes;
+    public static final int MISSING_INTEGER = Integer.MIN_VALUE;
 
     //first key is tid, starting from 0 for each relation
     //second key is field index to its imputed value
@@ -49,8 +51,6 @@ public class ImputeFactory {
             return HotDeck(attribute, tuple);
         }else if(imputationMethod == "MEAN"){
             return Mean(attribute, tuple);
-        }else if(imputationMethod == "RANDOM"){
-            return Random(attribute, tuple);
         }else{
             return imputedValue;
         }
@@ -149,15 +149,22 @@ public class ImputeFactory {
 
     public static Field HotDeck(Attribute attribute, Tuple tuple){
         Field attributeValue = new IntField(0);
+        List<Integer> values = Buffer.getBufferCDCValues(attribute.getAttribute());
+        Random rand = new Random();
+        int nextIndex, value;
+        while(true){
+            nextIndex = rand.nextInt(values.size());
+            value = values.get(nextIndex);
+            if(value != MISSING_INTEGER){
+                break;
+            }
+        }
+        attributeValue = new IntField(value);
+
         return attributeValue;
     }
 
     public static Field Mean(Attribute attribute, Tuple tuple){
-        Field attributeValue = new IntField(0);
-        return attributeValue;
-    }
-
-    public static Field Random(Attribute attribute, Tuple tuple){
         Field attributeValue = new IntField(0);
         return attributeValue;
     }
