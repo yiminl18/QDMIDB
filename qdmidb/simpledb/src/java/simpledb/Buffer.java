@@ -1,13 +1,22 @@
 package simpledb;
 
+import QMIDB.Attribute;
+import QMIDB.Schema;
 import QMIDB.Statistics;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class Buffer {
     private static HashMap<Integer, Tuple> buffers = new HashMap<>();
     private static Integer TID = 0;//latest tid of tuple to be inserted
     private static int usersTID=0, spaceTID=0, wifiTID=0;
+    private static HashMap<String, List<Integer>> bufferedValues = new HashMap<>();//buffered column values for imputation if needed
+
 
     public static void addTuple(Tuple t){
         //return the TID of inserted tuple
@@ -64,5 +73,53 @@ public class Buffer {
 
     public static int getTID(){
         return TID;
+    }
+
+    public static void bufferCDCValues(List<Attribute> schema){
+        for(int i=0;i<schema.size();i++){
+            List<Integer> list = new ArrayList<>();
+            bufferedValues.put(schema.get(i).getAttribute(), list);
+        }
+        String demoFile = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/cdcdataset/demoDirty.txt";
+        String examsFile = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/cdcdataset/examsDirty.txt";
+        String labsFile = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/cdcdataset/labsDirty.txt";
+        bufferCDCRelation(schema, demoFile, "demo");
+        bufferCDCRelation(schema, examsFile, "exams");
+        bufferCDCRelation(schema, labsFile, "labs");
+        //test
+        for(int i=0;i<schema.size();i++){
+            String attr = schema.get(i).getAttribute();
+            System.out.println(attr);
+            for(int j=0;j<20;j++){
+                System.out.println(bufferedValues.get(attr).get(j));
+            }
+        }
+    }
+
+    public static void bufferCDCRelation(List<Attribute> schema, String path, String relation){//buffer for one relation
+        int start = 0;
+        for(int i=0;i<schema.size();i++){
+            if(schema.get(i).getRelation().equals(relation)){
+                start = i;
+                break;
+            }
+        }
+        try{
+            BufferedReader in = new BufferedReader(new FileReader(path));
+            String row;
+            while ((row = in.readLine()) != null) {
+                String data[] = row.split(",");
+                for(int i=0;i<data.length;i++){
+                    String attribute = schema.get(start+i).getAttribute();
+                    if(!schema.get(start+i).getRelation().equals(relation)){
+                        System.out.println("Wrong schema for " + relation + ", Stop and check!");
+                    }
+                    bufferedValues.get(attribute).add(Integer.valueOf(data[i]));
+                }
+            }
+            in.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

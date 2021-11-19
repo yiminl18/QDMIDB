@@ -28,6 +28,7 @@ public class QueryProcessing {
         Statistics.initStatistics();
         //Statistics.print();
         ImputeFactory.setImputationMethod("Manual");
+        Buffer.bufferCDCValues(schema);
         //RelationshipGraph.printNonJoinNeighbor();
         //System.out.println(Statistics.getAttribute("R.b").getNumOfNullValue());
         //System.out.println(Statistics.getAttribute("S.b").getNumOfNullValue());

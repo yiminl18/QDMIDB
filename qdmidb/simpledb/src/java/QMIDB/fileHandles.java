@@ -15,13 +15,14 @@ import java.util.List;
 public class fileHandles {
     private final String schemaFilePath = "simpledb/metadata/schema.txt";
     private final String WifISchemaFilePath = "simpledb/wifidataset/schema.txt";
+    private final String CDCSchemaFilePath = "simpledb/cdcdataset/schema.txt";
     private final String predicateFilePath = "simpledb/metadata/predicate.txt";
     private final String AllPredicatesFilePath = "simpledb/wifidataset/predicates.txt";
 
     public List<Attribute> readSchema(){
         int N,n;
         List<Attribute> attributes = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(WifISchemaFilePath)))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(CDCSchemaFilePath)))) {
 
             String line = br.readLine();
             N = Integer.valueOf(line);
