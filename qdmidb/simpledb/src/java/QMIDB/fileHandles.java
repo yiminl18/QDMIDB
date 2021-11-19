@@ -18,9 +18,6 @@ public class fileHandles {
     private final String predicateFilePath = "simpledb/metadata/predicate.txt";
     private final String AllPredicatesFilePath = "simpledb/wifidataset/predicates.txt";
 
-
-
-
     public List<Attribute> readSchema(){
         int N,n;
         List<Attribute> attributes = new ArrayList<>();
