@@ -13,6 +13,7 @@ import java.util.List;
 
 public class Buffer {
     private static HashMap<Integer, Tuple> buffers = new HashMap<>();
+    public static final int MISSING_INTEGER = Integer.MIN_VALUE;
     private static Integer TID = 0;//latest tid of tuple to be inserted
     private static int usersTID=0, spaceTID=0, wifiTID=0;
     private static HashMap<String, List<Integer>> bufferedValues = new HashMap<>();//buffered column values for imputation if needed
@@ -79,6 +80,15 @@ public class Buffer {
         return bufferedValues.get(attribute);
     }
 
+    public static void updateBufferCDCValue(String attribute, int value, int tid){
+        if(bufferedValues.get(attribute).get(tid) == MISSING_INTEGER){
+            bufferedValues.get(attribute).set(tid, value);
+        }
+        else{
+            System.out.println("Update entry incorrect!");
+        }
+    }
+
     public static void bufferCDCValues(List<Attribute> schema){
         for(int i=0;i<schema.size();i++){
             List<Integer> list = new ArrayList<>();
@@ -118,7 +128,8 @@ public class Buffer {
                     if(!schema.get(start+i).getRelation().equals(relation)){
                         System.out.println("Wrong schema for " + relation + ", Stop and check!");
                     }
-                    bufferedValues.get(attribute).add(Integer.valueOf(data[i]));
+                    int value = Integer.valueOf(data[i]);
+                    bufferedValues.get(attribute).add(value);
                 }
             }
             in.close();

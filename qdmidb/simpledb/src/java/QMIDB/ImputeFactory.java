@@ -23,6 +23,8 @@ public class ImputeFactory {
     private static HashMap<Integer, HashMap<Integer, Integer>> imputedSpace = new HashMap<>();
     private static HashMap<Integer, HashMap<Integer, Integer>> imputedWiFi = new HashMap<>();
 
+    private static int imputeValue;
+
     public static void loadImputations(String relation, HashMap<Integer, HashMap<Integer, Integer>> imputedValues){
         if(relation.equals("users")){
             imputedUser = imputedValues;
@@ -44,16 +46,19 @@ public class ImputeFactory {
         Statistics.getAttribute(attribute.getAttribute()).incrementNumOfImputed();
         tuple.addImputedField(attribute.getAttribute());//ihe: check if changes
         if(imputationMethod == "REGRESSION_TREE"){
-            return RegressionTree(attribute, tuple);
+            imputedValue = RegressionTree(attribute, tuple);
         }else if(imputationMethod == "Manual"){
-            return ImputeWiFi(attribute, tuple);//replace manual
+            imputedValue = ImputeWiFi(attribute, tuple);//replace manual
         }else if(imputationMethod == "HOTDECK"){
-            return HotDeck(attribute, tuple);
+            imputedValue = HotDeck(attribute, tuple);
         }else if(imputationMethod == "MEAN"){
-            return Mean(attribute, tuple);
-        }else{
-            return imputedValue;
+            imputedValue = Mean(attribute, tuple);
         }
+        //update buffered columns
+        int tid = tuple.findTID(attribute.getAttribute());//raw tuple
+        int ImputedTID = Buffer.getTuple(tid).getImputedTID();//get imputedTID
+        Buffer.updateBufferCDCValue(attribute.getAttribute(), imputeValue, ImputedTID);
+        return imputedValue;
     }
 
     public static int getImputationTimes(){
@@ -138,20 +143,23 @@ public class ImputeFactory {
             }
             fieldValue = imputedSpace.get(imputedTID).get(fieldIndex);
         }
+        imputeValue = fieldValue;
         return new IntField(fieldValue);
     }
 
     public static Field RegressionTree(Attribute attribute, Tuple tuple){
         //to do
         Field attributeValue = new IntField(0);
+        imputeValue = 0;
         return attributeValue;
     }
 
     public static Field HotDeck(Attribute attribute, Tuple tuple){
-        Field attributeValue = new IntField(0);
+        Field attributeValue;
         List<Integer> values = Buffer.getBufferCDCValues(attribute.getAttribute());
         Random rand = new Random();
-        int nextIndex, value;
+        int nextIndex;
+        int value;
         while(true){
             nextIndex = rand.nextInt(values.size());
             value = values.get(nextIndex);
@@ -159,13 +167,13 @@ public class ImputeFactory {
                 break;
             }
         }
+        imputeValue = value;
         attributeValue = new IntField(value);
-
         return attributeValue;
     }
 
     public static Field Mean(Attribute attribute, Tuple tuple){
-        Field attributeValue = new IntField(0);
+        Field attributeValue;
         List<Integer> values = Buffer.getBufferCDCValues(attribute.getAttribute());
         int mean, sum =0;
         for(int i=0;i<values.size();i++){
@@ -174,6 +182,7 @@ public class ImputeFactory {
             }
         }
         mean = sum/values.size();
+        imputeValue = mean;
         attributeValue = new IntField(mean);
         return attributeValue;
     }
