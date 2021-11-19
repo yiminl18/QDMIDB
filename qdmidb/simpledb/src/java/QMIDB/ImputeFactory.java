@@ -166,6 +166,15 @@ public class ImputeFactory {
 
     public static Field Mean(Attribute attribute, Tuple tuple){
         Field attributeValue = new IntField(0);
+        List<Integer> values = Buffer.getBufferCDCValues(attribute.getAttribute());
+        int mean, sum =0;
+        for(int i=0;i<values.size();i++){
+            if(values.get(i) != MISSING_INTEGER){
+                sum += values.get(i);
+            }
+        }
+        mean = sum/values.size();
+        attributeValue = new IntField(mean);
         return attributeValue;
     }
 }
