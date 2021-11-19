@@ -84,6 +84,11 @@ public class Data {
                     continue;
                 }
                 String data[] = row.split(",");
+                boolean flag = false;
+                //last one value is missing
+                if(row.substring(row.length()-1).equals(",")){
+                    flag = true;
+                }
                 //update missing value counts for each attribute
                 String output = "";
                 for(int i=0;i<data.length;i++){
@@ -94,7 +99,13 @@ public class Data {
                     else{
                         output += data[i];
                     }
-                    if(i != data.length-1){
+                    if(i == data.length-1){
+                        if(flag){
+                            output += ",";
+                            output += MISSING_INTEGER;
+                        }
+                    }
+                    else{
                         output += ",";
                     }
                 }

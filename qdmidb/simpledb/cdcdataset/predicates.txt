@@ -1,0 +1,41 @@
+5
+1
+2
+F
+exams.height >= 15000
+J
+demo.id = exams.id
+2
+4
+F
+demo.income >= 13
+F
+exams.weight >= 6300
+J
+demo.id = exams.id 
+J
+exams.id = labs.i
+3
+3
+F
+demo.age_yrs <= 30
+J
+demo.id = labs.id
+J
+labs.id = exams.id
+4
+3
+F
+exams.body_mass_index >= 3000
+J
+demo.id = labs.id
+J
+labs.id = exams.id
+5
+3
+F
+exams.height >= 15000
+F
+exams.weight >= 10000
+J
+demo.id = exams.id

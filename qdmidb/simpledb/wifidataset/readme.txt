@@ -17,12 +17,14 @@ Ai: attribute name
 Format: relation_name.attribute_name
 
 Structure of predicate:
+MM
 M
 N
 Type_i
 pred_i
 ...
 ----
+MM: number of queries 
 M: id of query 
 N: number of predicate
 Type: F/J/A/O: filter, join, aggregate, order

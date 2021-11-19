@@ -17,7 +17,8 @@ public class fileHandles {
     private final String WifISchemaFilePath = "simpledb/wifidataset/schema.txt";
     private final String CDCSchemaFilePath = "simpledb/cdcdataset/schema.txt";
     private final String predicateFilePath = "simpledb/metadata/predicate.txt";
-    private final String AllPredicatesFilePath = "simpledb/wifidataset/predicates.txt";
+    private final String WiFiPredicatesFilePath = "simpledb/wifidataset/predicates.txt";
+    private final String CDCPredicatesFilePath = "simpledb/cdcdataset/predicates.txt";
 
     public List<Attribute> readSchema(){
         int N,n;
@@ -49,7 +50,7 @@ public class fileHandles {
         //read predicates for query with given queryID
         List<PredicateUnit> predicateUnits = new ArrayList<>();
         int n, queryNum, QID;
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(AllPredicatesFilePath)))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(CDCPredicatesFilePath)))) {
             String line = br.readLine();
             queryNum = Integer.valueOf(line);
             line = br.readLine();
