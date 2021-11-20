@@ -101,13 +101,13 @@ public class Buffer {
         bufferCDCRelation(schema, examsFile, "exams");
         bufferCDCRelation(schema, labsFile, "labs");
         //test
-        for(int i=0;i<schema.size();i++){
-            String attr = schema.get(i).getAttribute();
-            System.out.println(attr);
-            for(int j=0;j<20;j++){
-                System.out.println(bufferedValues.get(attr).get(j));
-            }
-        }
+//        for(int i=0;i<schema.size();i++){
+//            String attr = schema.get(i).getAttribute();
+//            System.out.println(attr);
+//            for(int j=0;j<20;j++){
+//                System.out.println(bufferedValues.get(attr).get(j));
+//            }
+//        }
     }
 
     public static void bufferCDCRelation(List<Attribute> schema, String path, String relation){//buffer for one relation

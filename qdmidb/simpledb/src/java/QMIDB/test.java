@@ -52,6 +52,28 @@ public class test {
         System.out.println("Total number of removed tuples: " + Statistics.getNumOfRemovedTuples());
     }
 
+    public static void runCDC()throws Exception{
+        QueryPlan QP = new QueryPlan();
+        QP.setupCDCHeapFiles();
+        TransactionId tid = new TransactionId();
+        Operator o = QP.getQueryPlan(1, tid,"CDC");
+        Statistics.setStartTime(System.currentTimeMillis());
+        try {
+            o.open();
+            while (o.hasNext()) {
+                Tuple tup = o.next();
+                System.out.println(tup);
+            }
+            o.close();
+            Database.getBufferPool().transactionComplete(tid);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("Total number of missing values in datasets: "+ Schema.getTotalNumberOfMissingValues());
+        System.out.println("Total number of imputation times -- lazy cleaning: " + ImputeFactory.getImputationTimes());
+        System.out.println("Total number of removed tuples: " + Statistics.getNumOfRemovedTuples());
+    }
+
     public static void testComplexQuery() throws Exception{
         Type types1[] = new Type[]{ Type.INT_TYPE, Type.INT_TYPE};
         String names1[] = new String[]{ "R.a", "R.b"};

@@ -17,6 +17,18 @@ public class QueryPlan {
     private static DbIterator iter = null;
     private HeapFile WifISpace, WiFiUsers, WiFiWiFi;
     private HeapFile CDCdemo, CDClabs, CDCexams;
+    private List<String> CDCrelations = new ArrayList<>();
+    private List<String> CDCpahts = new ArrayList<>();
+    private List<Attribute> attrs = Schema.getSchema();
+
+    public QueryPlan(){
+        this.CDCrelations.add("demo");
+        this.CDCrelations.add("exams");
+        this.CDCrelations.add("labs");
+        this.CDCpahts.add("simpledb/cdcdataset/demo.dat");
+        this.CDCpahts.add("simpledb/cdcdataset/exams.dat");
+        this.CDCpahts.add("simpledb/cdcdataset/labs.dat");
+    }
 
     public void setupWiFiHeapFiles()
     {
@@ -47,6 +59,47 @@ public class QueryPlan {
         Database.getCatalog().addTable(WiFiWiFi, "wifi");
     }
 
+    public void setupCDCHeapFiles(){
+        for(int i=0;i<CDCrelations.size();i++){
+            String relation = CDCrelations.get(i);
+            String path = CDCpahts.get(i);
+            boolean flag = false;
+            int pos = 0;
+            Type types[] = null;
+            String names[] = null;
+            for(int j=0;j<attrs.size();j++){
+                if(attrs.get(j).getRelation().equals(relation)){
+                    if(!flag){//first time, initialize arrays
+                        flag = true;
+                        int length = attrs.get(j).getSchemaWidth();
+                        types = new Type[length];
+                        for(int k=0;k<length;k++){
+                            types[k] = Type.INT_TYPE;
+                        }
+                        names = new String[length];
+                        pos = j;
+                    }
+                    names[j-pos] = attrs.get(j).getAttribute();
+                }
+            }
+            TupleDesc td = new TupleDesc(types, names);
+            System.out.println(relation + " " + path);
+            td.print();
+            switch(relation){
+                case "demo":
+                    CDCdemo = new HeapFile(new File(path), td);
+                    break;
+                case "labs":
+                    CDClabs = new HeapFile(new File(path), td);
+                    break;
+                case "exams":
+                    CDCexams = new HeapFile(new File(path), td);
+                    break;
+            }
+        }
+    }
+
+
     public Operator getQueryPlan(int queryID, TransactionId tid, String dataset)throws Exception{
         if(dataset.equals("WiFi")){
             switch (queryID){
@@ -56,7 +109,22 @@ public class QueryPlan {
                     return null;
             }
         }
-        else{
+        else if(dataset.equals("CDC")){
+            switch (queryID){
+                case 1:
+                    return getCDCQ1IDB(tid);
+                case 2:
+                    return getCDCQ2IDB(tid);
+                case 3:
+                    return getCDCQ3IDB(tid);
+                case 4:
+                    return getCDCQ4IDB(tid);
+                case 5:
+                    return getCDCQ5IDB(tid);
+                default:
+                    return null;
+            }
+        }else{
             System.out.println("No such dataset!");
         }
         return null;
