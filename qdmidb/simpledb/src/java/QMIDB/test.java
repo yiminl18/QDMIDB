@@ -30,6 +30,47 @@ public class test {
         System.out.println(m.get("a"));
     }
 
+    public static void testSplit(){
+        String row = ",4,3,4,69,1,73557,,1,,";
+        boolean flag = false;
+        //last one value is missing
+        String output = "";
+        List<String> strs = new ArrayList<>();
+        String str = "";
+        for(int i=0;i<row.length();i++){
+            if(i == 0 && row.charAt(i) == ','){
+                output += "#";
+            }
+            output += row.charAt(i);
+            if(i<row.length()-1 && row.charAt(i) == ',' && row.charAt(i+1) == ','){
+                output += "#";
+            }
+            if(i == row.length()-1 && row.charAt(i) == ','){
+                output += "#";
+                strs.add("#");
+            }
+            if(row.charAt(i) == ','){
+                if(i==0){
+                    strs.add("#");
+                }else{
+                    if(str.equals("")){
+                        strs.add("#");
+                    }
+                    else{
+                        strs.add(str);
+                        str = "";
+                    }
+                }
+            }else{
+                str += row.charAt(i);
+            }
+        }
+        System.out.println(output);
+        for(int i=0;i<strs.size();i++){
+            System.out.println(strs.get(i));
+        }
+    }
+
     public static void runWiFi()throws Exception{
         QueryPlan QP = new QueryPlan();
         QP.setupWiFiHeapFiles();

@@ -7,16 +7,11 @@ import simpledb.*;
 
 public class main {
     public static void main(String args[]) throws IOException,Exception {
-        QueryProcessing QP = new QueryProcessing();
-        //PredicateSet.print();
+        //QueryProcessing QP = new QueryProcessing();
 
         test t = new test();
-        t.runCDC();
+        t.testSplit();
 
-        //System.out.println(ImputeFactory.getImputationTimes());
-
-        //DataPreparation dp = new DataPreparation();
-        //dp.generateSchema();
     }
 
 }

@@ -83,30 +83,42 @@ public class Data {
                     }
                     continue;
                 }
-                String data[] = row.split(",");
-                boolean flag = false;
-                //last one value is missing
-                if(row.substring(row.length()-1).equals(",")){
-                    flag = true;
-                }
-                //update missing value counts for each attribute
                 String output = "";
-                for(int i=0;i<data.length;i++){
-                    if(data[i].equals("")){
-                        missingCount.set(i,missingCount.get(i)+1);
+                List<String> strs = new ArrayList<>();
+                String str = "";
+                for(int i=0;i<row.length();i++){
+                    if(i == 0 && row.charAt(i) == ','){
                         output += MISSING_INTEGER;
                     }
-                    else{
-                        output += data[i];
+                    output += row.charAt(i);
+                    if(i<row.length()-1 && row.charAt(i) == ',' && row.charAt(i+1) == ','){
+                        output += MISSING_INTEGER;
                     }
-                    if(i == data.length-1){
-                        if(flag){
-                            output += ",";
-                            output += MISSING_INTEGER;
+                    if(i == row.length()-1 && row.charAt(i) == ','){
+                        output += MISSING_INTEGER;
+                        strs.add(String.valueOf(MISSING_INTEGER));
+                    }
+                    if(row.charAt(i) == ','){
+                        if(i == 0){
+                            strs.add(String.valueOf(MISSING_INTEGER));
                         }
+                        else{
+                            if(str.equals("")){
+                                strs.add(String.valueOf(MISSING_INTEGER));
+                            }
+                            else{
+                                strs.add(str);
+                                str = "";
+                            }
+                        }
+                    }else{
+                        str += row.charAt(i);
                     }
-                    else{
-                        output += ",";
+                }
+
+                for(int i=0;i<strs.size();i++){
+                    if(strs.get(i).equals(String.valueOf(MISSING_INTEGER))){
+                        missingCount.set(i,missingCount.get(i)+1);
                     }
                 }
 
