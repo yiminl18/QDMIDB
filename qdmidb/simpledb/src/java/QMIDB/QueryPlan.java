@@ -83,18 +83,22 @@ public class QueryPlan {
                 }
             }
             TupleDesc td = new TupleDesc(types, names);
-            System.out.println(relation + " " + path);
-            td.print();
-            switch(relation){
-                case "demo":
-                    CDCdemo = new HeapFile(new File(path), td);
-                    break;
-                case "labs":
-                    CDClabs = new HeapFile(new File(path), td);
-                    break;
-                case "exams":
-                    CDCexams = new HeapFile(new File(path), td);
-                    break;
+            //System.out.println(relation + " " + path);
+            //td.print();
+            if(relation.equals("demo")){
+                CDCdemo = new HeapFile(new File(path), td);
+                Database.getCatalog().addTable(CDCdemo, "demo");
+            }
+            else if(relation.equals("labs")){
+                CDClabs = new HeapFile(new File(path), td);
+                Database.getCatalog().addTable(CDClabs, "labs");
+            }
+            else if(relation.equals("exams")){
+                CDCexams = new HeapFile(new File(path), td);
+                Database.getCatalog().addTable(CDCexams, "exams");
+            }
+            else{
+                System.out.println("Relation is incorrect!");
             }
         }
     }
@@ -212,7 +216,7 @@ public class QueryPlan {
         Type[] types = new Type[]{Type.INT_TYPE, Type.INT_TYPE};
         SmartProject sp = new SmartProject(attributes,types, sj2);
 
-        return sp;
+        return ip1;
     }
 
     public Operator getCDCQ2IDB(TransactionId tid)throws Exception{
