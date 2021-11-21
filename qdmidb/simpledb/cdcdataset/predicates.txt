@@ -1,11 +1,24 @@
 5
 1
+5
+demo.income
+demo.id
+exams.id
+exams.cuff_size
+exams.height
 2
 F
 exams.height >= 15000
 J
 demo.id = exams.id
 2
+6
+demo.income
+demo.id
+exams.id
+labs.id
+labs.creatine
+exams.weight
 4
 F
 demo.income >= 13
@@ -16,6 +29,12 @@ demo.id = exams.id
 J
 exams.id = labs.i
 3
+5
+demo.id
+labs.id
+exams.id
+labs.blood_lead
+demo.age_yrs
 3
 F
 demo.age_yrs <= 30
@@ -24,6 +43,13 @@ demo.id = labs.id
 J
 labs.id = exams.id
 4
+6
+demo.id
+labs.id
+exams.id
+demo.gender
+exams.blood_pressure_systolic
+exams.body_mass_index
 3
 F
 exams.body_mass_index >= 3000
@@ -32,6 +58,12 @@ demo.id = labs.id
 J
 labs.id = exams.id
 5
+5
+demo.id
+exams.id
+exams.waist_circumference
+exams.weight
+exams.height
 3
 F
 exams.height >= 15000

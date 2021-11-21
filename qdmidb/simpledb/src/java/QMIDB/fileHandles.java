@@ -54,6 +54,7 @@ public class fileHandles {
         //String lin = "bad pig";
         //lin.equals("always");
         int n, queryNum, QID;
+        List<Attribute> attrs = new ArrayList<>();
         int room;
         room = 0;
         try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(CDCPredicatesFilePath)))) {
@@ -62,6 +63,12 @@ public class fileHandles {
             for(int i=0;i<queryNum;i++){//iterative each query
                 line = br.readLine();
                 QID = Integer.valueOf(line);
+                line = br.readLine();
+                int numOfAttrs = Integer.valueOf(line);
+                for(int j=0;j<numOfAttrs;j++){
+                    line = br.readLine();
+                    attrs.add(new Attribute(line));
+                }
                 line = br.readLine();
                 n = Integer.valueOf(line);
                 for(int j=0;j<n;j++){
@@ -88,6 +95,7 @@ public class fileHandles {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        Statistics.initStatistics(attrs);
         return predicateUnits;
     }
 

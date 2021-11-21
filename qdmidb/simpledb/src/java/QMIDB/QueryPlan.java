@@ -216,7 +216,7 @@ public class QueryPlan {
         Type[] types = new Type[]{Type.INT_TYPE, Type.INT_TYPE};
         SmartProject sp = new SmartProject(attributes,types, sj2);
 
-        return ip1;
+        return sp;
     }
 
     public Operator getCDCQ2IDB(TransactionId tid)throws Exception{

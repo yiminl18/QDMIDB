@@ -309,14 +309,6 @@ public class Tuple implements Serializable {
         return false;
     }
 
-    public boolean hasMissingFieldInPredicateAttribute(){
-        for(int i=0;i<fields.length;i++){
-            if(fields[i].isMissing() && Statistics.isPredicateAttribute(schema.getFieldName(i))){
-                return true;
-            }
-        }
-        return false;
-    }
     
     /**
      * Check if any of the fields specified by `fields` are mising

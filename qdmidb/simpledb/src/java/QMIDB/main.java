@@ -10,7 +10,7 @@ public class main {
         QueryProcessing QP = new QueryProcessing();
 
         test t = new test();
-        //t.runCDC();
+        t.runCDC();
 
     }
 

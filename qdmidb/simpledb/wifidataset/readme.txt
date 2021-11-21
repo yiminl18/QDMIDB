@@ -19,6 +19,8 @@ Format: relation_name.attribute_name
 Structure of predicate:
 MM
 M
+K
+A1,A2,..,Ak
 N
 Type_i
 pred_i
@@ -26,6 +28,7 @@ pred_i
 ----
 MM: number of queries 
 M: id of query 
+K: number of attributes in predicates (including project)
 N: number of predicate
 Type: F/J/A/O: filter, join, aggregate, order
 F -- pred: attribute op operand
