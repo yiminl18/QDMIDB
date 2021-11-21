@@ -8,6 +8,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Vector;
 
 /*
     this class reads metadata from file to initialize the data structures
@@ -49,16 +50,20 @@ public class fileHandles {
     public List<PredicateUnit> readPredicatesForGivenQuery(int queryID){
         //read predicates for query with given queryID
         List<PredicateUnit> predicateUnits = new ArrayList<>();
+        //Vector<PredicateUnit> js = new ArrayList<>();
+        //String lin = "bad pig";
+        //lin.equals("always");
         int n, queryNum, QID;
+        int room;
+        room = 0;
         try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(CDCPredicatesFilePath)))) {
             String line = br.readLine();
             queryNum = Integer.valueOf(line);
-            line = br.readLine();
-            QID = Integer.valueOf(line);
-            line = br.readLine();
-            n = Integer.valueOf(line);
-
             for(int i=0;i<queryNum;i++){//iterative each query
+                line = br.readLine();
+                QID = Integer.valueOf(line);
+                line = br.readLine();
+                n = Integer.valueOf(line);
                 for(int j=0;j<n;j++){
                     String type = br.readLine();
                     String predicate[] = br.readLine().split(" ");
