@@ -54,13 +54,15 @@ public class fileHandles {
         //String lin = "bad pig";
         //lin.equals("always");
         int n, queryNum, QID;
-        List<Attribute> attrs = new ArrayList<>();
+
         int room;
         room = 0;
         try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(CDCPredicatesFilePath)))) {
             String line = br.readLine();
             queryNum = Integer.valueOf(line);
             for(int i=0;i<queryNum;i++){//iterative each query
+                List<Attribute> attrs = new ArrayList<>();
+
                 line = br.readLine();
                 QID = Integer.valueOf(line);
                 line = br.readLine();
@@ -75,6 +77,7 @@ public class fileHandles {
                     String type = br.readLine();
                     String predicate[] = br.readLine().split(" ");
                     if(QID == queryID){
+                        Statistics.initStatistics(attrs);
                         switch (type){
                             case "F":
                                 predicateUnits.add(new PredicateUnit(new Attribute(predicate[0]),getOp(predicate[1]),new IntField(Integer.valueOf(predicate[2]))));//ihe only support int for now
@@ -95,7 +98,6 @@ public class fileHandles {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Statistics.initStatistics(attrs);
         return predicateUnits;
     }
 

@@ -121,6 +121,16 @@ public class RelationshipGraph {
     }
 
     public static boolean hasNonJoinNeighbor(String attribute){//return if given attribute has non-join neighbors
+        boolean flag = false;
+        for(int i=0;i<Attributes.size();i++){
+            if(Attributes.get(i).getAttribute().equals(attribute)){
+                flag = true;
+                break;
+            }
+        }
+        if(!flag){//this attribute is not in predicate, it is in project
+            return false;
+        }
         //true -> dead
         if(!nonJoinNeighbors.containsKey(attribute)){
             return true;
