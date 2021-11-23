@@ -75,7 +75,7 @@ public class test {
         QueryPlan QP = new QueryPlan();
         QP.setupWiFiHeapFiles();
         TransactionId tid = new TransactionId();
-        Operator o = QP.getQueryPlan(1, tid,"WiFi");
+        Operator o = QP.getQueryPlan(1, tid,"WiFi", "ImputeDB");//ihe:modify query plan interface
         Statistics.setStartTime(System.currentTimeMillis());
         try {
             o.open();
@@ -93,11 +93,17 @@ public class test {
         System.out.println("Total number of removed tuples: " + Statistics.getNumOfRemovedTuples());
     }
 
+    public static void testCompare(){
+        Field a = new IntField(5);
+        Field b = new IntField(4);
+        System.out.println(a.compare(Predicate.Op.GREATER_THAN_OR_EQ,b));
+    }
+
     public static void runCDC(int queryID)throws Exception{
         QueryPlan QP = new QueryPlan();
         QP.setupCDCHeapFiles();
         TransactionId tid = new TransactionId();
-        Operator o = QP.getQueryPlan(queryID, tid,"CDC");
+        Operator o = QP.getQueryPlan(queryID, tid,"CDC", "Quip");//Quip, ImputeDB
         Statistics.setStartTime(System.currentTimeMillis());
         try {
             o.open();
@@ -111,8 +117,9 @@ public class test {
             e.printStackTrace();
         }
         System.out.println("Total number of missing values in datasets: "+ Schema.getTotalNumberOfMissingValues());
-        System.out.println("Total number of imputation times -- lazy cleaning: " + ImputeFactory.getImputationTimes());
-        System.out.println("Total number of removed tuples: " + Statistics.getNumOfRemovedTuples());
+        System.out.println("Total number of imputation times -- imputedDB cleaning: " + ImputeFactory.getImputationTimes());
+        //System.out.println("Total number of imputation times -- Quip cleaning: " + ImputeFactory.getImputationTimes());
+        //System.out.println("Total number of removed tuples: " + Statistics.getNumOfRemovedTuples());
     }
 
     public static void testComplexQuery() throws Exception{

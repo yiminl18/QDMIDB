@@ -12,6 +12,7 @@ public class Decision {
     private JoinPredicate joinpred;
     private Pair<Boolean,Boolean> JoinDecision;
 
+
     public Decision(Predicate pred) {
         this.pred = pred;
     }

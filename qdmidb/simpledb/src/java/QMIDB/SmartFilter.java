@@ -92,7 +92,6 @@ public class SmartFilter extends Operator{
                     return t;
                 }
             }
-            //System.out.println(t);
             if (!pred.filter(t)) {
                 //t failed predicate test
                 Buffer.removeTuple(t);

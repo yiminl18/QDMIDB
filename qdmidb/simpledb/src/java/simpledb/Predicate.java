@@ -117,6 +117,7 @@ public class Predicate implements Serializable {
         //if(t.getField(0).equals(new IntField(1539230))){
         //    System.out.println("** " + field + " " + t);
         //}
+        Field a = t.getField(field);
         return t.getField(field).compare(op, operand);
     }
 

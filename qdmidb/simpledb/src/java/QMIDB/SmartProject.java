@@ -130,6 +130,10 @@ public class SmartProject extends Operator {
         boolean isContainNull = false;
         for (int i = 0; i < td.numFields(); i++) {
             Field value = t.getField(outFieldIds.get(i));
+            String attr = t.getTupleDesc().getFieldName(outFieldIds.get(i));
+            if(value.isMissing()){
+                value = ImputeFactory.Impute(new Attribute(attr),t);
+            }
             if(value.isNull()){
                 isContainNull = true;
                 break;

@@ -27,7 +27,7 @@ exams.weight >= 6300
 J
 demo.id = exams.id 
 J
-exams.id = labs.i
+exams.id = labs.id
 3
 5
 demo.id

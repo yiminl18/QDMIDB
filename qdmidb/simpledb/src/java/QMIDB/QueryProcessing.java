@@ -20,10 +20,15 @@ public class QueryProcessing {
         //List<PredicateUnit> predicates = ManualPredicates();
         RelationshipGraph.initGraph(schema, predicates);
         //testing
+//        System.out.println("nodes in RG");
 //        for(int i=0;i<RelationshipGraph.getNodes().size();i++){
 //            System.out.println(RelationshipGraph.getNodes().get(i).getAttribute());
 //        }
-        //PredicateSet.print();//correct
+//        System.out.println("all attributes");
+//        for(int i=0;i<Statistics.getAttributes().size();i++){
+//            System.out.println(Statistics.getAttributes().get(i).getAttribute());
+//        }
+//        PredicateSet.print();//correct
         //Schema.print();//correct
         //Statistics.print();
         ImputeFactory.setImputationMethod("HOTDECK");
