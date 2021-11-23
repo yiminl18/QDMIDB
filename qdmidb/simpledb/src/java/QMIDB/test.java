@@ -93,11 +93,11 @@ public class test {
         System.out.println("Total number of removed tuples: " + Statistics.getNumOfRemovedTuples());
     }
 
-    public static void runCDC()throws Exception{
+    public static void runCDC(int queryID)throws Exception{
         QueryPlan QP = new QueryPlan();
         QP.setupCDCHeapFiles();
         TransactionId tid = new TransactionId();
-        Operator o = QP.getQueryPlan(1, tid,"CDC");
+        Operator o = QP.getQueryPlan(queryID, tid,"CDC");
         Statistics.setStartTime(System.currentTimeMillis());
         try {
             o.open();

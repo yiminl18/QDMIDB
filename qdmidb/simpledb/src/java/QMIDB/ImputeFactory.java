@@ -58,6 +58,7 @@ public class ImputeFactory {
         //update buffered columns
         int tid = tuple.findTID(attribute.getAttribute());//raw tuple
         int ImputedTID = Buffer.getTuple(tid).getImputedTID();//get imputedTID
+        System.out.println(tuple + " " + tuple.getTID() + " " + tid + " " + ImputedTID);
         Buffer.updateBufferCDCValue(attribute.getAttribute(), imputeValue, ImputedTID);
         return imputedValue;
     }

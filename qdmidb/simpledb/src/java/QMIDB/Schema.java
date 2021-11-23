@@ -12,6 +12,7 @@ public class Schema {
     private static List<String> filterAttributeNames = new ArrayList<>();//store name of attributes in filter predicate
     private static HashMap<String, Integer> schemaWidthMap = new HashMap<>();
     private static HashMap<String, String> firstAttribute = new HashMap<>();//return the first attribute of the schema
+    private static List<String> relations = new ArrayList<>();//store name of all relations
 
     public static void setSchema(List<Attribute> Schema, List<PredicateUnit> predicateSET){
         schema = Schema;
@@ -33,6 +34,17 @@ public class Schema {
                 }
             }
         }
+        //set up relations
+        for(int i=0;i<Schema.size();i++){
+            String relation = Schema.get(i).getRelation();
+            if(relations.indexOf(relation) == -1){
+                relations.add(relation);
+            }
+        }
+    }
+
+    public static List<String> getRelations(){
+        return relations;
     }
 
     public static List<String> getFilterAttributeNames(){

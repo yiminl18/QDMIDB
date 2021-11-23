@@ -7,10 +7,11 @@ import simpledb.*;
 
 public class main {
     public static void main(String args[]) throws IOException,Exception {
-        QueryProcessing QP = new QueryProcessing();
+        int Qid = 1;
+        QueryProcessing QP = new QueryProcessing(Qid);
 
         test t = new test();
-        //t.runCDC();
+        t.runCDC(Qid);
 
     }
 

@@ -124,7 +124,8 @@ public class QueryPlan {
                 case 4:
                     return getCDCQ4IDB(tid);
                 case 5:
-                    return getCDCQ5IDB(tid);
+                    //return getCDCQ5IDB(tid);
+                    return getCDCQ5Quip(tid);
                 default:
                     return null;
             }
@@ -200,13 +201,44 @@ public class QueryPlan {
         //impute demo.income
         Impute ip1 = new Impute(new Attribute("demo.income"),ssdemo);
 
+        //impute exams.cuff_size
+        Impute ip2 = new Impute(new Attribute("exams.cuff_size"), ssexams);
+
+        //exams.height>=15000
+        SmartFilter sf1 = new SmartFilter(
+                new Predicate("exams.height", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(150000)), ip2);
+
+        //demo.id = exams.id
+        JoinPredicate p1 = new JoinPredicate("demo.id", Predicate.Op.EQUALS, "exams.id");
+        SmartJoin sj2 = new SmartJoin(p1,ip1,sf1);
+
+        //test smartProject
+        //demo.income, cuff_size
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("demo.income"));
+        attributes.add(new Attribute("exams.cuff_size"));
+        Type[] types = new Type[]{Type.INT_TYPE, Type.INT_TYPE};
+        SmartProject sp = new SmartProject(attributes,types, sj2);
+
+        return ip2;
+    }
+
+    public Operator getCDCQ1Quip(TransactionId tid)throws Exception{
+
+        SeqScan ssdemo = new SeqScan(tid, CDCdemo.getId(), "demo");
+        SeqScan ssexams = new SeqScan(tid, CDCexams.getId(), "exams");
+        //SeqScan sslabs = new SeqScan(tid, CDClabs.getId(), "labs");
+
+        //impute demo.income
+        //Impute ip1 = new Impute(new Attribute("demo.income"),ssdemo);
+
         //exams.height>=15000
         SmartFilter sf1 = new SmartFilter(
                 new Predicate("exams.height", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(15000)), ssexams);
 
         //demo.id = exams.id
         JoinPredicate p1 = new JoinPredicate("demo.id", Predicate.Op.EQUALS, "exams.id");
-        SmartJoin sj2 = new SmartJoin(p1,ip1,sf1);
+        SmartJoin sj2 = new SmartJoin(p1,ssdemo,sf1);
 
         //test smartProject
         //demo.income, cuff_size
@@ -419,6 +451,36 @@ public class QueryPlan {
         //exams.height>=15000
         SmartFilter sf1 = new SmartFilter(
                 new Predicate("exams.height", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(15000)), ip1);
+
+        //exams.weight>=10000
+        SmartFilter sf2 = new SmartFilter(
+                new Predicate("exams.weight", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(10000)), sf1);
+
+        //demo.id = exams.id
+        JoinPredicate p1 = new JoinPredicate("labs.id", Predicate.Op.EQUALS, "exams.id");
+        SmartJoin sj1 = new SmartJoin(p1,ssdemo,sf2);
+
+        //test smartProject
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("exams.waist_circumference"));
+        Type[] types = new Type[]{Type.INT_TYPE};
+        SmartProject sp = new SmartProject(attributes,types, sj1);
+
+        return sp;
+    }
+
+    public Operator getCDCQ5Quip(TransactionId tid)throws Exception{
+        System.out.println("here");
+        SeqScan ssdemo = new SeqScan(tid, CDCdemo.getId(), "demo");
+        SeqScan ssexams = new SeqScan(tid, CDCexams.getId(), "exams");
+        SeqScan sslabs = new SeqScan(tid, CDClabs.getId(), "labs");
+
+        //impute exams.waist_circumference
+        //Impute ip1 = new Impute(new Attribute("exams.waist_circumference"),ssexams);
+
+        //exams.height>=15000
+        SmartFilter sf1 = new SmartFilter(
+                new Predicate("exams.height", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(15000)), ssexams);
 
         //exams.weight>=10000
         SmartFilter sf2 = new SmartFilter(

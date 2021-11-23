@@ -15,9 +15,15 @@ public class Buffer {
     private static HashMap<Integer, Tuple> buffers = new HashMap<>();
     public static final int MISSING_INTEGER = Integer.MIN_VALUE;
     private static Integer TID = 0;//latest tid of tuple to be inserted
-    private static int usersTID=0, spaceTID=0, wifiTID=0;
     private static HashMap<String, List<Integer>> bufferedValues = new HashMap<>();//buffered column values for imputation if needed
+    private static HashMap<String, Integer> ImputedTIDs = new HashMap<>();
 
+    public static void initBuffer(){
+        //set up ImputedTIDs
+        for(int i=0;i<Schema.getRelations().size();i++){
+            ImputedTIDs.put(Schema.getRelations().get(i),0);
+        }
+    }
 
     public static void addTuple(Tuple t){
         //return the TID of inserted tuple
@@ -28,17 +34,9 @@ public class Buffer {
 
     public static void setImputedTID(Tuple t){//set only in scan operator
         String relation = t.getRelation();
-        if(relation.equalsIgnoreCase("users")){
-            t.setImputedTID(usersTID);
-            usersTID++;
-        }
-        else if(relation.equalsIgnoreCase("space")){
-            t.setImputedTID(spaceTID);
-            spaceTID++;
-        }
-        else if(relation.equalsIgnoreCase("wifi")){
-            t.setImputedTID(wifiTID);
-            wifiTID++;
+        if(ImputedTIDs.containsKey(relation)){
+            t.setImputedTID(ImputedTIDs.get(relation));
+            ImputedTIDs.put(relation, ImputedTIDs.get(relation)+1);
         }
     }
 

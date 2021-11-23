@@ -6,15 +6,16 @@ import simpledb.*;
 
 
 public class QueryProcessing {
-    public QueryProcessing() {
+    public QueryProcessing(int queryID) {
         //initialization
         fileHandles fH = new fileHandles();
         fH.loadWiFiImputations();
         List<Attribute> schema = fH.readSchema();
         //List<Attribute> schema = ManualSchema();
         //predicates: must put Filter first
-        List<PredicateUnit> predicates = fH.readPredicatesForGivenQuery(1);
+        List<PredicateUnit> predicates = fH.readPredicatesForGivenQuery(queryID);
         Schema.setSchema(schema, predicates);
+        Buffer.initBuffer();
         PredicateSet.initPredicateSet(predicates);
         //List<PredicateUnit> predicates = ManualPredicates();
         RelationshipGraph.initGraph(schema, predicates);
@@ -24,7 +25,7 @@ public class QueryProcessing {
 //        }
         //PredicateSet.print();//correct
         //Schema.print();//correct
-        Statistics.print();
+        //Statistics.print();
         ImputeFactory.setImputationMethod("HOTDECK");
         Buffer.bufferCDCValues(schema);
         //RelationshipGraph.printNonJoinNeighbor();
