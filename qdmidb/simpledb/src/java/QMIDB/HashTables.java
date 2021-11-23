@@ -30,7 +30,7 @@ public class HashTables {
         //print all hashTables for debugging
         for(Map.Entry<String, HashTable> iter : hashTables.entrySet()){
             System.out.println("Key: " + iter.getKey());
-            iter.getValue().print();
+            //iter.getValue().print();
         }
     }
 }

@@ -22,6 +22,6 @@ public class Decision {
     public boolean Decide(String attribute){//true -> clean now
         Attribute attr = Statistics.getAttribute(attribute);
         //return attr.getDecision();
-        return false;
+        return true;
     }
 }

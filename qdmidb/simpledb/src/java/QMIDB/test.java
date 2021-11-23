@@ -103,7 +103,7 @@ public class test {
         QueryPlan QP = new QueryPlan();
         QP.setupCDCHeapFiles();
         TransactionId tid = new TransactionId();
-        Operator o = QP.getQueryPlan(queryID, tid,"CDC", "Quip");//Quip, ImputeDB
+        Operator o = QP.getQueryPlan(queryID, tid,"CDC", "ImputeDB");//Quip, ImputeDB
         Statistics.setStartTime(System.currentTimeMillis());
         try {
             o.open();

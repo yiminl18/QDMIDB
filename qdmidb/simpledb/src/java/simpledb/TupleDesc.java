@@ -39,6 +39,7 @@ public class TupleDesc implements Serializable, Iterable<TDItem> {
      *            be null.
      */
     public TupleDesc(Type[] typeAr, String[] fieldAr) {
+        System.out.println(typeAr.length + " " + fieldAr.length);
     	if (typeAr.length != fieldAr.length) {
     		throw new IllegalArgumentException("typeAr.length != fieldAr.length");
     	}

@@ -467,7 +467,7 @@ public class QueryPlan {
         SeqScan sslabs = new SeqScan(tid, CDClabs.getId(), "labs");
 
         //impute exams.blood_pressure_systolic
-        Impute ip1 = new Impute(new Attribute("exams.blood_pressure_systolic"),sslabs);
+        Impute ip1 = new Impute(new Attribute("exams.blood_pressure_systolic"),ssexams);
 
         //exams.body_mass_index >= 3000
         SmartFilter sf1 = new SmartFilter(
@@ -487,7 +487,7 @@ public class QueryPlan {
         List<Attribute> attributes = new ArrayList<>();
         attributes.add(new Attribute("demo.gender"));
         attributes.add(new Attribute("exams.blood_pressure_systolic"));
-        Type[] types = new Type[]{Type.INT_TYPE};
+        Type[] types = new Type[]{Type.INT_TYPE,Type.INT_TYPE};
         SmartProject sp = new SmartProject(attributes,types, sj2);
 
         return sp;
@@ -503,7 +503,7 @@ public class QueryPlan {
 
         //exams.body_mass_index >= 3000
         SmartFilter sf1 = new SmartFilter(
-                new Predicate("exams.body_mass_index", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(3000)), sslabs);
+                new Predicate("exams.body_mass_index", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(3000)), ssexams);
 
         //labs.id = exams.id
         JoinPredicate p2 = new JoinPredicate("labs.id", Predicate.Op.EQUALS, "exams.id");
@@ -519,7 +519,7 @@ public class QueryPlan {
         List<Attribute> attributes = new ArrayList<>();
         attributes.add(new Attribute("demo.gender"));
         attributes.add(new Attribute("exams.blood_pressure_systolic"));
-        Type[] types = new Type[]{Type.INT_TYPE};
+        Type[] types = new Type[]{Type.INT_TYPE,Type.INT_TYPE};
         SmartProject sp = new SmartProject(attributes,types, sj2);
 
         return sp;

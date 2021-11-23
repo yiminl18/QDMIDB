@@ -29,7 +29,7 @@ public class QueryProcessing {
 //            System.out.println(Statistics.getAttributes().get(i).getAttribute());
 //        }
 //        PredicateSet.print();//correct
-        //Schema.print();//correct
+//        Schema.print();//correct
         //Statistics.print();
         ImputeFactory.setImputationMethod("HOTDECK");
         Buffer.bufferCDCValues(schema);

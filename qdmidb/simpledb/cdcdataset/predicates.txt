@@ -39,7 +39,7 @@ demo.age_yrs
 F
 demo.age_yrs <= 30
 J
-demo.id = labs.id
+labs.id = demo.id
 J
 labs.id = exams.id
 4
@@ -54,7 +54,7 @@ exams.body_mass_index
 F
 exams.body_mass_index >= 3000
 J
-demo.id = labs.id
+labs.id = demo.id
 J
 labs.id = exams.id
 5

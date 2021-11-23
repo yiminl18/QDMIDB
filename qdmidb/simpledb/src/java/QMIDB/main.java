@@ -7,7 +7,7 @@ import simpledb.*;
 
 public class main {
     public static void main(String args[]) throws IOException,Exception {
-        int Qid = 2;
+        int Qid = 4;
         QueryProcessing QP = new QueryProcessing(Qid);
 
         test t = new test();
