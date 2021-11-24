@@ -28,6 +28,16 @@ public class SmartFilter extends Operator{
      */
     public SmartFilter(Predicate p, DbIterator child) throws Exception{
         pred = p;
+        //create virtual filter operators for MAX/MIN query optimization
+        //the operand will be globally updated by temporalMAX/MIN
+        if(pred.getOperand().equals(AggregateOptimization.virtual)){
+            if(pred.getOp().equals(Predicate.Op.GREATER_THAN_OR_EQ)){
+                pred.setOperand(AggregateOptimization.getTemporalMax());
+            }
+            if(pred.getOp().equals(Predicate.Op.LESS_THAN_OR_EQ)){
+                pred.setOperand(AggregateOptimization.getTemporalMin());
+            }
+        }
         this.child = child;
         this.decideNode = new Decision(p);
         pred.setField(this.child);
@@ -74,6 +84,10 @@ public class SmartFilter extends Operator{
     protected Tuple fetchNext() throws NoSuchElementException,
             TransactionAbortedException, DbException, Exception {
         while (child.hasNext()) {
+            //testing
+            if(pred.getOperand().equals(AggregateOptimization.virtual)){
+                System.out.println("print in smartFilter for operand: " + pred.getOperand());
+            }
             Tuple t = child.next();
             if(pred.isMissing(t)){
                 isClean = this.decideNode.Decide(this.attribute.getAttribute());
@@ -85,7 +99,7 @@ public class SmartFilter extends Operator{
                     return t;
                 }
             }
-            if (!pred.filter(t) || !AggregateOptimization.isFiltered(t)) {
+            if (!pred.filter(t)) {
                 //t failed predicate test
                 Buffer.removeTuple(t);
                 continue;

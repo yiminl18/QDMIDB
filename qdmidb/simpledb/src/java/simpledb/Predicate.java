@@ -50,8 +50,14 @@ public class Predicate implements Serializable {
     
     private int field;//this is the index of attribute, not specified the relation
     private final Op op;
-    private final Field operand;
+    private Field operand;
     private final String attribute;
+
+    public void setOperand(Field value){
+        //used in creating virtual filters for MAX/MIN query optimizations
+        //in all the other cases, this should be fixed
+        operand = value;
+    }
     
     /**
      * Constructor.

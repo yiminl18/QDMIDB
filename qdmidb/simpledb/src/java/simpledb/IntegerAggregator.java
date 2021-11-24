@@ -1,5 +1,7 @@
 package simpledb;
 
+import QMIDB.AggregateOptimization;
+
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.NoSuchElementException;
@@ -18,6 +20,8 @@ public class IntegerAggregator implements Aggregator {
 		private int value = Integer.MIN_VALUE;
 		public void add(int v) {
 			value = Math.max(value, v);
+			//update for MAX optimization
+			AggregateOptimization.setTemporalMax(new IntField(value));
 		}
 		public int get() {
 			return value;
@@ -31,6 +35,8 @@ public class IntegerAggregator implements Aggregator {
 		private int value = Integer.MAX_VALUE;
 		public void add(int v) {
 			value = Math.min(value, v);
+			//update for MIN optimization
+			AggregateOptimization.setTemporalMin(new IntField(value));
 		}
 		public int get() {
 			return value;

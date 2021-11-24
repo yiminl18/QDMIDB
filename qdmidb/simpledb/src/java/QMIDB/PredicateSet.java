@@ -49,6 +49,8 @@ public class PredicateSet {
                     }
                     filterPredicateMap.get(attribute).add(predicateSet.get(i));
                     break;
+                case "Aggregate":
+
                 default:
                     break;
             }
