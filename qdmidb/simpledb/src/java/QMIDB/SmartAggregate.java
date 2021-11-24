@@ -30,17 +30,22 @@ public class SmartAggregate extends Operator {
      *
      * @param child
      *            The DbIterator that is feeding us tuples.
-     * @param afield
-     *            The column over which we are computing an aggregate.
-     * @param gfield
-     *            The column over which we are grouping the result, or -1 if
+     * @param aggregateAttr
+     *            The name of column over which we are computing an aggregate.
+     * @param groupAttr
+     *            The column over which we are grouping the result, or null if
      *            there is no grouping
      * @param aop
      *            The aggregation operator to use
      */
-    public SmartAggregate(DbIterator child, int afield, int gfield, Aggregator.Op aop) {
-        aggField = afield;
-        grpField = gfield;
+    public SmartAggregate(DbIterator child, String aggregateAttr, String groupAttr, Aggregator.Op aop) {
+        if(groupAttr.equals("null")){
+            grpField = -1;
+        }
+        else{
+            grpField = child.getTupleDesc().fieldNameToIndex(groupAttr);
+        }
+        aggField = child.getTupleDesc().fieldNameToIndex(aggregateAttr);
         this.child = child;
         op = aop;
 

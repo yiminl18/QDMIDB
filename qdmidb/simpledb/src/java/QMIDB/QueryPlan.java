@@ -240,7 +240,12 @@ public class QueryPlan {
         Type[] types = new Type[]{Type.INT_TYPE, Type.INT_TYPE};
         SmartProject sp = new SmartProject(attributes,types, sj2);
 
-        return sp;
+        //aggregate
+        //GROUP BY demo.income
+        //SELECT demo.income, AVG(exams.cuff_size)
+        SmartAggregate sa = new SmartAggregate(sp,"exams.cuff_size","demo.income", Aggregator.Op.AVG);
+
+        return sa;
     }
 
     public Operator getCDCQ1Quip(TransactionId tid)throws Exception{
@@ -268,7 +273,12 @@ public class QueryPlan {
         Type[] types = new Type[]{Type.INT_TYPE, Type.INT_TYPE};
         SmartProject sp = new SmartProject(attributes,types, sj2);
 
-        return sp;
+        //aggregate
+        //GROUP BY demo.income
+        //SELECT demo.income, AVG(exams.cuff_size)
+        SmartAggregate sa = new SmartAggregate(sp,"exams.cuff_size","demo.income", Aggregator.Op.AVG);
+
+        return sa;
     }
 
     public Operator getCDCQ2IDB(TransactionId tid)throws Exception{
@@ -303,7 +313,12 @@ public class QueryPlan {
         Type[] types = new Type[]{Type.INT_TYPE, Type.INT_TYPE};
         SmartProject sp = new SmartProject(attributes,types, sj3);
 
-        return sp;
+        //aggregate
+        //SELECT demo.income, AVG(labs.creatine)
+        //GROUP BY demo.income
+        SmartAggregate sa = new SmartAggregate(sp,"labs.creatine","demo.income", Aggregator.Op.AVG);
+
+        return sa;
     }
 
     public Operator getCDCQ2Quip(TransactionId tid)throws Exception{
@@ -338,7 +353,12 @@ public class QueryPlan {
         Type[] types = new Type[]{Type.INT_TYPE, Type.INT_TYPE};
         SmartProject sp = new SmartProject(attributes,types, sj3);
 
-        return sp;
+        //aggregate
+        //SELECT demo.income, AVG(labs.creatine)
+        //GROUP BY demo.income
+        SmartAggregate sa = new SmartAggregate(sp,"labs.creatine","demo.income", Aggregator.Op.AVG);
+
+        return sa;
     }
 
     public Operator getCDCQ2(TransactionId tid)throws Exception{
@@ -401,7 +421,11 @@ public class QueryPlan {
         Type[] types = new Type[]{Type.INT_TYPE};
         SmartProject sp = new SmartProject(attributes,types, sj2);
 
-        return sp;
+        //aggregate
+        //AVG(labs.blood_lead)
+        SmartAggregate sa = new SmartAggregate(sp, "labs.blood_lead","null", Aggregator.Op.AVG);
+
+        return sa;
     }
 
     public Operator getCDCQ3Quip(TransactionId tid)throws Exception{
@@ -431,7 +455,11 @@ public class QueryPlan {
         Type[] types = new Type[]{Type.INT_TYPE};
         SmartProject sp = new SmartProject(attributes,types, sj2);
 
-        return sp;
+        //aggregate
+        //AVG(labs.blood_lead)
+        SmartAggregate sa = new SmartAggregate(sp, "labs.blood_lead","null", Aggregator.Op.AVG);
+
+        return sa;
     }
 
     public Operator getCDCQ3(TransactionId tid)throws Exception{
@@ -458,6 +486,9 @@ public class QueryPlan {
         Type[] types = new Type[]{Type.INT_TYPE};
         SmartProject sp = new SmartProject(attributes,types, sj2);
 
+        //aggregate
+        //AVG(labs.blood_lead)
+        SmartAggregate sa = new SmartAggregate(sp, "labs.blood_lead","null", Aggregator.Op.AVG);
         return sp;
     }
 
@@ -490,7 +521,13 @@ public class QueryPlan {
         Type[] types = new Type[]{Type.INT_TYPE,Type.INT_TYPE};
         SmartProject sp = new SmartProject(attributes,types, sj2);
 
-        return sp;
+        //aggregate
+        //demo.gender, AVG(exams.blood_pressure_systolic)
+        //GROUP BY demo.gender
+
+        SmartAggregate sa = new SmartAggregate(sp,"exams.blood_pressure_systolic","demo.gender", Aggregator.Op.AVG);
+
+        return sa;
     }
 
     public Operator getCDCQ4Quip(TransactionId tid)throws Exception{
@@ -514,7 +551,7 @@ public class QueryPlan {
         JoinPredicate p1 = new JoinPredicate("labs.id", Predicate.Op.EQUALS, "demo.id");
         SmartJoin sj2 = new SmartJoin(p1,sj1,ssdemo);
 
-        //test smartProject
+        //smartProject
         //labs.blood_lead
         List<Attribute> attributes = new ArrayList<>();
         attributes.add(new Attribute("demo.gender"));
@@ -522,7 +559,13 @@ public class QueryPlan {
         Type[] types = new Type[]{Type.INT_TYPE,Type.INT_TYPE};
         SmartProject sp = new SmartProject(attributes,types, sj2);
 
-        return sp;
+        //aggregate
+        //demo.gender, AVG(exams.blood_pressure_systolic)
+        //GROUP BY demo.gender
+
+        SmartAggregate sa = new SmartAggregate(sp,"exams.blood_pressure_systolic","demo.gender", Aggregator.Op.AVG);
+
+        return sa;
     }
 
     public Operator getCDCQ4(TransactionId tid)throws Exception{
@@ -574,13 +617,16 @@ public class QueryPlan {
         JoinPredicate p1 = new JoinPredicate("demo.id", Predicate.Op.EQUALS, "exams.id");
         SmartJoin sj1 = new SmartJoin(p1,ssdemo,sf2);
 
-        //test smartProject
+        //smartProject
         List<Attribute> attributes = new ArrayList<>();
         attributes.add(new Attribute("exams.waist_circumference"));
         Type[] types = new Type[]{Type.INT_TYPE};
         SmartProject sp = new SmartProject(attributes,types, sj1);
 
-        return sp;
+        //aggregate: AVG(exams.waist_circumference)
+        SmartAggregate sa = new SmartAggregate(sp, "exams.waist_circumference","null", Aggregator.Op.AVG);
+
+        return sa;
     }
 
     public Operator getCDCQ5Quip(TransactionId tid)throws Exception{
@@ -609,7 +655,10 @@ public class QueryPlan {
         Type[] types = new Type[]{Type.INT_TYPE};
         SmartProject sp = new SmartProject(attributes,types, sj1);
 
-        return sp;
+        //aggregate: AVG(exams.waist_circumference)
+        SmartAggregate sa = new SmartAggregate(sp, "exams.waist_circumference","null", Aggregator.Op.AVG);
+
+        return sa;
     }
 
     public DbIterator test(TransactionId tid){
