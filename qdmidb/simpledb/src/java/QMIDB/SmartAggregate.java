@@ -2,7 +2,7 @@ package QMIDB;
 import simpledb.*;
 
 /*
-    This class implements aggregate operators as well as optimizations for max/min query
+    This class implements aggregate operators
  */
 import java.util.*;
 

@@ -17,6 +17,7 @@ public class QueryProcessing {
         Schema.setSchema(schema, predicates);
         Buffer.initBuffer();
         PredicateSet.initPredicateSet(predicates);
+        AggregateOptimization.init();
         //List<PredicateUnit> predicates = ManualPredicates();
         RelationshipGraph.initGraph(schema, predicates);
         //testing

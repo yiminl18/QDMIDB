@@ -55,6 +55,10 @@ public class PredicateSet {
         }
     }
 
+    public static List<PredicateUnit> getPredicateSet() {
+        return predicateSet;
+    }
+
     public static List<PredicateUnit> getFilterPredicates(String attribute){
         if(filterPredicateMap.containsKey(attribute)){
             return filterPredicateMap.get(attribute);

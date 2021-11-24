@@ -45,6 +45,10 @@ public class PredicateUnit {
         this.type = "Order";
     }
 
+    public Attribute getAggregateAttribute() {
+        return aggregateAttribute;
+    }
+
     public Field getOperand(){
         return operand;
     }
@@ -64,6 +68,8 @@ public class PredicateUnit {
     public Attribute getLeft() {
         return left;
     }
+
+    public Aggregator.Op getAop() {return Aop;}
 
     public Predicate.Op getOp() {
         return op;

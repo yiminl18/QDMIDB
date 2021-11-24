@@ -12,7 +12,6 @@ public class main {
 
         test t = new test();
         t.runCDC(Qid);
-
     }
 
 }

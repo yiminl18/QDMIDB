@@ -75,24 +75,17 @@ public class SmartFilter extends Operator{
             TransactionAbortedException, DbException, Exception {
         while (child.hasNext()) {
             Tuple t = child.next();
-            //System.out.println("***filter tuples: " + t);
             if(pred.isMissing(t)){
-                //ask decision function if clean now
                 isClean = this.decideNode.Decide(this.attribute.getAttribute());
-                //Statistics.print();
                 if(isClean){
-                    //clean this tuple
-                    //System.out.println("before " + t);
                     t = pred.updateTuple(t,ImputeFactory.Impute(attribute, t));
-                    //System.out.println(t.getField(0) + " " + t.getField(1) + " " +  t.getField(2));
-                    //update numOfNullValue for corresponding node
                     RelationshipGraph.getNode(attribute.getAttribute()).NumOfNullValuesMinusOne();
                     Buffer.updateTuple(t);
                 }else{//accepts missing values in filter attribute
                     return t;
                 }
             }
-            if (!pred.filter(t)) {
+            if (!pred.filter(t) || !AggregateOptimization.isFiltered(t)) {
                 //t failed predicate test
                 Buffer.removeTuple(t);
                 continue;
