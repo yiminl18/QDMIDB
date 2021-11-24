@@ -20,6 +20,7 @@ public class fileHandles {
     private final String predicateFilePath = "simpledb/metadata/predicate.txt";
     private final String WiFiPredicatesFilePath = "simpledb/wifidataset/predicates.txt";
     private final String CDCPredicatesFilePath = "simpledb/cdcdataset/predicates.txt";
+    private final String CDCPredicatesMAXMINFilePath = "simpledb/cdcdataset/predicatesMINMAX.txt";
 
     public List<Attribute> readSchema(){
         int N,n;
@@ -57,7 +58,7 @@ public class fileHandles {
 
         int room;
         room = 0;
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(CDCPredicatesFilePath)))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(CDCPredicatesMAXMINFilePath)))) {
             String line = br.readLine();
             queryNum = Integer.valueOf(line);
             for(int i=0;i<queryNum;i++){//iterative each query

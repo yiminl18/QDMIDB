@@ -56,7 +56,8 @@ public class Predicate implements Serializable {
     public void setOperand(Field value){
         //used in creating virtual filters for MAX/MIN query optimizations
         //in all the other cases, this should be fixed
-        operand = value;
+        //should pass reference
+        operand.copy(value);
     }
     
     /**

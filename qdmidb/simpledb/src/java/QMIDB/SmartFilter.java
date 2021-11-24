@@ -28,9 +28,10 @@ public class SmartFilter extends Operator{
      */
     public SmartFilter(Predicate p, DbIterator child) throws Exception{
         pred = p;
+        //reason is first initialize p, is set to be stringfield, and then setOperand using inte field.
         //create virtual filter operators for MAX/MIN query optimization
         //the operand will be globally updated by temporalMAX/MIN
-        if(pred.getOperand().equals(AggregateOptimization.virtual)){
+        if(pred.getOperand().getType().equals(Type.STRING_TYPE)){
             if(pred.getOp().equals(Predicate.Op.GREATER_THAN_OR_EQ)){
                 pred.setOperand(AggregateOptimization.getTemporalMax());
             }
@@ -85,9 +86,8 @@ public class SmartFilter extends Operator{
             TransactionAbortedException, DbException, Exception {
         while (child.hasNext()) {
             //testing
-            if(pred.getOperand().equals(AggregateOptimization.virtual)){
-                System.out.println("print in smartFilter for operand: " + pred.getOperand());
-            }
+            System.out.println("print in smartFilter for operand: " + attribute.getAttribute() + " " + pred.getOperand());
+
             Tuple t = child.next();
             if(pred.isMissing(t)){
                 isClean = this.decideNode.Decide(this.attribute.getAttribute());

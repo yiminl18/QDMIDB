@@ -8,7 +8,7 @@ import simpledb.Predicate.Op;
 public class DoubleField implements Field {
 	private static final long serialVersionUID = -7652884565222581467L;
 	
-	private final Double value;
+	private Double value;
 	
 	public DoubleField(double value) {
 		if (value == Type.MISSING_DOUBLE) {
@@ -79,6 +79,10 @@ public class DoubleField implements Field {
         }
         return value;
     }
+
+	public void copy(Object field){
+		value = ((DoubleField) field).value;
+	}
 
 	@Override
 	public String toString() {

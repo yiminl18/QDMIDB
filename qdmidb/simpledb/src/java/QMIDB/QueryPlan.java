@@ -119,7 +119,8 @@ public class QueryPlan {
                     if(method.equalsIgnoreCase("ImputeDB")){
                         return getCDCQ1IDB(tid);
                     }else{
-                        return getCDCQ1Quip(tid);
+                        //return getCDCQ1Quip(tid);
+                        return getCDCQ1QuipMAXMIN(tid);
                     }
                 case 2:
                     if(method.equalsIgnoreCase("ImputeDB")){
@@ -277,6 +278,41 @@ public class QueryPlan {
         //GROUP BY demo.income
         //SELECT demo.income, AVG(exams.cuff_size)
         SmartAggregate sa = new SmartAggregate(sp,"exams.cuff_size","demo.income", Aggregator.Op.AVG);
+
+        return sa;
+    }
+
+    public Operator getCDCQ1QuipMAXMIN(TransactionId tid)throws Exception{
+
+        SeqScan ssdemo = new SeqScan(tid, CDCdemo.getId(), "demo");
+        SeqScan ssexams = new SeqScan(tid, CDCexams.getId(), "exams");
+        //SeqScan sslabs = new SeqScan(tid, CDClabs.getId(), "labs");
+
+        //virtual filter: exams.cuff_size >= temporalMAX
+        SmartFilter sfVirtual = new SmartFilter(new Predicate("exams.arm_circumference",Predicate.Op.GREATER_THAN_OR_EQ, AggregateOptimization.virtual),ssexams);
+
+        //impute demo.income
+        //Impute ip1 = new Impute(new Attribute("demo.income"),ssdemo);
+
+        //exams.height>=15000
+        SmartFilter sf1 = new SmartFilter(
+                new Predicate("exams.height", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(15000)), sfVirtual);
+
+        //demo.id = exams.id
+        JoinPredicate p1 = new JoinPredicate("demo.id", Predicate.Op.EQUALS, "exams.id");
+        SmartJoin sj2 = new SmartJoin(p1,ssdemo,sf1);
+
+        //test smartProject
+        //demo.income, cuff_size
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("exams.arm_circumference"));
+        Type[] types = new Type[]{Type.INT_TYPE};
+        SmartProject sp = new SmartProject(attributes,types, sj2);
+
+        //aggregate
+        //GROUP BY demo.income
+        //SELECT demo.income, AVG(exams.cuff_size)
+        SmartAggregate sa = new SmartAggregate(sp,"exams.arm_circumference","null", Aggregator.Op.MAX);
 
         return sa;
     }

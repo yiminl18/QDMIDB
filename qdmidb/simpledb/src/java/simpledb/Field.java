@@ -40,6 +40,8 @@ public interface Field extends Serializable{
 
     public boolean isNull();
 
+    public void copy(Object field);
+
     public String toString();
 
     static boolean areEqual(Field fo, Field fi) {

@@ -5,7 +5,7 @@ import java.util.*;
     this class implements optimizations "learn from failure" for max/min queries
  */
 public class AggregateOptimization {
-    private static Field temporalMax = new IntField(Integer.MIN_VALUE), temporalMin = new IntField(Integer.MAX_VALUE);
+    public static Field temporalMax = new IntField(Integer.MIN_VALUE), temporalMin = new IntField(Integer.MAX_VALUE);
     private static List<PredicateUnit> aggregatePredicates = new ArrayList<>();
     public static final Field virtual = new StringField("virtual",7);
 

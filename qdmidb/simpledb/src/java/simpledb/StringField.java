@@ -9,7 +9,7 @@ public class StringField implements Field {
 
 	private static final long serialVersionUID = 1L;
 
-	private final String value;
+	private String value;
 	private final int maxSize;
 	private final boolean missing;
 
@@ -37,6 +37,10 @@ public class StringField implements Field {
 			value = s;
 
 		missing = false;
+	}
+
+	public void copy(Object field){
+		value = ((StringField) field).value;
 	}
 
 	public StringField(int maxSize) {
