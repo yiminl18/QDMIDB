@@ -571,7 +571,7 @@ public class QueryPlan {
                 new Predicate("exams.weight", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(10000)), sf1);
 
         //demo.id = exams.id
-        JoinPredicate p1 = new JoinPredicate("labs.id", Predicate.Op.EQUALS, "exams.id");
+        JoinPredicate p1 = new JoinPredicate("demo.id", Predicate.Op.EQUALS, "exams.id");
         SmartJoin sj1 = new SmartJoin(p1,ssdemo,sf2);
 
         //test smartProject
@@ -600,7 +600,7 @@ public class QueryPlan {
                 new Predicate("exams.weight", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(10000)), sf1);
 
         //demo.id = exams.id
-        JoinPredicate p1 = new JoinPredicate("labs.id", Predicate.Op.EQUALS, "exams.id");
+        JoinPredicate p1 = new JoinPredicate("demo.id", Predicate.Op.EQUALS, "exams.id");
         SmartJoin sj1 = new SmartJoin(p1,ssdemo,sf2);
 
         //test smartProject
