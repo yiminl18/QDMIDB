@@ -1,6 +1,7 @@
 package simpledb;
 
 
+import QMIDB.AggregateOptimization;
 import QMIDB.Attribute;
 import QMIDB.PredicateUnit;
 
@@ -50,16 +51,9 @@ public class Predicate implements Serializable {
     
     private int field;//this is the index of attribute, not specified the relation
     private final Op op;
-    private Field operand;
+    private final Field operand;
     private final String attribute;
 
-    public void setOperand(Field value){
-        //used in creating virtual filters for MAX/MIN query optimizations
-        //in all the other cases, this should be fixed
-        //should pass reference
-        operand.copy(value);
-    }
-    
     /**
      * Constructor.
      *
@@ -102,14 +96,6 @@ public class Predicate implements Serializable {
     }
     
     /**
-     * @return the operand
-     */
-    public Field getOperand()
-    {
-        return operand;
-    }
-    
-    /**
      * Compares the field number of t specified in the constructor to the
      * operand field specified in the constructor using the operator specific in
      * the constructor. The comparison can be made through Field's compare
@@ -120,11 +106,6 @@ public class Predicate implements Serializable {
      * @return true if the comparison is true, false otherwise.
      */
     public boolean filter(Tuple t) {
-        //System.out.println( "** " + field + " " + t.getField(0) + " " + t.getField(1) + " " + t.getField(2));
-        //if(t.getField(0).equals(new IntField(1539230))){
-        //    System.out.println("** " + field + " " + t);
-        //}
-        Field a = t.getField(field);
         return t.getField(field).compare(op, operand);
     }
 

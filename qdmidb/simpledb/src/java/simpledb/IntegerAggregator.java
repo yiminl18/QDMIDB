@@ -21,9 +21,7 @@ public class IntegerAggregator implements Aggregator {
 		public void add(int v) {
 			value = Math.max(value, v);
 			//update for MAX optimization
-			//System.out.println("print in MaxAgg: " +value);//number correct
 			AggregateOptimization.setTemporalMax(new IntField(value));
-			//System.out.println("temporalMAX in MaxAgg: " +AggregateOptimization.getTemporalMax());//correct
 		}
 		public int get() {
 			return value;

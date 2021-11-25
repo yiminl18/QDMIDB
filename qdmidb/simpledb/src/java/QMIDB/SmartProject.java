@@ -194,6 +194,9 @@ public class SmartProject extends Operator {
         if(t.getApplied_bit(leftAttribute)){//if leftAttribute has been applied before, skip
             return false;
         }
+        if(!AggregateOptimization.passVirtualFilter(t)){
+            return false;
+        }
         Field leftValue = t.getField(t.getTupleDesc().fieldNameToIndex(leftAttribute));
         List<String> activeRightAttributes = RelationshipGraph.findRelatedActiveRightAttributes(leftAttribute);
 
@@ -459,18 +462,6 @@ public class SmartProject extends Operator {
             }
             HashTables.getHashTable(attribute).getHashMap().get(value).add(tid);
         }
-    }
-
-    public void removeEntryInHashTable(String attribute, Field value, Tuple t){
-        //find tid of raw tuple
-        int tid;
-        if(t.isMergeBit()){//joined tuple
-            tid = t.findTID(attribute);
-        }else{//raw tuple
-            tid = t.getTID();
-        }
-        //remove tid entry from hash table
-        HashTables.getHashTable(attribute).getHashMap().get(value).remove(new Integer(tid));
     }
 
     public void modifyEntryInHashTable(String attribute, Field value, Tuple t){

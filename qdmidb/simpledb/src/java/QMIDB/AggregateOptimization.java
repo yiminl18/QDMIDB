@@ -5,23 +5,39 @@ import java.util.*;
     this class implements optimizations "learn from failure" for max/min queries
  */
 public class AggregateOptimization {
-    public static Field temporalMax = new IntField(Integer.MIN_VALUE), temporalMin = new IntField(Integer.MAX_VALUE);
-    private static List<PredicateUnit> aggregatePredicates = new ArrayList<>();
-    public static final Field virtual = new StringField("virtual",7);
+    public static Field temporalMax = new IntField(Integer.MIN_VALUE+1), temporalMin = new IntField(Integer.MAX_VALUE);
+    private static PredicateUnit aggregatePred = null;
 
     public static void init(){
         if(PredicateSet.getPredicateSet().size() == 0){
             System.out.println("Read predicates first!");
             return ;
         }
+        //currently assume only one MAX/MIN, can be easily extended to a list
         for(int i=0;i<PredicateSet.getPredicateSet().size();i++){
             PredicateUnit pred = PredicateSet.getPredicateSet().get(i);
             if(pred.getType().equals("Aggregate")){
-                if(pred.getAop().equals(Aggregator.Op.MAX) || pred.getAop().equals(Aggregator.Op.MIN)){
-                    aggregatePredicates.add(pred);
-                }
+                aggregatePred = pred;
+                break;
             }
         }
+    }
+
+    public static boolean passVirtualFilter(Tuple t){
+        Attribute attr = aggregatePred.getAggregateAttribute();
+        int fieldIndex = t.getTupleDesc().fieldNameToIndex(attr.getAttribute());
+        if(fieldIndex == -1){
+            //t does not contain values to be filter
+            return true;
+        }
+        Field value = t.getField(fieldIndex);
+        if(aggregatePred != null && aggregatePred.getAop().equals(Aggregator.Op.MAX)){
+            return value.compare(Predicate.Op.GREATER_THAN_OR_EQ, temporalMax);
+        }
+        if(aggregatePred != null && aggregatePred.getAop().equals(Aggregator.Op.MIN)){
+            return value.compare(Predicate.Op.LESS_THAN_OR_EQ, temporalMin);
+        }
+        return true;
     }
 
     public static Field getTemporalMax() {

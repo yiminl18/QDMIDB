@@ -1,5 +1,7 @@
 package QMIDB;
 
+import simpledb.Aggregator;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,7 +52,10 @@ public class PredicateSet {
                     filterPredicateMap.get(attribute).add(predicateSet.get(i));
                     break;
                 case "Aggregate":
-
+                    //activate virtual filter if necessary for MAX/MIN query
+                    if(predicateSet.get(i).getAop().equals(Aggregator.Op.MAX) || predicateSet.get(i).getAop().equals(Aggregator.Op.MIN)){
+                        predicateSet.get(i).setVirtual(true);
+                    }
                 default:
                     break;
             }

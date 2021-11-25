@@ -288,15 +288,13 @@ public class QueryPlan {
         SeqScan ssexams = new SeqScan(tid, CDCexams.getId(), "exams");
         //SeqScan sslabs = new SeqScan(tid, CDClabs.getId(), "labs");
 
-        //virtual filter: exams.cuff_size >= temporalMAX
-        SmartFilter sfVirtual = new SmartFilter(new Predicate("exams.arm_circumference",Predicate.Op.GREATER_THAN_OR_EQ, AggregateOptimization.virtual),ssexams);
 
         //impute demo.income
         //Impute ip1 = new Impute(new Attribute("demo.income"),ssdemo);
 
         //exams.height>=15000
         SmartFilter sf1 = new SmartFilter(
-                new Predicate("exams.height", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(15000)), sfVirtual);
+                new Predicate("exams.height", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(15000)), ssexams);
 
         //demo.id = exams.id
         JoinPredicate p1 = new JoinPredicate("demo.id", Predicate.Op.EQUALS, "exams.id");

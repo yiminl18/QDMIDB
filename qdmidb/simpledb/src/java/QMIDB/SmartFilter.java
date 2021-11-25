@@ -28,17 +28,6 @@ public class SmartFilter extends Operator{
      */
     public SmartFilter(Predicate p, DbIterator child) throws Exception{
         pred = p;
-        //reason is first initialize p, is set to be stringfield, and then setOperand using inte field.
-        //create virtual filter operators for MAX/MIN query optimization
-        //the operand will be globally updated by temporalMAX/MIN
-        if(pred.getOperand().getType().equals(Type.STRING_TYPE)){
-            if(pred.getOp().equals(Predicate.Op.GREATER_THAN_OR_EQ)){
-                pred.setOperand(AggregateOptimization.getTemporalMax());
-            }
-            if(pred.getOp().equals(Predicate.Op.LESS_THAN_OR_EQ)){
-                pred.setOperand(AggregateOptimization.getTemporalMin());
-            }
-        }
         this.child = child;
         this.decideNode = new Decision(p);
         pred.setField(this.child);
@@ -86,7 +75,7 @@ public class SmartFilter extends Operator{
             TransactionAbortedException, DbException, Exception {
         while (child.hasNext()) {
             //testing
-            System.out.println("print in smartFilter for operand: " + attribute.getAttribute() + " " + pred.getOperand());
+            //System.out.println("print in smartFilter for operand: " + attribute.getAttribute() + " " + pred.getOperand());
 
             Tuple t = child.next();
             if(pred.isMissing(t)){
@@ -99,12 +88,12 @@ public class SmartFilter extends Operator{
                     return t;
                 }
             }
-            if (!pred.filter(t)) {
+            if (!pred.filter(t) || !AggregateOptimization.passVirtualFilter(t)) {
                 //t failed predicate test
                 Buffer.removeTuple(t);
                 continue;
-            }else{
-                //System.out.println("***after filter tuples: " + t);
+            }
+            else{
                 return  t;
             }
         }

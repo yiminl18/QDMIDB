@@ -18,6 +18,7 @@ public class PredicateUnit {
     private Attribute filterAttribute;
     private String type;//Filter, Join, Aggregate, Order
     private boolean flag;//to indicate if this predicate has been met
+    private boolean isVirtual = false;//for MAX/MIN optimization
 
     public PredicateUnit(Attribute left, Predicate.Op op, Attribute right) {//read join
         this.left = left;
@@ -43,6 +44,14 @@ public class PredicateUnit {
         this.orderAttribute = orderAttribute;
         this.orderType = orderType;
         this.type = "Order";
+    }
+
+    public boolean isVirtual() {
+        return isVirtual;
+    }
+
+    public void setVirtual(boolean virtual) {
+        isVirtual = virtual;
     }
 
     public Attribute getAggregateAttribute() {

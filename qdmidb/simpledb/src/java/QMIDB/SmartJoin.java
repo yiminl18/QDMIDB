@@ -384,6 +384,9 @@ public class SmartJoin extends Operator{
         if(t.getApplied_bit(leftAttribute)){//if leftAttribute has been applied before, skip
             return false;
         }
+        if(!AggregateOptimization.passVirtualFilter(t)){
+            return false;
+        }
         Field leftValue = t.getField(t.getTupleDesc().fieldNameToIndex(leftAttribute));
         List<String> activeRightAttributes = RelationshipGraph.findRelatedActiveRightAttributes(leftAttribute);
 
