@@ -117,8 +117,8 @@ public class test {
             e.printStackTrace();
         }
         System.out.println("Total number of missing values in datasets: "+ Schema.getTotalNumberOfMissingValues());
-        System.out.println("Total number of imputation times -- imputedDB cleaning: " + ImputeFactory.getImputationTimes());
-        //System.out.println("Total number of imputation times -- Quip cleaning: " + ImputeFactory.getImputationTimes());
+        //System.out.println("Total number of imputation times -- imputedDB cleaning: " + ImputeFactory.getImputationTimes());
+        System.out.println("Total number of imputation times -- Quip cleaning: " + ImputeFactory.getImputationTimes());
         //System.out.println("Total number of removed tuples: " + Statistics.getNumOfRemovedTuples());
     }
 
