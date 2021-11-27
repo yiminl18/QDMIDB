@@ -43,4 +43,6 @@ fieldIndex,imputed values
 
 *Use following command to transform txt file to dat file, which is consumed by codes
 java -jar simpledb.jar convert R.txt N
-where
+where N is number of columns in R.txt
+
+In Quip and ImputeDB, simpledb.jar, missing values should be MISSING.INTEGER instead of a white space. 

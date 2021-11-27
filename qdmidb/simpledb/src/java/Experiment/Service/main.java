@@ -5,6 +5,6 @@ import Experiment.Simulation.WiFi;
 
 public class main {
     public static void main(String args[]){
-        WiFi wifi = new WiFi("users");
+        WiFi wifi = new WiFi("wifi");
     }
 }

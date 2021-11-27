@@ -8,6 +8,7 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class WiFi {
     public static final int MISSING_INTEGER = Integer.MIN_VALUE;
+    public static final int hashPrime = 98371;
     List<Integer> roomPool = new ArrayList<>();
     List<Integer> buildingPool = new ArrayList<>();
     List<Integer> floorPool = new ArrayList<>();
@@ -228,6 +229,10 @@ public class WiFi {
                 break;
         }
 
+    }
+
+    public int rehash(int val){
+        return val % hashPrime;
     }
 
     public void openFile(String type){
@@ -587,7 +592,19 @@ public class WiFi {
         readMacs();
         for(int i=0;i<wifiTuples.size();i++){
             int num = ThreadLocalRandom.current().nextInt(0, macPool.size());
-            wifiTuples.get(i).setMac(macPool.get(num));
+            wifiTuples.get(i).setMac(rehash(macPool.get(num)));
+        }
+    }
+
+    public void setRoom(){
+        double missingRate = 0.7;
+        Random rand = new Random();
+
+        for(int i=0;i<wifiTuples.size();i++){
+            int n = rand.nextInt(100);
+            if(n < missingRate*100.0){
+                wifiTuples.get(i).setRoom(MISSING_INTEGER);
+            }
         }
     }
 
@@ -602,7 +619,7 @@ public class WiFi {
             if(n > missingRate*100.0){
                 int id = ThreadLocalRandom.current().nextInt(0,regionPool.size());
                 int region = regionPool.get(id);
-                wifiTuples.get(i).setRegion(region);
+                wifiTuples.get(i).setRegion(rehash(region));
             }
         }
     }
@@ -611,7 +628,7 @@ public class WiFi {
         readPresence();
         //set Mac
         setMac();
-        //set region
+        setRoom();
         setRegion();
         //write to files
         for(int i=0;i<wifiTuples.size();i++){
@@ -627,7 +644,7 @@ public class WiFi {
             userTuples.add(tuple);
         }
         for(int i=0;i<userMacPool.size();i++){
-            userTuples.get(i).setMac(userMacPool.get(i));
+            userTuples.get(i).setMac(rehash(userMacPool.get(i)));
         }
 
         Random rand = new Random();
@@ -637,7 +654,7 @@ public class WiFi {
             if (n > missingrate * 100.0) {
                 int id = ThreadLocalRandom.current().nextInt(0, macPool.size());
                 int mac = macPool.get(id);
-                userTuples.get(i).setMac(mac);
+                userTuples.get(i).setMac(rehash(mac));
                 continue;
             }
         }
