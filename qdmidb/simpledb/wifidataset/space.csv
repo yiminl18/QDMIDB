@@ -1,4 +1,3 @@
-name,floor,building
 4100_1,4,DBH
 4100_10,4,DBH
 2076,2,DBH
@@ -333,33 +332,3 @@ name,floor,building
 6051,6,DBH
 6136,6,DBH
 6132,6,DBH
-DBH,0,NULL
-"North Classroom",0,NULL
-"Informatics South West",0,NULL
-"Machine Learning and Graphics Group North",0,NULL
-"Building Management",0,NULL
-Systems,0,NULL
-"Inner Classroom",0,NULL
-"Staff CS Department",0,NULL
-ISG,0,NULL
-"Informatics North",0,NULL
-"Stats South",0,NULL
-"Financial Offices",0,NULL
-"Informatics South East",0,NULL
-"Architecture and Embedded Systems",0,NULL
-"South Classroom",0,NULL
-Informatics,0,NULL
-"Machine Learning and Graphics Group South West",0,NULL
-"Machine Learning and Graphics Group South East",0,NULL
-"Communication Media Department",0,NULL
-"Seminar Hall",0,NULL
-"Multimedia Networks and Systems",0,NULL
-"Facilities Offices",0,NULL
-"Dean's Office",0,NULL
-"Stats North",0,NULL
-1-floor,0,NULL
-2-floor,0,NULL
-3-floor,0,NULL
-4-floor,0,NULL
-5-floor,0,NULL
-6-floor,0,NULL

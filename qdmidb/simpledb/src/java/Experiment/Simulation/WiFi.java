@@ -1,8 +1,6 @@
 package Experiment.Simulation;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 /*
@@ -15,12 +13,26 @@ public class WiFi {
     List<Integer> floorPool = new ArrayList<>();
     List<Integer> regionPool = new ArrayList<>();
     List<Integer> capacityPool = new ArrayList<>();
+    List<Integer> macPool = new ArrayList<>();
+    List<Integer> userMacPool = new ArrayList<>();
 
     static class spaceTuple{
         int room, building, floor, region, capacity, size, type;
 
         public int getRegion() {
             return this.region;
+        }
+
+        public List<Integer> getList(){
+            List<Integer> values = new ArrayList<>();
+            values.add(this.room);
+            values.add(this.building);
+            values.add(this.floor);
+            values.add(this.region);
+            values.add(this.capacity);
+            values.add(this.size);
+            values.add(this.type);
+            return values;
         }
 
         public spaceTuple(int room, int building, int floor, int region, int capacity, int size, int type){
@@ -58,7 +70,272 @@ public class WiFi {
         }
     }
 
+    static class wifiTuple{
+        int st, et, mac, room, region;
+        public wifiTuple(int st, int et, int mac, int room, int region){
+            this.st = st;
+            this.et = et;
+            this.mac = mac;
+            this.room = room;
+            this.region = region;
+        }
+
+        public List<Integer> getList(){
+            List<Integer> values = new ArrayList<>();
+            values.add(st);
+            values.add(et);
+            values.add(mac);
+            values.add(room);
+            values.add(region);
+            return values;
+        }
+
+        public int getSt() {
+            return st;
+        }
+
+        public void setSt(int st) {
+            this.st = st;
+        }
+
+        public int getEt() {
+            return et;
+        }
+
+        public void setEt(int et) {
+            this.et = et;
+        }
+
+        public int getMac() {
+            return mac;
+        }
+
+        public void setMac(int mac) {
+            this.mac = mac;
+        }
+
+        public int getRoom() {
+            return room;
+        }
+
+        public void setRoom(int room) {
+            this.room = room;
+        }
+
+        public int getRegion() {
+            return region;
+        }
+
+        public void setRegion(int region) {
+            this.region = region;
+        }
+    }
+
+    static class userTuple{
+        int mac, name, email, group;
+        public userTuple(int mac, int name, int email, int group){
+            this.mac = mac;
+            this.name = name;
+            this.email = email;
+            this.group = group;
+        }
+
+        public List<Integer> getList(){
+            List<Integer> values = new ArrayList<>();
+            values.add(this.mac);
+            values.add(this.name);
+            values.add(this.email);
+            values.add(this.group);
+            return values;
+        }
+
+        public int getMac() {
+            return mac;
+        }
+
+        public void setMac(int mac) {
+            this.mac = mac;
+        }
+
+        public int getName() {
+            return name;
+        }
+
+        public void setName(int name) {
+            this.name = name;
+        }
+
+        public int getEmail() {
+            return email;
+        }
+
+        public void setEmail(int email) {
+            this.email = email;
+        }
+
+        public int getGroup() {
+            return group;
+        }
+
+        public void setGroup(int group) {
+            this.group = group;
+        }
+    }
+
     List<spaceTuple> spaceTuples = new ArrayList<>();
+    List<wifiTuple> wifiTuples = new ArrayList<>();
+    List<userTuple> userTuples = new ArrayList<>();
+    private final String spacePathQuip = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/spaceQuip.txt";
+    private final String spacePathIDB = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/spaceIDB.txt";
+    private final String wifiPathQuip = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/wifiQuip.txt";
+    private final String wifiPathIDB = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/wifiIDB.txt";
+    private final String userPathQuip = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/userQuip.txt";
+    private final String userPathIDB = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/userIDB.txt";
+    BufferedWriter spaceQuip = null, spaceIDB= null, wifiQuip = null, wifiIDB = null, userQuip = null, userIDB = null;
+
+    public WiFi(String type){
+        File f = null;
+        switch (type){
+            case "space":
+                f = new File(spacePathQuip);
+                if(f.exists()){
+                    System.out.println(spacePathQuip + " exists!");
+                    return;
+                }
+                openFile(type);
+                processSpace();
+                closeFile(type);
+                break;
+            case "wifi":
+                f = new File(wifiPathQuip);
+                if(f.exists()){
+                    System.out.println(wifiPathQuip + " exists!");
+                    return;
+                }
+                openFile(type);
+                processWiFi();
+                closeFile(type);
+                break;
+            case "users":
+                f = new File(userPathQuip);
+                if(f.exists()){
+                    System.out.println(userPathQuip + " exists!");
+                    return;
+                }
+                openFile(type);
+                processUsers();
+                closeFile(type);
+                break;
+        }
+
+    }
+
+    public void openFile(String type){
+        switch (type){
+            case "space":
+                try {
+                    FileWriter spaceQuipFile = new FileWriter(spacePathQuip);
+                    spaceQuip = new BufferedWriter(spaceQuipFile);
+
+                    FileWriter spaceIDBFile = new FileWriter(spacePathIDB);
+                    spaceIDB = new BufferedWriter(spaceIDBFile);
+
+                }catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
+            case "wifi":
+                try {
+                    FileWriter wifiQuipFile = new FileWriter(wifiPathQuip);
+                    wifiQuip = new BufferedWriter(wifiQuipFile);
+
+                    FileWriter wifiIDBFile = new FileWriter(wifiPathIDB);
+                    wifiIDB = new BufferedWriter(wifiIDBFile);
+
+                }catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
+            case "users":
+                try {
+                    FileWriter userQuipFile = new FileWriter(userPathQuip);
+                    userQuip = new BufferedWriter(userQuipFile);
+
+                    FileWriter userIDBFile = new FileWriter(userPathIDB);
+                    userIDB = new BufferedWriter(userIDBFile);
+
+                }catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
+        }
+
+    }
+
+    public void closeFile(String type){
+        switch (type){
+            case "space":
+                try {
+                    spaceIDB.flush();
+                    spaceIDB.close();
+
+                    spaceQuip.flush();
+                    spaceQuip.close();
+                    System.out.println("Write files successfully!");
+                }catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
+            case "wifi":
+                try {
+                    wifiIDB.flush();
+                    wifiIDB.close();
+
+                    wifiQuip.flush();
+                    wifiQuip.close();
+                    System.out.println("Write files successfully!");
+                }catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
+            case "users":
+                try {
+                    userIDB.flush();
+                    userIDB.close();
+
+                    userQuip.flush();
+                    userQuip.close();
+                    System.out.println("Write files successfully!");
+                }catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
+        }
+
+
+    }
+
+    public int transformTime(String time){
+        //"2019-04-16 16:09:09";
+        String t = time.substring(5,time.length());
+        String nt = "";
+        for(int i=0;i<t.length();i++){
+            if(t.charAt(i) >= '0' && t.charAt(i) <= '9'){
+                nt += t.charAt(i);
+            }
+        }
+        //remove front zero's
+        int pos = 0;
+        for(int i=0;i<nt.length();i++){
+            if(nt.charAt(i) == '0'){
+                pos ++;
+            }else{
+                break;
+            }
+        }
+        //System.out.println(nt.substring(pos));
+        return Integer.valueOf(nt.substring(pos));
+    }
 
     public void readRoomPool(){
         //read from "roomPool.txt"
@@ -73,7 +350,9 @@ public class WiFi {
                     continue;
                 String[] data = row.split(",");
                 String room = data[0];
-                roomPool.add(room.hashCode());
+                if(room.substring(0,1).compareTo("0")>=0 && room.substring(0,1).compareTo("9")<=0){
+                    roomPool.add(Integer.valueOf(room.substring(0,4)));
+                }
             }
             csvReader.close();
         }catch (IOException e) {
@@ -118,7 +397,7 @@ public class WiFi {
                 buildingPool.add(building);
                 floorPool.add(floor);
                 capacityPool.add(capacity);
-                spaceTuple st = new spaceTuple(0,building,floor, region.hashCode(), capacity,-1,-1);
+                spaceTuple st = new spaceTuple(MISSING_INTEGER,building,floor, region.hashCode(), capacity,-1,-1);
                 spaceTuples.add(st);
                 //System.out.println(region + " " + floor + " " + building + " " + capacity);
             }
@@ -132,8 +411,10 @@ public class WiFi {
     public void setRoom(int room, int min, int max){
         while(true) {
             int num = ThreadLocalRandom.current().nextInt(min, max);
-            if (spaceTuples.get(num).getRoom() != MISSING_INTEGER && spaceTuples.get(num).getRegion() != MISSING_INTEGER) {
+            //System.out.println(spaceTuples.get(num).getRoom() + " " + spaceTuples.get(num).getRegion());
+            if (spaceTuples.get(num).getRoom() == MISSING_INTEGER && spaceTuples.get(num).getRegion() != MISSING_INTEGER) {
                 spaceTuples.get(num).setRoom(room);
+                //System.out.println(num + " " +  room);
                 break;
             }
         }
@@ -180,12 +461,43 @@ public class WiFi {
         }
     }
 
-    public void writeFile(String path, List<Integer> values){
-
+    public void write2Quip(List<Integer> values, BufferedWriter bw){//write out missing values
+        try {
+            String out = "";
+            for(int i=0;i<values.size();i++){
+                out += String.valueOf(values.get(i));
+                if(i != values.size()-1){
+                    out += ",";
+                }
+            }
+            bw.write(out);
+            bw.newLine();
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void simulate(){
+    public void write2IDB(List<Integer> values, BufferedWriter bw){//interpret missing value as space
+        try {
+            String out = "";
+            for(int i=0;i<values.size();i++){
+                if(values.get(i) != MISSING_INTEGER){
+                    out += String.valueOf(values.get(i));
+                }
+                if(i != values.size()-1){
+                    out += ",";
+                }
+            }
+            bw.write(out);
+            bw.newLine();
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void processSpace(){
         //read spaces
+        readRoomPool();
         readSpacePlus();
         //add rooms
         for(int i=0;i<roomPool.size();i++){
@@ -197,8 +509,183 @@ public class WiFi {
         setType();
         //set size
         setSize();
+        //write to files
+        for(int i=0;i<spaceTuples.size();i++){
+            write2IDB(spaceTuples.get(i).getList(), spaceIDB);
+            write2Quip(spaceTuples.get(i).getList(), spaceQuip);
+        }
+    }
 
+    public void readPresence(){
+        String fileSpace = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/presence.csv";//raw dirty
+        //startTimestamp,endTimestamp,room
+        try{
+            BufferedReader csvReader = new BufferedReader(new FileReader(fileSpace));
+            int count = 0;
+            String row;
+            while ((row = csvReader.readLine()) != null) {
+                count++;
+                if (count == 1)
+                    continue;
+                String[] data = row.split(",");
+                String st = data[0];
+                String et = data[1];
+                String room = data[2];
+                wifiTuple tuple = new wifiTuple(transformTime(st), transformTime(et), MISSING_INTEGER, Integer.valueOf(room), MISSING_INTEGER);
+                wifiTuples.add(tuple);
+            }
+            csvReader.close();
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void readMacs(){
+        String fileSpace = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/wifiClean.txt";
+        //startTimestamp,endTimestamp,room
+        try{
+            BufferedReader csvReader = new BufferedReader(new FileReader(fileSpace));
+            int count = 0;
+            String row;
+            while ((row = csvReader.readLine()) != null) {
+                count++;
+                if (count == 1)
+                    continue;
+                String[] data = row.split(",");
+                String mac = data[0];
+                macPool.add(mac.hashCode());
+            }
+            csvReader.close();
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void readUserMacs(){
+        String fileSpace = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/usermac.csv";
+        //startTimestamp,endTimestamp,room
+        try{
+            BufferedReader csvReader = new BufferedReader(new FileReader(fileSpace));
+            int count = 0;
+            String row;
+            while ((row = csvReader.readLine()) != null) {
+                count++;
+                if (count == 1)
+                    continue;
+                String mac = row;
+                userMacPool.add(mac.hashCode());
+            }
+            csvReader.close();
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 
+    public void setMac(){
+        //first read from rawpool
+        readMacs();
+        for(int i=0;i<wifiTuples.size();i++){
+            int num = ThreadLocalRandom.current().nextInt(0, macPool.size());
+            wifiTuples.get(i).setMac(macPool.get(num));
+        }
+    }
+
+    public void setRegion(){
+        //get region pool
+        readSpacePlus();
+        double missingRate = 0.2;
+        Random rand = new Random();
+
+        for(int i=0;i<wifiTuples.size();i++){
+            int n = rand.nextInt(100);
+            if(n > missingRate*100.0){
+                int id = ThreadLocalRandom.current().nextInt(0,regionPool.size());
+                int region = regionPool.get(id);
+                wifiTuples.get(i).setRegion(region);
+            }
+        }
+    }
+
+    public void processWiFi(){
+        readPresence();
+        //set Mac
+        setMac();
+        //set region
+        setRegion();
+        //write to files
+        for(int i=0;i<wifiTuples.size();i++){
+            write2IDB(wifiTuples.get(i).getList(), wifiIDB);
+            write2Quip(wifiTuples.get(i).getList(), wifiQuip);
+        }
+    }
+
+    public void setUserMac(){
+        int userCardinality = 4018;
+        for(int i=0;i<userCardinality;i++){
+            userTuple tuple = new userTuple(MISSING_INTEGER, MISSING_INTEGER, MISSING_INTEGER, MISSING_INTEGER);
+            userTuples.add(tuple);
+        }
+        for(int i=0;i<userMacPool.size();i++){
+            userTuples.get(i).setMac(userMacPool.get(i));
+        }
+
+        Random rand = new Random();
+        double missingrate = 0.2;
+        for(int i = userMacPool.size();i<userCardinality;i++) {
+            int n = rand.nextInt(100);
+            if (n > missingrate * 100.0) {
+                int id = ThreadLocalRandom.current().nextInt(0, macPool.size());
+                int mac = macPool.get(id);
+                userTuples.get(i).setMac(mac);
+                continue;
+            }
+        }
+    }
+
+    public void setUsername(){
+        for(int i=0;i<userTuples.size();i++){
+            int name = ThreadLocalRandom.current().nextInt(0, 100000);
+            userTuples.get(i).setName(name);
+        }
+    }
+
+    public void setEmail(){
+        for(int i=0;i<userTuples.size();i++){
+            int email = ThreadLocalRandom.current().nextInt(0, 100000);
+            userTuples.get(i).setEmail(email);
+        }
+    }
+
+    public void setGroup(){
+        Random rand = new Random();
+        double missingrate = 0.1;
+        for(int i=0;i<userTuples.size();i++){
+            int n = rand.nextInt(100);
+            if (n < missingrate * 100.0) {
+                int group = ThreadLocalRandom.current().nextInt(1, 8);
+                userTuples.get(i).setGroup(group);
+            }
+        }
+    }
+
+    public void processUsers(){
+        //mac, name, email, group;
+
+        //read user macs
+        readUserMacs();
+        //read macs from wifi connectivity events
+        readMacs();
+
+        setUserMac();
+        setUsername();
+        setEmail();
+        setGroup();
+
+        //write to files
+        for(int i=0;i<userTuples.size();i++){
+            write2IDB(userTuples.get(i).getList(), userIDB);
+            write2Quip(userTuples.get(i).getList(), userQuip);
+        }
+    }
 }
