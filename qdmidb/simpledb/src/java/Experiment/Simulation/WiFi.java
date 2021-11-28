@@ -232,6 +232,9 @@ public class WiFi {
     }
 
     public int rehash(int val){
+//        if(val < 0){
+//            val = -1*val;
+//        }
         return val % hashPrime;
     }
 
@@ -402,11 +405,11 @@ public class WiFi {
                 buildingPool.add(building);
                 floorPool.add(floor);
                 capacityPool.add(capacity);
-                spaceTuple st = new spaceTuple(MISSING_INTEGER,building,floor, region.hashCode(), capacity,-1,-1);
+                spaceTuple st = new spaceTuple(MISSING_INTEGER,building,floor, rehash(region.hashCode()), capacity,-1,-1);
                 spaceTuples.add(st);
                 //System.out.println(region + " " + floor + " " + building + " " + capacity);
             }
-            System.out.println("percentage of null capacity: " + nullCapacity + " " + spaceTuples.size());
+            //System.out.println("percentage of null capacity: " + nullCapacity + " " + spaceTuples.size());
             csvReader.close();
         }catch (IOException e) {
             e.printStackTrace();
@@ -516,7 +519,7 @@ public class WiFi {
         setSize();
         //write to files
         for(int i=0;i<spaceTuples.size();i++){
-            write2IDB(spaceTuples.get(i).getList(), spaceIDB);
+            //write2IDB(spaceTuples.get(i).getList(), spaceIDB);
             write2Quip(spaceTuples.get(i).getList(), spaceQuip);
         }
     }
@@ -536,7 +539,7 @@ public class WiFi {
                 String st = data[0];
                 String et = data[1];
                 String room = data[2];
-                wifiTuple tuple = new wifiTuple(transformTime(st), transformTime(et), MISSING_INTEGER, Integer.valueOf(room), MISSING_INTEGER);
+                wifiTuple tuple = new wifiTuple(rehash(transformTime(st)), rehash(transformTime(et)), MISSING_INTEGER, Integer.valueOf(room), MISSING_INTEGER);
                 wifiTuples.add(tuple);
             }
             csvReader.close();
@@ -632,7 +635,7 @@ public class WiFi {
         setRegion();
         //write to files
         for(int i=0;i<wifiTuples.size();i++){
-            write2IDB(wifiTuples.get(i).getList(), wifiIDB);
+            //write2IDB(wifiTuples.get(i).getList(), wifiIDB);
             write2Quip(wifiTuples.get(i).getList(), wifiQuip);
         }
     }
@@ -701,7 +704,7 @@ public class WiFi {
 
         //write to files
         for(int i=0;i<userTuples.size();i++){
-            write2IDB(userTuples.get(i).getList(), userIDB);
+            //write2IDB(userTuples.get(i).getList(), userIDB);
             write2Quip(userTuples.get(i).getList(), userQuip);
         }
     }
