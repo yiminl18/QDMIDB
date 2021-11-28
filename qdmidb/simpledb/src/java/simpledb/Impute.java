@@ -64,7 +64,7 @@ public abstract class Impute extends Operator {
     }
 
     @Override
-    public void open() throws DbException, TransactionAbortedException {
+    public void open() throws DbException, TransactionAbortedException, Exception {
         super.open();
         child.open();
     }

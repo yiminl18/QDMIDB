@@ -95,7 +95,7 @@ public class ImputedLogicalPlan extends LogicalPlan {
 		return LogicalComposeImputation.create(scanPlan, ImputationType.MAXIMAL, allDirty, tableMap);
 	}
 
-	private void optimizeFilters(TransactionId tid, ImputedPlanCache cache, Set<QualifiedName> globalRequired) throws ParsingException {
+	private void optimizeFilters(TransactionId tid, ImputedPlanCache cache, Set<QualifiedName> globalRequired) throws ParsingException, Exception {
 		// Accumulate all filters on each table.
 		HashMap<String, Set<LogicalFilterNode>> filterMap = new HashMap<>();
 		for (LogicalFilterNode filter : filters) {
@@ -160,7 +160,7 @@ public class ImputedLogicalPlan extends LogicalPlan {
 	 *             when stats or filter selectivities is missing a table in the
 	 *             join, or or when another internal error occurs
 	 */
-	private void optimizeJoins(TransactionId tid, ImputedPlanCache cache, Set<QualifiedName> globalRequired) throws ParsingException {
+	private void optimizeJoins(TransactionId tid, ImputedPlanCache cache, Set<QualifiedName> globalRequired) throws ParsingException, Exception {
 		if (joins.isEmpty()) {
 			return;
 		}
@@ -194,7 +194,7 @@ public class ImputedLogicalPlan extends LogicalPlan {
 	 *             when stats, filterSelectivities, or pc object is missing
 	 *             tables involved in join
 	 */
-	private void computePlan(TransactionId tid, int joinToRemove, BitSet joinSet, ImputedPlanCache pc, Set<QualifiedName> globalRequired) throws ParsingException {
+	private void computePlan(TransactionId tid, int joinToRemove, BitSet joinSet, ImputedPlanCache pc, Set<QualifiedName> globalRequired) throws ParsingException, Exception {
 		// join node from standard simpledb planner, not imputed, just used for
 		// convenience
 		LogicalJoinNode j = joins.get(joinToRemove);
@@ -335,7 +335,7 @@ public class ImputedLogicalPlan extends LogicalPlan {
 	
 	@Override
 	public DbIterator physicalPlan(TransactionId tid, Map<String, TableStats> baseTableStats, boolean explain)
-			throws ParsingException {
+			throws ParsingException, Exception {
 		// Determine the global imputation requirements.
 		Set<QualifiedName> globalRequired = new HashSet<QualifiedName>();
 		for (LogicalFilterNode filter : filters) {

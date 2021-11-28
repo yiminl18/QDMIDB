@@ -48,7 +48,7 @@ public class ImputeHotDeck extends Impute {
     }
 
     @Override
-    protected Tuple fetchNext() throws DbException, TransactionAbortedException {
+    protected Tuple fetchNext() throws DbException, TransactionAbortedException,Exception {
         // First, we must add all of the child tuples to the buffer.
         // TODO If !child.hasNext(), does that mean that there are no more
         //      tuples at all that will come from this child, or can some be added in

@@ -9,7 +9,7 @@ public class LogicalImputedFilterNode extends ImputedPlan {
 	private final TableStats tableStats;
 	private final ImputedPlan subplan;
 
-	public LogicalImputedFilterNode(TransactionId tid, ImputedPlan subplan, Set<LogicalFilterNode> filters) throws ParsingException {
+	public LogicalImputedFilterNode(TransactionId tid, ImputedPlan subplan, Set<LogicalFilterNode> filters) throws ParsingException, Exception {
 		this.subplan = subplan;
 		
 		DbIterator physicalPlanTmp = subplan.getPlan();

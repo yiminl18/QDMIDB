@@ -13,7 +13,7 @@ import java.util.*;
 import org.apache.commons.cli.*;
 
 public class SimpleDb {
-	public static void main(String args[]) throws DbException, TransactionAbortedException, IOException {
+	public static void main(String args[]) throws DbException, TransactionAbortedException, IOException, Exception {
 		String usage =
 				"Usage: simpledb load [OPTION]...\n" +
 				"       simpledb query [OPTION]...\n" +
@@ -46,7 +46,7 @@ public class SimpleDb {
 		System.exit(ret);
 	}
 
-	private static int draw(String[] args) throws IOException, TransactionAbortedException, DbException {
+	private static int draw(String[] args) throws IOException, TransactionAbortedException, DbException, Exception {
 		if (args.length != 5) {
             System.out.println("Usage: simpledb draw catalog query_file output_prefix alpha");
             System.exit(-1);

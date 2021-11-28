@@ -39,7 +39,7 @@ public class ImputeTotallyRandom extends Impute {
      * on the column.
      */
     @Override
-    protected Tuple fetchNext() throws DbException, TransactionAbortedException {
+    protected Tuple fetchNext() throws DbException, TransactionAbortedException, Exception {
         if (child.hasNext()){
             Tuple t = child.next();
             

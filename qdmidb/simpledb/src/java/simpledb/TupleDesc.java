@@ -182,18 +182,14 @@ public class TupleDesc implements Serializable, Iterable<TDItem> {
     		throw new NoSuchElementException();
     	}
 
-        //old code -- linear search
         int index = 0;
-    	int flag = -1;
         for (TDItem i : schema) {
         	if (name.equals(i.fieldName)) {
-        	    flag = 0;
         		return index;
         	}
         	index++;
         }
         return -1;
-        //new code: O(1) search ihe: to check
     }
 
     public void print(){

@@ -22,7 +22,7 @@ public class Drop extends Impute {
     }
 
     @Override
-    protected Tuple fetchNext() throws DbException, TransactionAbortedException {
+    protected Tuple fetchNext() throws DbException, TransactionAbortedException, Exception {
         while (child.hasNext()) {
             Tuple t = child.next();
             boolean drop = false;

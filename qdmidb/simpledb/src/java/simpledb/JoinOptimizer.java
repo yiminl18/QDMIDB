@@ -43,7 +43,7 @@ public class JoinOptimizer {
      *            The right join node's child
      */
     public static DbIterator instantiateJoin(LogicalJoinNode lj,
-            DbIterator plan1, DbIterator plan2) throws ParsingException {
+            DbIterator plan1, DbIterator plan2) throws ParsingException, Exception {
 
         int t1id = 0, t2id = 0;
         DbIterator j;

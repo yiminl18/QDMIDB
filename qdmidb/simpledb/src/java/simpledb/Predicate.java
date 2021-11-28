@@ -52,7 +52,7 @@ public class Predicate implements Serializable {
     private int field;//this is the index of attribute, not specified the relation
     private final Op op;
     private final Field operand;
-    private final String attribute;
+    private String attribute;
 
     /**
      * Constructor.
@@ -66,6 +66,12 @@ public class Predicate implements Serializable {
      */
     public Predicate(String attribute, Op op, Field operand) {
         this.attribute = attribute;
+        this.op = op;
+        this.operand = operand;
+    }
+
+    public Predicate(int field, Op op, Field operand) {
+        this.field = field;
         this.op = op;
         this.operand = operand;
     }
@@ -118,6 +124,11 @@ public class Predicate implements Serializable {
         //System.out.println(value);
         t.setField(field, value);
         return t;
+    }
+
+    public Field getOperand()
+    {
+        return operand;
     }
 
     /**

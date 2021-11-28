@@ -14,7 +14,7 @@ public class JoinPredicate implements Serializable {
     private static final long serialVersionUID = 1L;
     
     private int field1, field2;
-    private final String attribute1, attribute2;
+    private String attribute1, attribute2;
     private final Predicate.Op op;
 
     /**
@@ -34,6 +34,12 @@ public class JoinPredicate implements Serializable {
     public JoinPredicate(String attribute1, Predicate.Op op, String attribute2) {
         this.attribute1 = attribute1;
         this.attribute2 = attribute2;
+        this.op = op;
+    }
+
+    public JoinPredicate(int field1, Predicate.Op op, int field2) {
+        this.field1 = field1;
+        this.field2 = field2;
         this.op = op;
     }
 

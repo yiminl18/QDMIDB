@@ -83,7 +83,7 @@ public class ExperimentRunner {
     private static DbIterator planQuery(String query, Function<Void,
             LogicalPlan> planFactory)
             throws ParseException, TransactionAbortedException, DbException,
-                              IOException, ParsingException {
+                              IOException, ParsingException, Exception {
         ZqlParser p = new ZqlParser(new ByteArrayInputStream(query.getBytes("UTF-8")));
         ZStatement s = p.readStatement();
         Parser pp = new Parser(planFactory);
@@ -132,7 +132,7 @@ public class ExperimentRunner {
     }
 
     private void run(int q, double alpha, int iter)
-            throws ParseException, TransactionAbortedException, DbException, IOException, ParsingException {
+            throws ParseException, TransactionAbortedException, DbException, IOException, ParsingException, Exception {
 
         String query = queries[q] + ";";
 
@@ -186,7 +186,7 @@ public class ExperimentRunner {
     }
 
     public void runExperiments()
-            throws ParseException, TransactionAbortedException, DbException, IOException, ParsingException {
+            throws ParseException, TransactionAbortedException, DbException, IOException, ParsingException, Exception {
         init();
         this.queries = getQueries();
         for (int q = 0; q < queries.length; q++) {

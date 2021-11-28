@@ -83,7 +83,7 @@ public class ImputeRegressionTree extends Impute {
     }
 
     @Override
-    protected Tuple fetchNext() throws DbException, TransactionAbortedException {
+    protected Tuple fetchNext() throws DbException, TransactionAbortedException, Exception {
 		// Block, adding all of the child tuples to the buffer.
 		while (child.hasNext()){
 			buffer.add(child.next());

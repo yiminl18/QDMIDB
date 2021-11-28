@@ -259,7 +259,7 @@ public class LogicalPlan {
      *  @throws ParsingException if the logical plan is not valid
      *  @return A DbIterator representing this plan.
      */ 
-    public DbIterator physicalPlan(TransactionId t, Map<String,TableStats> baseTableStats, boolean explain) throws ParsingException {
+    public DbIterator physicalPlan(TransactionId t, Map<String,TableStats> baseTableStats, boolean explain) throws ParsingException, Exception {
         Iterator<LogicalScanNode> tableIt = tables.iterator();
         HashMap<String,String> equivMap = new HashMap<String,String>();
         HashMap<String,Double> filterSelectivities = new HashMap<String, Double>();
@@ -469,7 +469,7 @@ public class LogicalPlan {
         return new Project(outFields, outTypes, node);
     }
 
-    public static void main(String argv[]) {
+    public static void main(String argv[]) throws Exception{
         // construct a 3-column table schema
         Type types[] = new Type[]{ Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE };
         String names[] = new String[]{ "field0", "field1", "field2" };

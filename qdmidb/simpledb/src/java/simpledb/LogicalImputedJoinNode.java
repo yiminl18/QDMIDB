@@ -46,7 +46,7 @@ public class LogicalImputedJoinNode extends ImputedPlan {
     // table stats
     private TableStats tableStats;
 
-    public LogicalImputedJoinNode(
+    public LogicalImputedJoinNode (
         TransactionId tid,
         String table1Name,
         String table2Name,
@@ -55,7 +55,7 @@ public class LogicalImputedJoinNode extends ImputedPlan {
         String joinField1,
         String joinField2,
         Predicate.Op pred,
-        Map<String, Integer> tableMap) {
+        Map<String, Integer> tableMap) throws Exception{
         this.tid = tid;
         t1Alias = table1Name;
         t2Alias = table2Name;
@@ -104,7 +104,7 @@ public class LogicalImputedJoinNode extends ImputedPlan {
     
     /** Return a new LogicalJoinNode with the inner and outer (t1.f1
      * and t2.f2) tables swapped. */
-    public LogicalImputedJoinNode swapInnerOuter() {
+    public LogicalImputedJoinNode swapInnerOuter() throws Exception{
         Predicate.Op newp;
         if (p == Predicate.Op.GREATER_THAN)
             newp = Predicate.Op.LESS_THAN;

@@ -50,7 +50,7 @@ public class ImputeMean extends Impute {
     }
 
     @Override
-    protected Tuple fetchNext() throws DbException, TransactionAbortedException {
+    protected Tuple fetchNext() throws DbException, TransactionAbortedException, Exception {
         if (this.tableStats == null){
             throw new DbException("TableStats not loaded.");
         }
