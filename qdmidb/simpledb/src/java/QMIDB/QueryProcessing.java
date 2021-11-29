@@ -18,18 +18,20 @@ public class QueryProcessing {
         Buffer.initBuffer();
         PredicateSet.initPredicateSet(predicates);
         AggregateOptimization.init();
+//        System.out.println("Print aggregate predicate!");
+//        System.out.println(AggregateOptimization.getAggregatePred());
         //List<PredicateUnit> predicates = ManualPredicates();
         RelationshipGraph.initGraph(schema, predicates);
         //testing
-        System.out.println("nodes in RG");
-        for(int i=0;i<RelationshipGraph.getNodes().size();i++){
-            System.out.println(RelationshipGraph.getNodes().get(i).getAttribute());
-        }
-        System.out.println("all attributes");
-        for(int i=0;i<Statistics.getAttributes().size();i++){
-            System.out.println(Statistics.getAttributes().get(i).getAttribute());
-        }
-        PredicateSet.print();//correct
+//        System.out.println("nodes in RG");
+//        for(int i=0;i<RelationshipGraph.getNodes().size();i++){
+//            System.out.println(RelationshipGraph.getNodes().get(i).getAttribute());
+//        }
+//        System.out.println("all attributes");
+//        for(int i=0;i<Statistics.getAttributes().size();i++){
+//            System.out.println(Statistics.getAttributes().get(i).getAttribute());
+//        }
+//        PredicateSet.print();//correct
         //Schema.print();//correct
         //Statistics.print();
         ImputeFactory.setImputationMethod("HOTDECK");

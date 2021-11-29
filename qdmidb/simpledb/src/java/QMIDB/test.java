@@ -103,7 +103,7 @@ public class test {
         QueryPlan QP = new QueryPlan();
         QP.setupCDCHeapFiles();
         TransactionId tid = new TransactionId();
-        Operator o = QP.getQueryPlan(queryID, tid,"CDC", "Quip");//Quip, ImputeDB
+        Operator o = QP.getQueryPlan(queryID, tid,"CDC", "ImputeDB");//Quip, ImputeDB
         Statistics.setStartTime(System.currentTimeMillis());
         try {
             o.open();
@@ -117,8 +117,8 @@ public class test {
             e.printStackTrace();
         }
         System.out.println("Total number of missing values in datasets: "+ Schema.getTotalNumberOfMissingValues());
-        //System.out.println("Total number of imputation times -- imputedDB cleaning: " + ImputeFactory.getImputationTimes());
-        System.out.println("Total number of imputation times -- Quip cleaning: " + ImputeFactory.getImputationTimes());
+        System.out.println("Total number of imputation times -- imputedDB cleaning: " + ImputeFactory.getImputationTimes());
+        //System.out.println("Total number of imputation times -- Quip cleaning: " + ImputeFactory.getImputationTimes());
         //System.out.println("Total number of removed tuples: " + Statistics.getNumOfRemovedTuples());
     }
 

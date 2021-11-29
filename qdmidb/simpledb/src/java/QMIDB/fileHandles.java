@@ -58,7 +58,7 @@ public class fileHandles {
 
         int room;
         room = 0;
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(CDCPredicatesMAXMINFilePath)))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(CDCPredicatesFilePath)))) {
             String line = br.readLine();
             queryNum = Integer.valueOf(line);
             for(int i=0;i<queryNum;i++){//iterative each query

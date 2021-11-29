@@ -12,7 +12,7 @@ import java.util.List;
  */
 
 public class QueryPlan {
-    private static String dataSet;//{R1,R2,S1,S2}
+    private static String CDC;//{R1,R2,S1,S2}
     private static int queryID;
     private static DbIterator iter = null;
     private HeapFile WifISpace, WiFiUsers, WiFiWiFi;
@@ -117,6 +117,7 @@ public class QueryPlan {
             switch (queryID){
                 case 1:
                     if(method.equalsIgnoreCase("ImputeDB")){
+                        //return getQueryTest1(tid);
                         return getCDCQ1IDB(tid);
                     }else{
                         //return getCDCQ1Quip(tid);
@@ -154,6 +155,25 @@ public class QueryPlan {
             System.out.println("No such dataset!");
         }
         return null;
+    }
+
+    public Operator getQueryTest1(TransactionId tid) throws Exception{
+        SeqScan s1demo= new SeqScan(tid, CDCdemo.getId(), "demo");
+        Impute imp1demo = new Impute(new Attribute("demo.income"),s1demo);
+        SeqScan s2exams= new SeqScan(tid, CDCexams.getId(), "exams");
+        Impute imp2exams = new Impute(new Attribute("exams.cuff_size"),s2exams);
+        Impute imp3exams = new Impute(new Attribute("exams.height"),imp2exams);
+        SmartFilter sel1exams = new SmartFilter(new Predicate("exams.height", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(15000)), imp3exams);
+        JoinPredicate predName1 = new JoinPredicate("demo.id", Predicate.Op.EQUALS, "exams.id");
+        SmartJoin join1demo = new SmartJoin(predName1, imp1demo, sel1exams);
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("demo.income"));
+        attributes.add(new Attribute("exams.cuff_size"));
+        Type[] types = new Type[]{Type.INT_TYPE,Type.INT_TYPE};
+        SmartProject sp1 = new SmartProject(attributes, types, join1demo);
+        SmartAggregate sp = new SmartAggregate(sp1, "exams.cuff_size", "demo.income", Aggregator.Op.AVG);
+
+        return sp;
     }
 
     public Operator getWiFiQ1(TransactionId tid)throws Exception{

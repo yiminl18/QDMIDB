@@ -46,3 +46,6 @@ java -jar simpledb.jar convert R.txt N
 where N is number of columns in R.txt
 
 In Quip and ImputeDB, simpledb.jar, missing values should be MISSING.INTEGER instead of a white space. 
+
+Note:
+1. Predicate.txt will not include aggregate predicate except MIN/MAX, which will be added in query plan directly. 

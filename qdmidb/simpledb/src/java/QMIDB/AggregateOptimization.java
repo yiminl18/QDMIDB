@@ -8,6 +8,10 @@ public class AggregateOptimization {
     public static Field temporalMax = new IntField(Integer.MIN_VALUE+1), temporalMin = new IntField(Integer.MAX_VALUE);
     private static PredicateUnit aggregatePred = null;
 
+    public static PredicateUnit getAggregatePred() {
+        return aggregatePred;
+    }
+
     public static void init(){
         if(PredicateSet.getPredicateSet().size() == 0){
             System.out.println("Read predicates first!");
@@ -24,6 +28,10 @@ public class AggregateOptimization {
     }
 
     public static boolean passVirtualFilter(Tuple t){
+        if(aggregatePred == null){
+            //no MAX/MIN predicate, pass the test
+            return true;
+        }
         Attribute attr = aggregatePred.getAggregateAttribute();
         int fieldIndex = t.getTupleDesc().fieldNameToIndex(attr.getAttribute());
         if(fieldIndex == -1){
