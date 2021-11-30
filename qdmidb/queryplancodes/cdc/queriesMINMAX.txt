@@ -1,26 +1,23 @@
-SELECT income, AVG(cuff_size)
+SELECT MAX(arm_circumference)
 FROM demo, exams
 WHERE demo.id = exams.id
 AND height >= 15000
-GROUP BY income;
 
-SELECT income, AVG(creatine)
+SELECT MIN(creatine)
 FROM demo, exams, labs
 WHERE demo.id = exams.id AND exams.id = labs.id AND
 income >= 13 AND weight >= 6300
-GROUP BY income;
 
-SELECT AVG(blood_lead)
+SELECT MAX(blood_lead)
 FROM demo, exams, labs
-WHERE demo.id = labs.id AND labs.id = exams.id AND age_yrs <= 20;
+WHERE demo.id = labs.id AND labs.id = exams.id AND age_yrs <= 30;
 
-SELECT gender, AVG(blood_pressure_systolic)
+SELECT MAX(blood_pressure_systolic)
 FROM demo, labs, exams
 WHERE demo.id = labs.id AND labs.id = exams.id AND
       body_mass_index >= 3000
-GROUP BY gender;
 
-SELECT AVG(waist_circumference)
+SELECT MIN(waist_circumference)
 FROM demo, exams
 WHERE demo.id = exams.id 
 AND height >= 15000

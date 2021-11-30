@@ -460,9 +460,9 @@ public class QueryPlan {
         JoinPredicate p1 = new JoinPredicate("labs.id", Predicate.Op.EQUALS, "exams.id");
         SmartJoin sj1 = new SmartJoin(p1,ip1,ssexams);
 
-        //demo.age_yrs <= 30
+        //demo.age_yrs <= 20
         SmartFilter sf1 = new SmartFilter(
-                new Predicate("demo.age_yrs", Predicate.Op.LESS_THAN_OR_EQ, new IntField(30)), ssdemo);
+                new Predicate("demo.age_yrs", Predicate.Op.LESS_THAN_OR_EQ, new IntField(20)), ssdemo);
 
         //labs.id = demo.id
         JoinPredicate p2 = new JoinPredicate("labs.id", Predicate.Op.EQUALS, "demo.id");
@@ -496,7 +496,7 @@ public class QueryPlan {
 
         //demo.age_yrs <= 30
         SmartFilter sf1 = new SmartFilter(
-                new Predicate("demo.age_yrs", Predicate.Op.LESS_THAN_OR_EQ, new IntField(30)), ssdemo);
+                new Predicate("demo.age_yrs", Predicate.Op.LESS_THAN_OR_EQ, new IntField(20)), ssdemo);
 
         //labs.id = demo.id
         JoinPredicate p2 = new JoinPredicate("labs.id", Predicate.Op.EQUALS, "demo.id");
