@@ -1,0 +1,6 @@
+SELECT MAX(user.name)
+FROM user, wifi, space
+WHERE user.macaddr = wifi.macaddr
+AND wifi.region = space.region 
+AND user.ugroup = 4
+AND space.capacity > 20;

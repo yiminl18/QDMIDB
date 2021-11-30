@@ -14,13 +14,13 @@ import java.util.Vector;
     this class reads metadata from file to initialize the data structures
  */
 public class fileHandles {
-    private final String schemaFilePath = "simpledb/metadata/schema.txt";
-    private final String WifISchemaFilePath = "simpledb/wifidataset/schema.txt";
-    private final String CDCSchemaFilePath = "simpledb/cdcdataset/schema.txt";
-    private final String predicateFilePath = "simpledb/metadata/predicate.txt";
-    private final String WiFiPredicatesFilePath = "simpledb/wifidataset/predicates.txt";
-    private final String CDCPredicatesFilePath = "simpledb/cdcdataset/predicates.txt";
-    private final String CDCPredicatesMAXMINFilePath = "simpledb/cdcdataset/predicatesMINMAX.txt";
+    private final String schemaFilePath = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/metadata/schema.txt";
+    private final String WifISchemaFilePath = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/schema.txt";
+    private final String CDCSchemaFilePath = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/cdcdataset/schema.txt";
+    private final String predicateFilePath = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/metadata/predicate.txt";
+    private final String WiFiPredicatesFilePath = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/predicates.txt";
+    private final String CDCPredicatesFilePath = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/cdcdataset/predicates.txt";
+    private final String CDCPredicatesMAXMINFilePath = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/cdcdataset/predicatesMINMAX.txt";
 
     public List<Attribute> readSchema(){
         int N,n;
@@ -173,9 +173,9 @@ public class fileHandles {
     }
 
     public void loadWiFiImputations(){
-        String fileUserImputed = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/userImputedValues.txt";
-        String fileSpaceImputed = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/spaceImputedValues.txt";
-        String fileWiFiImputed = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/wifiImputedValues.txt";
+        String fileUserImputed = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/userImputedValues.txt";
+        String fileSpaceImputed = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/spaceImputedValues.txt";
+        String fileWiFiImputed = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/wifiImputedValues.txt";
         loadImputedValues("users", fileUserImputed);
         loadImputedValues("space",fileSpaceImputed);
         loadImputedValues("wifi", fileWiFiImputed);

@@ -92,9 +92,9 @@ public class Buffer {
             List<Integer> list = new ArrayList<>();
             bufferedValues.put(schema.get(i).getAttribute(), list);
         }
-        String demoFile = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/cdcdataset/demoDirty.txt";
-        String examsFile = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/cdcdataset/examsDirty.txt";
-        String labsFile = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/cdcdataset/labsDirty.txt";
+        String demoFile = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/cdcdataset/demoDirty.txt";
+        String examsFile = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/cdcdataset/examsDirty.txt";
+        String labsFile = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/cdcdataset/labsDirty.txt";
         bufferCDCRelation(schema, demoFile, "demo");
         bufferCDCRelation(schema, examsFile, "exams");
         bufferCDCRelation(schema, labsFile, "labs");

@@ -1,0 +1,3 @@
+space(room int, building int, floor int, region int, capacity int, size int, type int)
+wifi(startTime int, endTime int, macaddr int, room int, region int)
+user(macaddr int, name int, email int, ugroup int)

@@ -25,9 +25,9 @@ public class QueryPlan {
         this.CDCrelations.add("demo");
         this.CDCrelations.add("exams");
         this.CDCrelations.add("labs");
-        this.CDCpahts.add("simpledb/cdcdataset/demo.dat");
-        this.CDCpahts.add("simpledb/cdcdataset/exams.dat");
-        this.CDCpahts.add("simpledb/cdcdataset/labs.dat");
+        this.CDCpahts.add("/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/cdcdataset/demo.dat");
+        this.CDCpahts.add("/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/cdcdataset/exams.dat");
+        this.CDCpahts.add("/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/cdcdataset/labs.dat");
     }
 
     public void setupWiFiHeapFiles()
