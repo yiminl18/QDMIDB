@@ -1,1 +1,12 @@
-Q1
+scan(exams):
+μ(exams.weight):[scan(exams)]
+σ(exams.weight<=5000):[μ(exams.weight)]
+scan(labs):
+μ(labs.blood_lead):[scan(labs)]
+σ(labs.blood_lead>=100):[μ(labs.blood_lead)]
+⨝(exams.id=labs.id):[σ(exams.weight<=5000)],[σ(labs.blood_lead>=100)]
+scan(demo):
+μ(demo.income):[|]
+⨝(exams.id=demo.id):[⨝(exams.id=labs.id)],[μ(demo.income)]
+max(demo.income):[⨝(exams.id=demo.id)]
+π(null):[max(demo.income)]

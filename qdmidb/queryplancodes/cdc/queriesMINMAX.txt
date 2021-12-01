@@ -22,3 +22,38 @@ FROM demo, exams
 WHERE demo.id = exams.id 
 AND height >= 15000
 AND weight >= 10000;
+
+---
+attributes candidate:
+
+labs
+
+white_blood_cell_ct: 500-1200 (13%)
+blood_lead: 50-300 (47%)
+triglyceride: 50-500 (68%)
+albumin: 100-40000, (500-2000) (18%)
+creatine: 50-200(13%)
+
+exams
+
+body_mass_index: 1000-4000 (8%)
+blood_pressure_secs: 400-2000 (3%)
+waist_circumference: 4000-16000 (12%)
+height: 8000-20000 (7.6%)
+arm_circumference: 1000-4000 (5.2%)
+blood_pressure_systolic: 80-200 (27%)
+weight: 1000-10000 (1%)
+head_circumference: 3000-5000 (98%)
+
+
+demo
+
+income: most in 4-20, 20-99 (1.31%)
+age_yrs: 0-100 (0%)
+years_edu: 3-15 (72%)
+
+SELECT max(income)
+FROM demo, exams, labs
+WHERE demo.id = exams.id AND exams.id = labs.id AND
+weight <= 5000 AND 
+blood_lead >= 100;

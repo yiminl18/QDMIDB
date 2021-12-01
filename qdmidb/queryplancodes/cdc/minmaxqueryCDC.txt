@@ -1,0 +1,5 @@
+SELECT max(income)
+FROM demo, exams, labs
+WHERE demo.id = exams.id AND exams.id = labs.id AND
+weight <= 5000 AND 
+blood_lead >= 100;
