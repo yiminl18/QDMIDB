@@ -1,4 +1,4 @@
-5
+8
 1
 5
 demo.income
@@ -71,3 +71,61 @@ F
 exams.weight >= 10000
 J
 demo.id = exams.id
+6
+6
+demo.id
+labs.id
+exams.id
+demo.income
+labs.blood_lead
+exams.weight
+5
+F
+exams.weight <= 5000
+F
+labs.blood_lead >= 100
+J
+exams.id = demo.id
+J
+exams.id = labs.id
+A
+demo.income MAX
+7
+6
+demo.id
+labs.id
+exams.id
+labs.triglyceride
+demo.years_edu
+exams.head_circumference
+5
+F
+labs.triglyceride >= 500
+F
+demo.years_edu >= 10
+J
+exams.id = demo.id
+J
+exams.id = labs.id
+A
+exams.head_circumference MIN
+8
+5
+labs.blood_lead
+exams.blood_pressure_systolic
+labs.id
+exams.id
+exams.body_mass_index
+4
+F
+labs.blood_lead >= 200
+F
+exams.blood_pressure_systolic <= 100
+J
+labs.id = exams.id
+A
+exams.body_mass_index MAX
+
+
+
+

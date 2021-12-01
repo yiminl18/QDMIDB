@@ -11,6 +11,7 @@ public class Decision {
     private boolean isJoin = false;
     private JoinPredicate joinpred;
     private Pair<Boolean,Boolean> JoinDecision;
+    private static boolean applied_bit = true;
 
 
     public Decision(Predicate pred) {
@@ -19,8 +20,16 @@ public class Decision {
 
     public Decision(JoinPredicate joinPred) {this.joinpred = joinPred; isJoin = true;}
 
+    public static void flipApplied_bit(){
+        //false: eager imputation to test ImputeDB
+        applied_bit = false;
+    }
+
     public boolean Decide(String attribute){//true -> clean now
         Attribute attr = Statistics.getAttribute(attribute);
+        if(!applied_bit){
+            return true;
+        }
         //return attr.getDecision();
         return false;
     }

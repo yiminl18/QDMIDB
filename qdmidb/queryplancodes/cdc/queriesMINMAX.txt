@@ -57,3 +57,15 @@ FROM demo, exams, labs
 WHERE demo.id = exams.id AND exams.id = labs.id AND
 weight <= 5000 AND 
 blood_lead >= 100;
+
+SELECT MIN(head_circumference)
+FROM demo, exams, labs
+WHERE demo.id = exams.id AND exams.id = labs.id AND
+triglyceride >= 300 AND
+white_blood_cell_ct >= 1000
+
+SELECT MAX(body_mass_index)
+FROM exams, labs
+WHERE labs.id = exams.id AND 
+blood_pressure_systolic <= 100 AND
+blood_lead >= 200

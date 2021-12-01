@@ -1,0 +1,12 @@
+SeqScan s1labs= new SeqScan(tid, CDClabs.getId(), "labs");
+SmartFilter sel1labs = new SmartFilter(new Predicate("labs.blood_lead", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(200)), s1labs);
+SeqScan s2exams= new SeqScan(tid, CDCexams.getId(), "exams");
+SmartFilter sel2exams = new SmartFilter(new Predicate("exams.blood_pressure_systolic", Predicate.Op.LESS_THAN_OR_EQ, new IntField(100)), s2exams);
+JoinPredicate predName1 = new JoinPredicate("labs.id", Predicate.Op.EQUALS, "exams.id");
+SmartJoin join1labs = new SmartJoin(predName1, sel1labs, sel2exams);
+List<Attribute> attributes = new ArrayList<>();
+attributes.add(new Attribute("exams.body_mass_index"));
+Type[] types = new Type[]{Type.INT_TYPE};
+SmartProject sp1 = new SmartProject(attributes, types, join1labs);
+SmartAggregate sp = new SmartAggregate(sp1, "exams.body_mass_index", "", Aggregator.Op.MAX);
+return sp;

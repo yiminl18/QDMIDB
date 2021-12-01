@@ -7,6 +7,11 @@ import java.util.*;
 public class AggregateOptimization {
     public static Field temporalMax = new IntField(Integer.MIN_VALUE+1), temporalMin = new IntField(Integer.MAX_VALUE);
     private static PredicateUnit aggregatePred = null;
+    private static boolean applied_flag = true;
+
+    public static void setApplied_flag(boolean flag){
+        applied_flag = flag;
+    }
 
     public static PredicateUnit getAggregatePred() {
         return aggregatePred;
@@ -28,6 +33,9 @@ public class AggregateOptimization {
     }
 
     public static boolean passVirtualFilter(Tuple t){
+        if(!applied_flag){//does not apply this optimization
+            return true;
+        }
         if(aggregatePred == null){
             //no MAX/MIN predicate, pass the test
             return true;

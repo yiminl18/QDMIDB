@@ -1,7 +1,7 @@
 DATASET = 'CDC'
 
 path = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/queryplancodes/cdc/cdcQueryPlans.txt"
-output_path = '/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/queryplancodes/cdc/querycode.txt'
+output_path = '/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/queryplancodes/cdc/querycodeIDB.txt'
 
 f = open(path).readlines()
 

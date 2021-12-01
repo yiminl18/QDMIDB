@@ -19,9 +19,13 @@ public class QueryProcessing {
         PredicateSet.initPredicateSet(predicates);
         AggregateOptimization.init();
 //        System.out.println("Print aggregate predicate!");
-//        System.out.println(AggregateOptimization.getAggregatePred());
+//        AggregateOptimization.getAggregatePred().print();
         //List<PredicateUnit> predicates = ManualPredicates();
         RelationshipGraph.initGraph(schema, predicates);
+        System.out.println("Print right attributes:");
+        for(int i=0;i<RelationshipGraph.getRightAttributes().size();i++){
+            System.out.println(RelationshipGraph.getRightAttributes().get(i));
+        }
         //testing
 //        System.out.println("nodes in RG");
 //        for(int i=0;i<RelationshipGraph.getNodes().size();i++){

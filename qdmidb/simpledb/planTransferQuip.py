@@ -1,8 +1,8 @@
-DATASET = 'DATASET'
+DATASET = 'CDC'
 
-path = "/Users/delilah/Desktop/Q1input.txt"
-output_path = '/Users/delilah/Desktop/draft2.java'
-linenum = 9
+path = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/queryplancodes/cdc/cdcQueryPlans.txt"
+output_path = '/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/queryplancodes/cdc/querycodeQuip.txt'
+
 
 f = open(path).readlines()
 
@@ -10,7 +10,7 @@ order_list = []
 tree_dict = {}
 temp_node =[] # in case of | node
 temp_child = []
-for line in f[1:linenum]:
+for line in f:
     #node
     node = line.split(':')[0]
     #child
@@ -242,8 +242,8 @@ for node in order_list_noimp:
 print('transfer result:')
 print(output)
 #
-# with open(output_path,'w') as f:
-#     f.write(output)
+with open(output_path,'w') as f:
+    f.write(output)
 
 
 

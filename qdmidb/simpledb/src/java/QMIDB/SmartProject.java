@@ -291,8 +291,9 @@ public class SmartProject extends Operator {
                     Statistics.addJoins(1);
                     t.countImputedJoinBy(1);
                     t.countOuterTupleBy(1);
-                    //HashTables.print();
-                    //System.out.println("print in Project: " + pickedColumn);
+//                    System.out.println("Print in project, hash tables");
+//                    HashTables.print();
+//                    System.out.println("print in Project: " + pickedColumn);
                     if(!HashTables.getHashTable(pickedColumn).getHashMap().containsKey(value)){
                         //remove this tuple
                         flag = true;

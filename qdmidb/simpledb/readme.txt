@@ -35,6 +35,11 @@ F -- pred: attribute op operand
 J -- pred: attributeLeft op attributeRight
 A -- pred: attribute Type -- MAX/MIN/SUM/COUNT/AVG
 O -- pred: attribute D/A (desc or asc)
+Note:
+1. Each line must be seperated by " "
+2. MAX/MIN cannot be max/min
+3. format of aggregate(max/min): attr Aop
+4. Join order should be consistent with real query plans instead of queries.txt!
 
 Structure of imputedValues
 tid
