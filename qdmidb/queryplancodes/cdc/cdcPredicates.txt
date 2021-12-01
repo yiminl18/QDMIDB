@@ -1,0 +1,6 @@
+labs.blood_lead
+labs.blood_lead>=200
+exams.blood_pressure_systolic,exams.body_mass_index
+exams.blood_pressure_systolic<=100
+labs.id=exams.id
+exams.body_mass_index
