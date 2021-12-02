@@ -803,18 +803,25 @@ public class WiFi {
     public void setOccupancy(){
         Random rand = new Random();
         int occupancy;
+        double missingrate = 0.7;
         for(int i=0;i<occupancyTuples.size();i++){
-            int coin = rand.nextInt(100);
-            if(coin < 60){
-                occupancy = ThreadLocalRandom.current().nextInt(0,20);
+            int isImptute = rand.nextInt(100);
+            if(isImptute > missingrate * 100){
+                int type = occupancyTuples.get(i).getType();
+                if(type == 1){//room
+                    occupancy = ThreadLocalRandom.current().nextInt(0,20);
+                }
+                else if(type == 2){//region
+                    occupancy = ThreadLocalRandom.current().nextInt(10,50);
+                }
+                else if(type == 3){//floor
+                    occupancy = ThreadLocalRandom.current().nextInt(40,100);
+                }
+                else{//4:building
+                    occupancy = ThreadLocalRandom.current().nextInt(70,300);
+                }
+                occupancyTuples.get(i).setOccupancy(occupancy);
             }
-            else if(coin < 90){
-                occupancy = ThreadLocalRandom.current().nextInt(10,50);
-            }
-            else{
-                occupancy = ThreadLocalRandom.current().nextInt(40,200);
-            }
-            occupancyTuples.get(i).setOccupancy(occupancy);
         }
     }
 
@@ -824,7 +831,17 @@ public class WiFi {
         for(int i=0;i<occupancyTuples.size();i++){
             int n = rand.nextInt(100);
             if(n > missingrate*100.0){
-                int type = ThreadLocalRandom.current().nextInt(0, 5);
+                int coin = rand.nextInt(100);
+                int type;
+                if(coin < 60){
+                    type = 1;
+                }else if(coin < 80){
+                    type = 2;
+                }else if(coin < 95){
+                    type = 3;
+                }else{
+                    type = 4;
+                }
                 occupancyTuples.get(i).setType(type);
             }
         }
@@ -833,8 +850,8 @@ public class WiFi {
     public void processOccupancy(){
         setOccuLocation();
         setTime();
-        setOccupancy();
         setType();
+        setOccupancy();
         //write to files
         for(int i=0;i<occupancyTuples.size();i++){
             write2Quip(occupancyTuples.get(i).getList(), occupancyQuip);

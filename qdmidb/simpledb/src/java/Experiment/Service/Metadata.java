@@ -9,7 +9,12 @@ public class Metadata {
     private static final int MISSING_INTEGER = Integer.MIN_VALUE;
     private static final int numOfRelation = 3;
 
-    public void generateSchema(){
+    public void getSchema(){
+        //automatically generate schema and statistics from raw data given catalog file
+
+    }
+
+    public void generateSchema(){//this is old
         //read all relations sequentially
         String fileWiFi = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/wifiHash.txt";
         String fileUser = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/userHash.txt";
