@@ -1,0 +1,5 @@
+SELECT occupancy.type, AVG(duration) 
+FROM wifi, occupancy
+WHERE occupancy.lid = wifi.lid 
+AND occupancy.occupancy > 10
+GROUP BY occupancy.type;

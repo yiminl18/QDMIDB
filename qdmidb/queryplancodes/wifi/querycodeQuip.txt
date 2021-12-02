@@ -1,0 +1,12 @@
+SeqScan s1occupancy= new SeqScan(tid, WiFioccupancy.getId(), "occupancy");
+SmartFilter sel1occupancy = new SmartFilter(new Predicate("occupancy.occupancy", Predicate.Op.GREATER_THAN, new IntField(10)), s1occupancy);
+SeqScan s2wifi= new SeqScan(tid, WiFiwifi.getId(), "wifi");
+JoinPredicate predName1 = new JoinPredicate("occupancy.lid", Predicate.Op.EQUALS, "wifi.lid");
+SmartJoin join1occupancy = new SmartJoin(predName1, sel1occupancy, s2wifi);
+List<Attribute> attributes = new ArrayList<>();
+attributes.add(new Attribute("occupancy.type"));
+attributes.add(new Attribute("wifi.duration"));
+Type[] types = new Type[]{Type.INT_TYPE,Type.INT_TYPE};
+SmartProject sp1 = new SmartProject(attributes, types, join1occupancy);
+SmartAggregate sp = new SmartAggregate(sp1, "wifi.duration", "occupancy.type", Aggregator.Op.AVG);
+return sp;

@@ -101,9 +101,12 @@ public class test {
 
     public static void runCDC(int queryID)throws Exception{
         QueryPlan QP = new QueryPlan();
-        QP.setupCDCHeapFiles();
+        //QP.setupCDCHeapFiles();
+        QP.setupWiFiHeapFiles();
         TransactionId tid = new TransactionId();
-        Operator o = QP.getQueryPlan(queryID, tid,"CDC", "Quip");//Quip, ImputeDB
+        String method = "ImputeDB";//Quip, ImputeDB
+        String dataset = "WiFi";
+        Operator o = QP.getQueryPlan(queryID, tid, dataset, method);
         Statistics.setStartTime(System.currentTimeMillis());
         try {
             o.open();
@@ -117,9 +120,11 @@ public class test {
             e.printStackTrace();
         }
         System.out.println("Total number of missing values in datasets: "+ Schema.getTotalNumberOfMissingValues());
-        //System.out.println("Total number of imputation times -- imputedDB cleaning: " + ImputeFactory.getImputationTimes());
-        System.out.println("Total number of imputation times -- Quip cleaning: " + ImputeFactory.getImputationTimes());
-        //System.out.println("Total number of removed tuples: " + Statistics.getNumOfRemovedTuples());
+        if(method.equals("ImputeDB")){
+            System.out.println("Total number of imputation times -- imputedDB cleaning: " + ImputeFactory.getImputationTimes());
+        }else{
+            System.out.println("Total number of imputation times -- Quip cleaning: " + ImputeFactory.getImputationTimes());
+        }
     }
 
     public static void testComplexQuery() throws Exception{

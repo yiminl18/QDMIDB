@@ -15,10 +15,10 @@ public class QueryPlan {
     private static String CDC;//{R1,R2,S1,S2}
     private static int queryID;
     private static DbIterator iter = null;
-    private HeapFile WifISpace, WiFiUsers, WiFiWiFi;
+    private HeapFile WiFioccupancy, WiFiusers, WiFiwifi;
     private HeapFile CDCdemo, CDClabs, CDCexams;
-    private List<String> CDCrelations = new ArrayList<>();
-    private List<String> CDCpahts = new ArrayList<>();
+    private List<String> CDCrelations = new ArrayList<>(), WiFiRelations = new ArrayList<>();
+    private List<String> CDCpahts = new ArrayList<>(), WiFiPaths = new ArrayList<>();
     private List<Attribute> attrs = Schema.getSchema();
 
     public QueryPlan(){
@@ -28,35 +28,58 @@ public class QueryPlan {
         this.CDCpahts.add("/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/cdcdataset/demo.dat");
         this.CDCpahts.add("/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/cdcdataset/exams.dat");
         this.CDCpahts.add("/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/cdcdataset/labs.dat");
+
+        this.WiFiRelations.add("occupancy");
+        this.WiFiRelations.add("users");
+        this.WiFiRelations.add("wifi");
+        this.WiFiPaths.add("/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/occupancy.dat");
+        this.WiFiPaths.add("/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/users.dat");
+        this.WiFiPaths.add("/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/wifi.dat");
     }
 
     public void setupWiFiHeapFiles()
     {
-        Type types1[] = new Type[]{ Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE};
-        String names1[] = new String[]{ "space.room", "space.floor","space.building"};
-
-        TupleDesc tdSpace = new TupleDesc(types1, names1);
-
-        Type types2[] = new Type[]{ Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE};
-        String names2[] = new String[]{"users.name", "users.email","users.mac"};
-
-        TupleDesc tdUsers = new TupleDesc(types2, names2);
-
-        Type types3[] = new Type[]{ Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE};
-        String names3[] = new String[]{ "wifi.mac", "wifi.time", "wifi.room"};
-
-        TupleDesc tdWiFi = new TupleDesc(types3, names3);
-
-        // create the tables, associate them with the data files
-        // and tell the catalog about the schema the tables.
-        WifISpace = new HeapFile(new File("simpledb/wifidataset/spaceHash.dat"), tdSpace);
-        Database.getCatalog().addTable(WifISpace, "space");
-
-        WiFiUsers = new HeapFile(new File("simpledb/wifidataset/userHash.dat"), tdUsers);
-        Database.getCatalog().addTable(WiFiUsers, "users");
-
-        WiFiWiFi = new HeapFile(new File("simpledb/wifidataset/wifiHash.dat"), tdWiFi);
-        Database.getCatalog().addTable(WiFiWiFi, "wifi");
+        for(int i=0;i<WiFiRelations.size();i++){
+            String relation = WiFiRelations.get(i);
+            String path = WiFiPaths.get(i);
+            boolean flag = false;
+            int pos = 0;
+            Type types[] = null;
+            String names[] = null;
+            for(int j=0;j<attrs.size();j++){
+                if(attrs.get(j).getRelation().equals(relation)){
+                    if(!flag){//first time, initialize arrays
+                        flag = true;
+                        int length = attrs.get(j).getSchemaWidth();
+                        types = new Type[length];
+                        for(int k=0;k<length;k++){
+                            types[k] = Type.INT_TYPE;
+                        }
+                        names = new String[length];
+                        pos = j;
+                    }
+                    names[j-pos] = attrs.get(j).getAttribute();
+                }
+            }
+            TupleDesc td = new TupleDesc(types, names);
+            //System.out.println(relation + " " + path);
+            //td.print();
+            if(relation.equals("occupancy")){
+                WiFioccupancy = new HeapFile(new File(path), td);
+                Database.getCatalog().addTable(WiFioccupancy, "occupancy");
+            }
+            else if(relation.equals("users")){
+                WiFiusers = new HeapFile(new File(path), td);
+                Database.getCatalog().addTable(WiFiusers, "users");
+            }
+            else if(relation.equals("wifi")){
+                WiFiwifi = new HeapFile(new File(path), td);
+                Database.getCatalog().addTable(WiFiwifi, "wifi");
+            }
+            else{
+                System.out.println("Relation is incorrect!");
+            }
+        }
     }
 
     public void setupCDCHeapFiles(){
@@ -108,7 +131,96 @@ public class QueryPlan {
         if(dataset.equals("WiFi")){
             switch (queryID){
                 case 1:
-                    return getWiFiQ1(tid);
+                    if(method.equalsIgnoreCase("ImputeDB")){
+                        AggregateOptimization.setApplied_flag(false);
+                        Decision.flipApplied_bit();
+                        //return getQueryTest1(tid);
+                        return getWifiQ1IDB(tid);
+                    }else{
+                        //return getCDCQ1Quip(tid);
+                        return getWifiQ1Quip(tid);
+                    }
+                case 2:
+                    if(method.equalsIgnoreCase("ImputeDB")){
+                        AggregateOptimization.setApplied_flag(false);
+                        Decision.flipApplied_bit();
+                        return getWifiQ2IDB(tid);
+                    }else{
+                        //return getCDCQ1Quip(tid);
+                        return getWifiQ2Quip(tid);
+                    }
+                case 3:
+                    if(method.equalsIgnoreCase("ImputeDB")){
+                        AggregateOptimization.setApplied_flag(false);
+                        Decision.flipApplied_bit();
+                        return getWifiQ3IDB(tid);
+                    }else{
+                        //return getCDCQ1Quip(tid);
+                        return getWifiQ3Quip(tid);
+                    }
+                case 4:
+                    if(method.equalsIgnoreCase("ImputeDB")){
+                        AggregateOptimization.setApplied_flag(false);
+                        Decision.flipApplied_bit();
+                        return getWifiQ4IDB(tid);
+                    }else{
+                        //return getCDCQ1Quip(tid);
+                        return getWifiQ4Quip(tid);
+                    }
+                case 5:
+                    if(method.equalsIgnoreCase("ImputeDB")){
+                        AggregateOptimization.setApplied_flag(false);
+                        Decision.flipApplied_bit();
+                        return getWifiQ5IDB(tid);
+                    }else{
+                        //return getCDCQ1Quip(tid);
+                        return getWifiQ5Quip(tid);
+                    }
+                case 6:
+                    if(method.equalsIgnoreCase("ImputeDB")){
+                        AggregateOptimization.setApplied_flag(false);
+                        Decision.flipApplied_bit();
+                        return getWifiQ6IDB(tid);
+                    }else{
+                        //return getCDCQ1Quip(tid);
+                        return getWifiQ6Quip(tid);
+                    }
+                case 7:
+                    if(method.equalsIgnoreCase("ImputeDB")){
+                        AggregateOptimization.setApplied_flag(false);
+                        Decision.flipApplied_bit();
+                        return getWifiQ7IDB(tid);
+                    }else{
+                        //return getCDCQ1Quip(tid);
+                        return getWifiQ7Quip(tid);
+                    }
+                case 8:
+                    if(method.equalsIgnoreCase("ImputeDB")){
+                        AggregateOptimization.setApplied_flag(false);
+                        Decision.flipApplied_bit();
+                        return getWifiQ8IDB(tid);
+                    }else{
+                        //return getCDCQ1Quip(tid);
+                        return getWifiQ8Quip(tid);
+                    }
+                case 9:
+                    if(method.equalsIgnoreCase("ImputeDB")){
+                        AggregateOptimization.setApplied_flag(false);
+                        Decision.flipApplied_bit();
+                        return getWifiQ9IDB(tid);
+                    }else{
+                        //return getCDCQ1Quip(tid);
+                        return getWifiQ9Quip(tid);
+                    }
+                case 10:
+                    if(method.equalsIgnoreCase("ImputeDB")){
+                        AggregateOptimization.setApplied_flag(false);
+                        Decision.flipApplied_bit();
+                        return getWifiQ10IDB(tid);
+                    }else{
+                        //return getCDCQ1Quip(tid);
+                        return getWifiQ10Quip(tid);
+                    }
                 default:
                     return null;
             }
@@ -122,8 +234,7 @@ public class QueryPlan {
                         //return getQueryTest1(tid);
                         return getCDCQ1IDB(tid);
                     }else{
-                        //return getCDCQ1Quip(tid);
-                        return getCDCQ1QuipMAXMIN(tid);
+                        return getCDCQ1Quip(tid);
                     }
                 case 2:
                     if(method.equalsIgnoreCase("ImputeDB")){
@@ -208,81 +319,6 @@ public class QueryPlan {
         return null;
     }
 
-    public Operator getQueryTest1(TransactionId tid) throws Exception{
-        SeqScan s1demo= new SeqScan(tid, CDCdemo.getId(), "demo");
-        Impute imp1demo = new Impute(new Attribute("demo.income"),s1demo);
-        SeqScan s2exams= new SeqScan(tid, CDCexams.getId(), "exams");
-        Impute imp2exams = new Impute(new Attribute("exams.cuff_size"),s2exams);
-        Impute imp3exams = new Impute(new Attribute("exams.height"),imp2exams);
-        SmartFilter sel1exams = new SmartFilter(new Predicate("exams.height", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(15000)), imp3exams);
-        JoinPredicate predName1 = new JoinPredicate("demo.id", Predicate.Op.EQUALS, "exams.id");
-        SmartJoin join1demo = new SmartJoin(predName1, imp1demo, sel1exams);
-        List<Attribute> attributes = new ArrayList<>();
-        attributes.add(new Attribute("demo.income"));
-        attributes.add(new Attribute("exams.cuff_size"));
-        Type[] types = new Type[]{Type.INT_TYPE,Type.INT_TYPE};
-        SmartProject sp1 = new SmartProject(attributes, types, join1demo);
-        SmartAggregate sp = new SmartAggregate(sp1, "exams.cuff_size", "demo.income", Aggregator.Op.AVG);
-
-        return sp;
-    }
-
-    public Operator getWiFiQ1(TransactionId tid)throws Exception{
-
-
-        SeqScan ssSpace = new SeqScan(tid, WifISpace.getId(), "space");
-        SeqScan ssUsers = new SeqScan(tid, WiFiUsers.getId(), "users");
-        SeqScan ssWiFi = new SeqScan(tid, WiFiWiFi.getId(), "wifi");
-
-        //users.mac = wifi.mac
-        JoinPredicate p1 = new JoinPredicate("wifi.mac", Predicate.Op.EQUALS, "users.mac");
-        SmartJoin sj1 = new SmartJoin(p1,ssWiFi,ssUsers);
-
-        //space.building = 'DBH'
-        SmartFilter sf1 = new SmartFilter(
-                new Predicate("space.building", Predicate.Op.EQUALS, new IntField(67466)), ssSpace);
-
-        //WiFi.room = Space.room
-        JoinPredicate p2 = new JoinPredicate("wifi.room", Predicate.Op.EQUALS, "space.room");
-        SmartJoin sj2 = new SmartJoin(p2,sj1,sf1);
-
-
-        //test smartProject
-        List<Attribute> attributes = new ArrayList<>();
-        attributes.add(new Attribute("users.name"));
-        attributes.add(new Attribute("wifi.time"));
-        attributes.add(new Attribute("wifi.room"));
-        Type[] types = new Type[]{Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE};
-        SmartProject sp = new SmartProject(attributes,types, sj2);
-
-        return sp;
-    }
-
-    public Operator getCDCQ1(TransactionId tid)throws Exception{
-
-        SeqScan ssdemo = new SeqScan(tid, CDCdemo.getId(), "demo");
-        SeqScan ssexams = new SeqScan(tid, CDCexams.getId(), "exams");
-        //SeqScan sslabs = new SeqScan(tid, CDClabs.getId(), "labs");
-
-        //exams.height>=15000
-        SmartFilter sf1 = new SmartFilter(
-                new Predicate("exams.height", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(15000)), ssexams);
-
-        //demo.id = exams.id
-        JoinPredicate p1 = new JoinPredicate("demo.id", Predicate.Op.EQUALS, "exams.id");
-        SmartJoin sj2 = new SmartJoin(p1,ssdemo,sf1);
-
-        //test smartProject
-        //demo.income, cuff_size
-        List<Attribute> attributes = new ArrayList<>();
-        attributes.add(new Attribute("demo.income"));
-        attributes.add(new Attribute("exams.cuff_size"));
-        Type[] types = new Type[]{Type.INT_TYPE, Type.INT_TYPE};
-        SmartProject sp = new SmartProject(attributes,types, sj2);
-
-        return sp;
-    }
-
     //*IDB are plans generated by imputeDB
     public Operator getCDCQ1IDB(TransactionId tid)throws Exception{
 
@@ -349,38 +385,6 @@ public class QueryPlan {
         //GROUP BY demo.income
         //SELECT demo.income, AVG(exams.cuff_size)
         SmartAggregate sa = new SmartAggregate(sp,"exams.cuff_size","demo.income", Aggregator.Op.AVG);
-
-        return sa;
-    }
-
-    public Operator getCDCQ1QuipMAXMIN(TransactionId tid)throws Exception{
-
-        SeqScan ssdemo = new SeqScan(tid, CDCdemo.getId(), "demo");
-        SeqScan ssexams = new SeqScan(tid, CDCexams.getId(), "exams");
-        //SeqScan sslabs = new SeqScan(tid, CDClabs.getId(), "labs");
-
-        //impute demo.income
-        //Impute ip1 = new Impute(new Attribute("exams.arm_circumference"),ssexams);
-
-        //exams.height>=15000
-        SmartFilter sf1 = new SmartFilter(
-                new Predicate("exams.height", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(15000)), ssexams);
-
-        //demo.id = exams.id
-        JoinPredicate p1 = new JoinPredicate("demo.id", Predicate.Op.EQUALS, "exams.id");
-        SmartJoin sj2 = new SmartJoin(p1,ssdemo,sf1);
-
-        //test smartProject
-        //demo.income, cuff_size
-        List<Attribute> attributes = new ArrayList<>();
-        attributes.add(new Attribute("exams.arm_circumference"));
-        Type[] types = new Type[]{Type.INT_TYPE};
-        SmartProject sp = new SmartProject(attributes,types, sj2);
-
-        //aggregate
-        //GROUP BY demo.income
-        //SELECT demo.income, AVG(exams.cuff_size)
-        SmartAggregate sa = new SmartAggregate(sp,"exams.arm_circumference","null", Aggregator.Op.MAX);
 
         return sa;
     }
@@ -465,39 +469,6 @@ public class QueryPlan {
         return sa;
     }
 
-    public Operator getCDCQ2(TransactionId tid)throws Exception{
-
-        SeqScan ssdemo = new SeqScan(tid, CDCdemo.getId(), "demo");
-        SeqScan ssexams = new SeqScan(tid, CDCexams.getId(), "exams");
-        SeqScan sslabs = new SeqScan(tid, CDClabs.getId(), "labs");
-
-        //demo.income >= 13 AND demo.income <= 15
-        SmartFilter sf1 = new SmartFilter(
-                new Predicate("demo.income", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(13)), ssdemo);
-
-        //exams.weight >= 6300
-        SmartFilter sf3 = new SmartFilter(
-                new Predicate("exams.weight", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(6300)), ssexams);
-
-        //exams.id = demo.id
-        JoinPredicate p1 = new JoinPredicate("exams.id", Predicate.Op.EQUALS, "demo.id");
-        SmartJoin sj2 = new SmartJoin(p1,sf3,sf1);
-
-        //labs.id = exams.id
-        JoinPredicate p2 = new JoinPredicate("labs.id", Predicate.Op.EQUALS, "exams.id");
-        SmartJoin sj3 = new SmartJoin(p2,sslabs,sj2);
-
-        //test smartProject
-        //demo.income, labs.creatine
-        List<Attribute> attributes = new ArrayList<>();
-        attributes.add(new Attribute("demo.income"));
-        attributes.add(new Attribute("labs.creatine"));
-        Type[] types = new Type[]{Type.INT_TYPE, Type.INT_TYPE};
-        SmartProject sp = new SmartProject(attributes,types, sj3);
-
-        return sp;
-    }
-
     public Operator getCDCQ3IDB(TransactionId tid)throws Exception{
         SeqScan ssdemo = new SeqScan(tid, CDCdemo.getId(), "demo");
         SeqScan ssexams = new SeqScan(tid, CDCexams.getId(), "exams");
@@ -564,36 +535,6 @@ public class QueryPlan {
         SmartAggregate sa = new SmartAggregate(sp, "labs.blood_lead","null", Aggregator.Op.AVG);
 
         return sa;
-    }
-
-    public Operator getCDCQ3(TransactionId tid)throws Exception{
-        SeqScan ssdemo = new SeqScan(tid, CDCdemo.getId(), "demo");
-        SeqScan ssexams = new SeqScan(tid, CDCexams.getId(), "exams");
-        SeqScan sslabs = new SeqScan(tid, CDClabs.getId(), "labs");
-
-        //demo.age_yrs <= 6
-        SmartFilter sf1 = new SmartFilter(
-                new Predicate("demo.age_yrs", Predicate.Op.LESS_THAN_OR_EQ, new IntField(6)), ssdemo);
-
-        //labs.id = demo.id
-        JoinPredicate p2 = new JoinPredicate("labs.id", Predicate.Op.EQUALS, "demo.id");
-        SmartJoin sj1 = new SmartJoin(p2,sslabs,sf1);
-
-        //exams.id = labs.id
-        JoinPredicate p1 = new JoinPredicate("exams.id", Predicate.Op.EQUALS, "labs.id");
-        SmartJoin sj2 = new SmartJoin(p1,ssexams,sj1);
-
-        //test smartProject
-        //labs.blood_lead
-        List<Attribute> attributes = new ArrayList<>();
-        attributes.add(new Attribute("labs.blood_lead"));
-        Type[] types = new Type[]{Type.INT_TYPE};
-        SmartProject sp = new SmartProject(attributes,types, sj2);
-
-        //aggregate
-        //AVG(labs.blood_lead)
-        SmartAggregate sa = new SmartAggregate(sp, "labs.blood_lead","null", Aggregator.Op.AVG);
-        return sp;
     }
 
     public Operator getCDCQ4IDB(TransactionId tid)throws Exception{
@@ -670,35 +611,6 @@ public class QueryPlan {
         SmartAggregate sa = new SmartAggregate(sp,"exams.blood_pressure_systolic","demo.gender", Aggregator.Op.AVG);
 
         return sa;
-    }
-
-    public Operator getCDCQ4(TransactionId tid)throws Exception{
-        SeqScan ssdemo = new SeqScan(tid, CDCdemo.getId(), "demo");
-        SeqScan ssexams = new SeqScan(tid, CDCexams.getId(), "exams");
-        SeqScan sslabs = new SeqScan(tid, CDClabs.getId(), "labs");
-
-        //exams.body_mass_index >= 3000
-        SmartFilter sf1 = new SmartFilter(
-                new Predicate("exams.body_mass_index", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(3000)), ssexams);
-
-        //labs.id = exams.id
-        JoinPredicate p2 = new JoinPredicate("labs.id", Predicate.Op.EQUALS, "exams.id");
-        SmartJoin sj1 = new SmartJoin(p2,sslabs,sf1);
-
-
-        //demo.id = labs.id
-        JoinPredicate p1 = new JoinPredicate("demo.id", Predicate.Op.EQUALS, "labs.id");
-        SmartJoin sj2 = new SmartJoin(p1,ssdemo,sj1);
-
-        //test smartProject
-        //labs.blood_lead
-        List<Attribute> attributes = new ArrayList<>();
-        attributes.add(new Attribute("demo.gender"));
-        attributes.add(new Attribute("exams.blood_pressure_systolic"));
-        Type[] types = new Type[]{Type.INT_TYPE, Type.INT_TYPE};
-        SmartProject sp = new SmartProject(attributes,types, sj2);
-
-        return sp;
     }
 
     public Operator getCDCQ5IDB(TransactionId tid)throws Exception{
@@ -803,6 +715,7 @@ public class QueryPlan {
         SmartAggregate sp = new SmartAggregate(sp1, "demo.income", "", Aggregator.Op.MAX);
         return sp;
     }
+
     public Operator getCDCQ7IDB(TransactionId tid) throws Exception{
         SeqScan s1exams= new SeqScan(tid, CDCexams.getId(), "exams");
         Impute imp1exams = new Impute(new Attribute("exams.head_circumference"),s1exams);
@@ -958,10 +871,110 @@ public class QueryPlan {
         return sp;
     }
 
-
-    public DbIterator test(TransactionId tid){
-        SeqScan ssSpace = new SeqScan(tid, WifISpace.getId(), "space");
-        return ssSpace;
+    public Operator getWifiQ1Quip(TransactionId tid) throws Exception{
+        SeqScan s1occupancy= new SeqScan(tid, WiFioccupancy.getId(), "occupancy");
+        SmartFilter sel1occupancy = new SmartFilter(new Predicate("occupancy.occupancy", Predicate.Op.GREATER_THAN, new IntField(10)), s1occupancy);
+        SeqScan s2wifi= new SeqScan(tid, WiFiwifi.getId(), "wifi");
+        JoinPredicate predName1 = new JoinPredicate("occupancy.lid", Predicate.Op.EQUALS, "wifi.lid");
+        SmartJoin join1occupancy = new SmartJoin(predName1, sel1occupancy, s2wifi);
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("occupancy.type"));
+        attributes.add(new Attribute("wifi.duration"));
+        Type[] types = new Type[]{Type.INT_TYPE,Type.INT_TYPE};
+        SmartProject sp1 = new SmartProject(attributes, types, join1occupancy);
+        SmartAggregate sp = new SmartAggregate(sp1, "wifi.duration", "occupancy.type", Aggregator.Op.AVG);
+        return sp;
     }
+
+    public Operator getWifiQ1IDB(TransactionId tid) throws Exception{
+        SeqScan s1occupancy= new SeqScan(tid, WiFioccupancy.getId(), "occupancy");
+        Impute imp1occupancy = new Impute(new Attribute("occupancy.occupancy"),s1occupancy);
+        SmartFilter sel1occupancy = new SmartFilter(new Predicate("occupancy.occupancy", Predicate.Op.GREATER_THAN, new IntField(10)), imp1occupancy);
+        SeqScan s2wifi= new SeqScan(tid, WiFiwifi.getId(), "wifi");
+        Impute imp2wifi = new Impute(new Attribute("wifi.lid"),s2wifi);
+        JoinPredicate predName1 = new JoinPredicate("occupancy.lid", Predicate.Op.EQUALS, "wifi.lid");
+        SmartJoin join1occupancy = new SmartJoin(predName1, sel1occupancy, imp2wifi);
+        Impute imp3occupancy = new Impute(new Attribute("occupancy.type"),join1occupancy);
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("occupancy.type"));
+        attributes.add(new Attribute("wifi.duration"));
+        Type[] types = new Type[]{Type.INT_TYPE,Type.INT_TYPE};
+        SmartProject sp1 = new SmartProject(attributes, types, imp3occupancy);
+        SmartAggregate sp = new SmartAggregate(sp1, "wifi.duration", "occupancy.type", Aggregator.Op.AVG);
+        return sp;
+    }
+
+    public Operator getWifiQ2Quip(TransactionId tid) throws Exception{
+        return null;
+    }
+
+    public Operator getWifiQ2IDB(TransactionId tid) throws Exception{
+        return null;
+    }
+
+    public Operator getWifiQ3Quip(TransactionId tid) throws Exception{
+        return null;
+    }
+
+    public Operator getWifiQ3IDB(TransactionId tid) throws Exception{
+        return null;
+    }
+
+    public Operator getWifiQ4Quip(TransactionId tid) throws Exception{
+        return null;
+    }
+
+    public Operator getWifiQ4IDB(TransactionId tid) throws Exception{
+        return null;
+    }
+
+    public Operator getWifiQ5Quip(TransactionId tid) throws Exception{
+        return null;
+    }
+
+    public Operator getWifiQ5IDB(TransactionId tid) throws Exception{
+        return null;
+    }
+
+    public Operator getWifiQ6Quip(TransactionId tid) throws Exception{
+        return null;
+    }
+
+    public Operator getWifiQ6IDB(TransactionId tid) throws Exception{
+        return null;
+    }
+
+    public Operator getWifiQ7Quip(TransactionId tid) throws Exception{
+        return null;
+    }
+
+    public Operator getWifiQ7IDB(TransactionId tid) throws Exception{
+        return null;
+    }
+
+    public Operator getWifiQ8Quip(TransactionId tid) throws Exception{
+        return null;
+    }
+
+    public Operator getWifiQ8IDB(TransactionId tid) throws Exception{
+        return null;
+    }
+
+    public Operator getWifiQ9Quip(TransactionId tid) throws Exception{
+        return null;
+    }
+
+    public Operator getWifiQ9IDB(TransactionId tid) throws Exception{
+        return null;
+    }
+
+    public Operator getWifiQ10Quip(TransactionId tid) throws Exception{
+        return null;
+    }
+
+    public Operator getWifiQ10IDB(TransactionId tid) throws Exception{
+        return null;
+    }
+
 
 }

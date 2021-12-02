@@ -1,7 +1,7 @@
-DATASET = 'CDC'
+DATASET = 'WiFi'
 
-path = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/queryplancodes/cdc/cdcQueryPlans.txt"
-output_path = '/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/queryplancodes/cdc/querycodeQuip.txt'
+path = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/queryplancodes/wifi/cdcQueryPlans.txt"
+output_path = '/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/queryplancodes/wifi/querycodeQuip.txt'
 
 
 f = open(path).readlines()

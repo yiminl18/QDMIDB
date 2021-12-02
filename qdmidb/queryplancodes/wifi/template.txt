@@ -1,0 +1,38 @@
+3
+4
+users.mac
+4018,814
+users.name
+4018,0
+users.email
+4018,0
+users.ugroup
+4018,3607
+5
+wifi.st
+10991,0
+wifi.et
+10991,0
+wifi.mac
+10991,0
+wifi.lid
+10991,7852
+wifi.duration
+10991,0
+5
+occupancy.lid
+11002,0
+occupancy.st
+11002,0
+occupancy.et
+11002,0
+occupancy.occupancy
+11002,7759
+occupancy.type
+11002,2260
+
+SELECT occupancy.type, AVG(duration) 
+FROM wifi, occupancy
+WHERE occupancy.lid = wifi.lid 
+AND occupancy.occupancy > 10
+GROUP BY occupancy.type;
