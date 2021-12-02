@@ -15,8 +15,8 @@ public class test {
 
 
     public static void testPath()throws IOException{
-        String catalog = "demo.db/catalog.txt";
-        String queries = "demo.db/queries.txt";
+        String catalog = "../cdc/queries.txt";
+        String queries = "../queryplancodes/queries.txt";
         String catalogPath = Paths.get(catalog).toAbsolutePath().toString();
         String queriesPath = Paths.get(queries).toAbsolutePath().toString();
         System.out.println(catalogPath);

@@ -11,6 +11,7 @@ public class main {
         QueryProcessing QP = new QueryProcessing(Qid);
 
         test t = new test();
-        t.runCDC(Qid);
+        //t.runCDC(Qid);
+        t.testPath();
     }
 }
