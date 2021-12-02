@@ -158,7 +158,7 @@ public class ImputeFactory {
 
     public static Field HotDeck(Attribute attribute, Tuple tuple){
         Field attributeValue;
-        List<Integer> values = Buffer.getBufferCDCValues(attribute.getAttribute());
+        List<Integer> values = Buffer.getBufferValues(attribute.getAttribute());
         Random rand = new Random();
         int nextIndex;
         int value;
@@ -176,7 +176,7 @@ public class ImputeFactory {
 
     public static Field Mean(Attribute attribute, Tuple tuple){
         Field attributeValue;
-        List<Integer> values = Buffer.getBufferCDCValues(attribute.getAttribute());
+        List<Integer> values = Buffer.getBufferValues(attribute.getAttribute());
         int mean, sum =0;
         for(int i=0;i<values.size();i++){
             if(values.get(i) != MISSING_INTEGER){

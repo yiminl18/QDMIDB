@@ -74,7 +74,7 @@ public class Buffer {
         return TID;
     }
 
-    public static List<Integer> getBufferCDCValues(String attribute){
+    public static List<Integer> getBufferValues(String attribute){
         return bufferedValues.get(attribute);
     }
 
@@ -98,14 +98,19 @@ public class Buffer {
         bufferCDCRelation(schema, demoFile, "demo");
         bufferCDCRelation(schema, examsFile, "exams");
         bufferCDCRelation(schema, labsFile, "labs");
-        //test
-//        for(int i=0;i<schema.size();i++){
-//            String attr = schema.get(i).getAttribute();
-//            System.out.println(attr);
-//            for(int j=0;j<20;j++){
-//                System.out.println(bufferedValues.get(attr).get(j));
-//            }
-//        }
+    }
+
+    public static void bufferWiFiValues(List<Attribute> schema){
+        for(int i=0;i<schema.size();i++){
+            List<Integer> list = new ArrayList<>();
+            bufferedValues.put(schema.get(i).getAttribute(), list);
+        }
+        String wifiFile = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/wifi.txt";
+        String usersFile = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/users.txt";
+        String occupancyFile = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/occupancy.txt";
+        bufferCDCRelation(schema, wifiFile, "wifi");
+        bufferCDCRelation(schema, usersFile, "users");
+        bufferCDCRelation(schema, occupancyFile, "occupancy");
     }
 
     public static void bufferCDCRelation(List<Attribute> schema, String path, String relation){//buffer for one relation

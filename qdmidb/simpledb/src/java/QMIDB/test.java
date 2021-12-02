@@ -99,13 +99,12 @@ public class test {
         System.out.println(a.compare(Predicate.Op.GREATER_THAN_OR_EQ,b));
     }
 
-    public static void runCDC(int queryID)throws Exception{
+    public static void runCDC(int queryID, String dataset)throws Exception{
         QueryPlan QP = new QueryPlan();
         //QP.setupCDCHeapFiles();
         QP.setupWiFiHeapFiles();
         TransactionId tid = new TransactionId();
         String method = "ImputeDB";//Quip, ImputeDB
-        String dataset = "WiFi";
         Operator o = QP.getQueryPlan(queryID, tid, dataset, method);
         Statistics.setStartTime(System.currentTimeMillis());
         try {

@@ -6,26 +6,20 @@ import simpledb.*;
 
 
 public class QueryProcessing {
-    public QueryProcessing(int queryID) {
-        //initialization
+    public QueryProcessing(int queryID, String dataset) {
         fileHandles fH = new fileHandles();
-        fH.loadWiFiImputations();
         List<Attribute> schema = fH.readSchema();
-        //List<Attribute> schema = ManualSchema();
         //predicates: must put Filter first
         List<PredicateUnit> predicates = fH.readPredicatesForGivenQuery(queryID);
         Schema.setSchema(schema, predicates);
         Buffer.initBuffer();
         PredicateSet.initPredicateSet(predicates);
         AggregateOptimization.init();
-//        System.out.println("Print aggregate predicate!");
-//        AggregateOptimization.getAggregatePred().print();
-        //List<PredicateUnit> predicates = ManualPredicates();
         RelationshipGraph.initGraph(schema, predicates);
-        System.out.println("Print right attributes:");
-        for(int i=0;i<RelationshipGraph.getRightAttributes().size();i++){
-            System.out.println(RelationshipGraph.getRightAttributes().get(i));
-        }
+//        System.out.println("Print right attributes:");
+//        for(int i=0;i<RelationshipGraph.getRightAttributes().size();i++){
+//            System.out.println(RelationshipGraph.getRightAttributes().get(i));
+//        }
         //testing
 //        System.out.println("nodes in RG");
 //        for(int i=0;i<RelationshipGraph.getNodes().size();i++){
@@ -39,10 +33,16 @@ public class QueryProcessing {
         //Schema.print();//correct
         //Statistics.print();
         ImputeFactory.setImputationMethod("HOTDECK");
-        Buffer.bufferCDCValues(schema);
-        //RelationshipGraph.printNonJoinNeighbor();
-        //System.out.println(Statistics.getAttribute("R.b").getNumOfNullValue());
-        //System.out.println(Statistics.getAttribute("S.b").getNumOfNullValue());
+        //load buffered values in CDC dataset to compute stats
+        if(dataset.equals("CDC")){
+            Buffer.bufferCDCValues(schema);
+        }else if(dataset.equals("WiFi")){
+            Buffer.bufferWiFiValues(schema);
+        } else{
+
+        }
+
+
     }
 
     public List<PredicateUnit> ManualPredicates(){//for testing purpose

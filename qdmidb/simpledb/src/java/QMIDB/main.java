@@ -8,9 +8,10 @@ import simpledb.*;
 public class main {
     public static void main(String args[]) throws IOException,Exception {
         int Qid = 1;
-        QueryProcessing QP = new QueryProcessing(Qid);
+        String dataset = "WiFi";//CDC
+        QueryProcessing QP = new QueryProcessing(Qid, dataset);
 
         test t = new test();
-        t.runCDC(Qid);
+        t.runCDC(Qid, dataset);
     }
 }
