@@ -7,6 +7,7 @@ import java.io.IOException;
 
 public class main {
     public static void main(String args[])throws IOException {
-        WiFi wifi = new WiFi("occupancy");
+        Metadata md = new Metadata();
+        md.getSchema();
     }
 }

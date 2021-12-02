@@ -4,172 +4,106 @@ package Experiment.Service;
  */
 
 import java.io.*;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.*;
+
+import com.sun.javafx.scene.layout.PaneHelper;
+import javafx.util.*;
 
 public class Metadata {
     private static final int MISSING_INTEGER = Integer.MIN_VALUE;
     private static final int numOfRelation = 3;
+    private static final String catalogFile = "../QDMIDB/QDMIDB/qdmidb/queryplancodes/wifi/catalog.txt";
+    private static final String schemaFile = "../QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/schema.txt";
 
     public void getSchema(){
         //automatically generate schema and statistics from raw data given catalog file
-
-    }
-
-    public void generateSchema(){//this is old
-        //read all relations sequentially
-        String fileWiFi = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/wifiHash.txt";
-        String fileUser = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/userHash.txt";
-        String fileSpace = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/spaceHash.txt";
-        String fileSchema = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/schema.txt";
-
-        int cardinality = 0;
-
+        String catalogPath = Paths.get(catalogFile).toAbsolutePath().toString();
+        String schemaPath = Paths.get(schemaFile).toAbsolutePath().toString();
         try {
-            FileWriter out = new FileWriter(fileSchema);
-            BufferedWriter bw = new BufferedWriter(out);
+            BufferedReader catalog = new BufferedReader(new FileReader(catalogPath));
+            FileWriter schemaWriter = new FileWriter(schemaPath);
+            BufferedWriter bw = new BufferedWriter(schemaWriter);
+
             bw.write(String.valueOf(numOfRelation));
             bw.newLine();
 
-            //process space: room,floor,building
-            int NULLroom=0, NULLfloor=0, NULLbuilding=0;
-            BufferedReader spaceReader = new BufferedReader(new FileReader(fileSpace));
             String row;
-            int count = 0;
-            bw.write(String.valueOf(3));
-            bw.newLine();
-            while ((row = spaceReader.readLine()) != null) {
-                count++;
-                if (count == 1)
-                    continue;
-                cardinality ++;
-                String[] data = row.split(",");
-                int room = Integer.valueOf(data[0]);
-                int floor = Integer.valueOf(data[1]);
-                int building = Integer.valueOf(data[2]);
-                if(room == MISSING_INTEGER){
-                    NULLroom +=1;
+            while ((row = catalog.readLine()) != null) {
+                String tableName = row.split("\\(")[0];
+                String strs = row.split("\\(")[1].split("\\)")[0];
+                String[] attrs = strs.split(",");
+                List<String> attributes = new ArrayList<>();
+                for(int i=0;i<attrs.length;i++){
+                    String s = attrs[i];
+                    if(s.substring(0,1).equals(" ")){
+                        s = s.substring(1,s.length());
+                    }
+                    String attr = tableName + "." + s.split(" ")[0];
+                    attributes.add(attr);
+                    //System.out.println(attr);
                 }
-                if(floor == MISSING_INTEGER){
-                    NULLfloor +=1;
-                }
-                if(building == MISSING_INTEGER){
-                    NULLbuilding +=1;
-                }
-            }
+                //write number of attributes
+                bw.write(String.valueOf(attributes.size()));
+                bw.newLine();
 
-            bw.write("space.room");
-            bw.newLine();
-
-            bw.write(String.valueOf(cardinality) + ',' + String.valueOf(NULLroom));
-            bw.newLine();
-
-            bw.write("space.floor");
-            bw.newLine();
-
-            bw.write(String.valueOf(cardinality) + ',' + String.valueOf(NULLfloor));
-            bw.newLine();
-
-            bw.write("space.building");
-            bw.newLine();
-
-            bw.write(String.valueOf(cardinality) + ',' + String.valueOf(NULLbuilding));
-            bw.newLine();
-
-            spaceReader.close();
-
-            //process users: name,email,mac
-            bw.write(String.valueOf(3));
-            bw.newLine();
-            cardinality = 0;
-            BufferedReader userReader = new BufferedReader(new FileReader(fileUser));
-            count = 0;
-            int NULLname=0,NULLemail=0,NULLmac=0;
-            while ((row = userReader.readLine()) != null) {
-                count++;
-                if (count == 1)
-                    continue;
-                cardinality ++;
-                String[] data = row.split(",");
-                int name = Integer.valueOf(data[0]);
-                int email = Integer.valueOf(data[1]);
-                int mac = Integer.valueOf(data[2]);
-                if(name == MISSING_INTEGER){
-                    NULLname ++;
-                }
-                if(email == MISSING_INTEGER){
-                    NULLemail ++;
-                }
-                if(mac == MISSING_INTEGER){
-                    NULLmac ++;
+                String rawDataFile = "../QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/" + tableName + ".txt";
+                String rawDataPath = Paths.get(rawDataFile).toAbsolutePath().toString();
+                //System.out.println(rawDataPath);
+                //print statistics
+                HashMap<String, Pair<Integer, Integer>> stats = computeStatistics(attributes, rawDataPath);
+                for(int i=0;i<attributes.size();i++){
+                    bw.write(attributes.get(i));
+                    bw.newLine();
+                    int cardinality = stats.get(attributes.get(i)).getKey();
+                    int missingNum = stats.get(attributes.get(i)).getValue();
+                    String out = cardinality + "," + missingNum;
+                    bw.write(out);
+                    bw.newLine();
                 }
             }
-            bw.write("users.name");
-            bw.newLine();
 
-            bw.write(String.valueOf(cardinality) + ',' + String.valueOf(NULLname));
-            bw.newLine();
-
-            bw.write("users.email");
-            bw.newLine();
-
-            bw.write(String.valueOf(cardinality) + ',' + String.valueOf(NULLemail));
-            bw.newLine();
-
-            bw.write("users.mac");
-            bw.newLine();
-
-            bw.write(String.valueOf(cardinality) + ',' + String.valueOf(NULLmac));
-            bw.newLine();
-            userReader.close();
-
-            //process wifi: mac, time, room
-            bw.write(String.valueOf(3));
-            bw.newLine();
-            cardinality = 0;
-            BufferedReader wifiReader = new BufferedReader(new FileReader(fileWiFi));
-            count = 0;
-            int NULLmacs=0,NULLtime=0,NULLroomWifi=0;
-            while ((row = wifiReader.readLine()) != null) {
-                count++;
-                if (count == 1)
-                    continue;
-                cardinality ++;
-                String[] data = row.split(",");
-                int macs = Integer.valueOf(data[0]);
-                int time = Integer.valueOf(data[1]);
-                int roomWifi = Integer.valueOf(data[2]);
-                if(macs == MISSING_INTEGER){
-                    NULLmacs ++;
-                }
-                if(time == MISSING_INTEGER){
-                    NULLtime ++;
-                }
-                if(roomWifi == MISSING_INTEGER){
-                    NULLroomWifi ++;
-                }
-            }
-            bw.write("wifi.mac");
-            bw.newLine();
-
-            bw.write(String.valueOf(cardinality) + ',' + String.valueOf(NULLmacs));
-            bw.newLine();
-
-            bw.write("wifi.time");
-            bw.newLine();
-
-            bw.write(String.valueOf(cardinality) + ',' + String.valueOf(NULLtime));
-            bw.newLine();
-
-            bw.write("wifi.room");
-            bw.newLine();
-
-            bw.write(String.valueOf(cardinality) + ',' + String.valueOf(NULLroomWifi));
-            bw.newLine();
-            wifiReader.close();
-
+            catalog.close();
             bw.flush();
             bw.close();
-        } catch (IOException e) {
+        }catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+    public HashMap<String, Pair<Integer, Integer>> computeStatistics(List<String> attrs, String filePath){
+        HashMap<String, Pair<Integer, Integer>> statistics = new HashMap<>();
+        for(int i=0;i<attrs.size();i++){
+            statistics.put(attrs.get(i),new Pair<>(0,0));
+        }
+        try{
+            BufferedReader f = new BufferedReader(new FileReader(filePath));
+            String row;
+            int cardinality = 0, missingNum;
+            while ((row = f.readLine()) != null) {
+                String[] values = row.split(",");
+                if(attrs.size() != values.length){
+                    System.out.println("Schema length is different!" + " " + attrs.size() + " " + values.length + " " + attrs.get(0));
+                    return null;
+                }
+                for(int i=0;i<attrs.size();i++){
+                    missingNum = statistics.get(attrs.get(i)).getValue();
+                    if(Integer.valueOf(values[i]) == MISSING_INTEGER){
+                        statistics.put(attrs.get(i),new Pair<>(0,missingNum+1));
+                    }
+                }
+                cardinality ++;
+            }
+            //set cardinality
+            for(int i=0;i<attrs.size();i++){
+                missingNum = statistics.get(attrs.get(i)).getValue();
+                statistics.put(attrs.get(i),new Pair<>(cardinality,missingNum));
+            }
+        }catch (IOException e) {
+        e.printStackTrace();
+        }
+        return statistics;
+    }
+
 }

@@ -1,3 +1,3 @@
-space(room int, building int, floor int, region int, capacity int, size int, type int)
-wifi(startTime int, endTime int, macaddr int, room int, region int)
-user(macaddr int, name int, email int, ugroup int)
+users(mac int, name int, email int, ugroup int)
+wifi(st int, et int, mac int, lid int, duration int)
+occupancy(lid int, st int, et int, occupancy int, type int)
