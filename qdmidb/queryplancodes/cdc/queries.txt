@@ -43,3 +43,16 @@ FROM exams, labs
 WHERE labs.id = exams.id AND 
 blood_pressure_systolic <= 100 AND
 blood_lead >= 200;
+
+SELECT income, MAX(blood_pressure_systolic)
+FROM demo, exams, labs
+WHERE demo.id = exams.id AND exams.id = labs.id AND
+blood_lead >= 100 AND height <= 10000 
+GROUP BY income;
+
+SELECT gender, AVG(triglyceride)
+FROM demo, exams, labs
+WHERE demo.id = exams.id AND exams.id = labs.id AND
+waist_circumference <= 5000 AND 
+albumin >= 2000 
+GROUP BY gender;

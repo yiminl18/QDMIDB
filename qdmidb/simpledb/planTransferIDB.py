@@ -3,31 +3,46 @@ DATASET = 'CDC'
 path = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/queryplancodes/cdc/cdcQueryPlans.txt"
 output_path = '/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/queryplancodes/cdc/querycodeIDB.txt'
 
+
 f = open(path).readlines()
 
 order_list = []
 tree_dict = {}
 temp_node =[] # in case of | node
+need_father=[]
+
+
 for line in f:
     #node
     node = line.split(':')[0]
     #child
     child = line.split(':')[1]
-    # print(child)
-    if ("|" not in child) and ("|" not in node):
-        temp_node=[]
-        temp_node.append(node)
     if "|" not in node:
+        need_father.append(node)
         order_list.append(node)
         tree_dict[node] = []
-        if len(child)>1: # not null  # if null, do nothing
-            if "|" in child:
-                tree_dict[node] = [j for j in temp_node]
-                temp_node = []  # remove the node in temp_node
+        if len(child)>1: #not leave node
+            child_nodes = child.split(']')
+            if len(child_nodes)>2: #in case of join len=3
+                # c1= child_nodes[0].split('[')[1]
+                # c2= child_nodes[1].split('[')[1]
+
+                tree_dict[node].append(need_father[0])
+                tree_dict[node].append(need_father[1])
+                need_father.pop(0)
+                need_father.pop(0)
+
             else:
-                child_nodes = child.split(']')
-                for i in child_nodes[:-1]:
-                    tree_dict[node].append(i.split('[')[1])
+                c= child_nodes[0].split('[')[1]
+                if "|" not in c:
+                    idx = need_father.index(c)
+                    need_father.pop(idx)
+                    tree_dict[node].append(c)
+                else:
+                    tree_dict[node].append(need_father[-2])
+                    need_father.pop(-2) #pop the last one
+
+
 print("order: ")
 print(order_list)
 print("dict: ")
@@ -165,10 +180,8 @@ for node in new_order_list:
             nodelist = node.split(',')
         else:
             nodelist = [node]
-
         groupNodeName = name_dict[node]
         groupChildName = name_dict[tree_dict[node][0]]
-
 
         for n in nodelist:
             aggVal = n.split("(")[1].split(")")[0]

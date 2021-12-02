@@ -1,4 +1,4 @@
-8
+10
 1
 5
 demo.income
@@ -125,6 +125,44 @@ J
 labs.id = exams.id
 A
 exams.body_mass_index MAX
+9
+7
+labs.blood_lead
+demo.income
+exams.id
+labs.id
+demo.id
+exams.blood_pressure_systolic
+exams.height
+4
+F
+exams.height <= 10000
+F
+labs.blood_lead >= 100
+J
+exams.id = labs.id
+J
+exams.id = demo.id
+10
+7
+exams.id
+labs.id
+demo.id
+demo.gender
+exams.waist_circumference
+labs.triglyceride
+labs.albumin
+4
+F
+exams.waist_circumference <= 5000
+F
+labs.albumin >= 2000
+J
+exams.id = labs.id
+J
+exams.id = demo.id
+
+
 
 
 

@@ -9,6 +9,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class WiFi {
     public static final int MISSING_INTEGER = Integer.MIN_VALUE;
     public static final int hashPrime = 98371;
+    public static final int locationMIN = 1, locationMAX = 1000;
     List<Integer> roomPool = new ArrayList<>();
     List<Integer> buildingPool = new ArrayList<>();
     List<Integer> floorPool = new ArrayList<>();
@@ -17,7 +18,7 @@ public class WiFi {
     List<Integer> macPool = new ArrayList<>();
     List<Integer> userMacPool = new ArrayList<>();
 
-    static class spaceTuple{
+    /*static class spaceTuple{
         int room, building, floor, region, capacity, size, type;
 
         public int getRegion() {
@@ -69,16 +70,16 @@ public class WiFi {
         public void setSize(int size){
             this.size = size;
         }
-    }
+    }*/
 
     static class wifiTuple{
-        int st, et, mac, room, region;
-        public wifiTuple(int st, int et, int mac, int room, int region){
+        int st, et, mac, lid, duration;
+        public wifiTuple(int st, int et, int mac, int lid, int duration){
             this.st = st;
             this.et = et;
             this.mac = mac;
-            this.room = room;
-            this.region = region;
+            this.lid = lid;
+            this.duration = duration;
         }
 
         public List<Integer> getList(){
@@ -86,8 +87,8 @@ public class WiFi {
             values.add(st);
             values.add(et);
             values.add(mac);
-            values.add(room);
-            values.add(region);
+            values.add(lid);
+            values.add(duration);
             return values;
         }
 
@@ -115,20 +116,20 @@ public class WiFi {
             this.mac = mac;
         }
 
-        public int getRoom() {
-            return room;
+        public int getLid() {
+            return lid;
         }
 
-        public void setRoom(int room) {
-            this.room = room;
+        public void setLid(int lid) {
+            this.lid = lid;
         }
 
-        public int getRegion() {
-            return region;
+        public int getDuration() {
+            return duration;
         }
 
-        public void setRegion(int region) {
-            this.region = region;
+        public void setDuration(int duration) {
+            this.duration = duration;
         }
     }
 
@@ -183,28 +184,28 @@ public class WiFi {
         }
     }
 
-    List<spaceTuple> spaceTuples = new ArrayList<>();
+    //List<spaceTuple> spaceTuples = new ArrayList<>();
     List<wifiTuple> wifiTuples = new ArrayList<>();
     List<userTuple> userTuples = new ArrayList<>();
-    private final String spacePathQuip = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/spaceQuip.txt";
-    private final String spacePathIDB = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/spaceIDB.txt";
+    private final String occupancyPathQuip = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/spaceQuip.txt";
+    private final String occupancyPathIDB = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/spaceIDB.txt";
     private final String wifiPathQuip = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/wifiQuip.txt";
     private final String wifiPathIDB = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/wifiIDB.txt";
     private final String userPathQuip = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/userQuip.txt";
     private final String userPathIDB = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/userIDB.txt";
-    BufferedWriter spaceQuip = null, spaceIDB= null, wifiQuip = null, wifiIDB = null, userQuip = null, userIDB = null;
+    BufferedWriter occupancyQuip = null, occupancyIDB= null, wifiQuip = null, wifiIDB = null, userQuip = null, userIDB = null;
 
     public WiFi(String type){
         File f = null;
         switch (type){
-            case "space":
-                f = new File(spacePathQuip);
+            case "occupancy":
+                f = new File(occupancyPathQuip);
                 if(f.exists()){
-                    System.out.println(spacePathQuip + " exists!");
+                    System.out.println(occupancyPathQuip + " exists!");
                     return;
                 }
                 openFile(type);
-                processSpace();
+                processOccupancy();
                 closeFile(type);
                 break;
             case "wifi":
@@ -240,13 +241,13 @@ public class WiFi {
 
     public void openFile(String type){
         switch (type){
-            case "space":
+            case "occupancy":
                 try {
-                    FileWriter spaceQuipFile = new FileWriter(spacePathQuip);
-                    spaceQuip = new BufferedWriter(spaceQuipFile);
+                    FileWriter spaceQuipFile = new FileWriter(occupancyPathQuip);
+                    occupancyQuip = new BufferedWriter(spaceQuipFile);
 
-                    FileWriter spaceIDBFile = new FileWriter(spacePathIDB);
-                    spaceIDB = new BufferedWriter(spaceIDBFile);
+                    FileWriter spaceIDBFile = new FileWriter(occupancyPathIDB);
+                    occupancyIDB = new BufferedWriter(spaceIDBFile);
 
                 }catch (IOException e) {
                     e.printStackTrace();
@@ -284,11 +285,11 @@ public class WiFi {
         switch (type){
             case "space":
                 try {
-                    spaceIDB.flush();
-                    spaceIDB.close();
+                    occupancyIDB.flush();
+                    occupancyIDB.close();
 
-                    spaceQuip.flush();
-                    spaceQuip.close();
+                    occupancyQuip.flush();
+                    occupancyQuip.close();
                     System.out.println("Write files successfully!");
                 }catch (IOException e) {
                     e.printStackTrace();
@@ -368,7 +369,7 @@ public class WiFi {
         }
     }
 
-    public void readSpacePlus(){
+    /*public void readSpacePlus(){
         //"region","building","floor","capacity"
         Random rand = new Random();
         String fileSpace = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/space+.csv";//raw dirty
@@ -414,9 +415,9 @@ public class WiFi {
         }catch (IOException e) {
             e.printStackTrace();
         }
-    }
+    }*/
 
-    public void setRoom(int room, int min, int max){
+    /*public void setRoom(int room, int min, int max){
         while(true) {
             int num = ThreadLocalRandom.current().nextInt(min, max);
             //System.out.println(spaceTuples.get(num).getRoom() + " " + spaceTuples.get(num).getRegion());
@@ -426,9 +427,9 @@ public class WiFi {
                 break;
             }
         }
-    }
+    }*/
 
-    public void setType(){
+    /*public void setType(){
         Random rand = new Random();
         double missingrate = 0.6;
         for(int i=0;i<spaceTuples.size();i++){
@@ -440,9 +441,9 @@ public class WiFi {
             int num = ThreadLocalRandom.current().nextInt(0, 20);
             spaceTuples.get(i).setType(num);
         }
-    }
+    }*/
 
-    public void setSize(){
+    /*public void setSize(){
         double missingrate = 0.7;
         Random rand = new Random();
         for(int i=0;i<spaceTuples.size();i++){
@@ -467,7 +468,7 @@ public class WiFi {
                 spaceTuples.get(i).setSize(ThreadLocalRandom.current().nextInt(30, 100));
             }
         }
-    }
+    }*/
 
     public void write2Quip(List<Integer> values, BufferedWriter bw){//write out missing values
         try {
@@ -503,7 +504,7 @@ public class WiFi {
         }
     }
 
-    public void processSpace(){
+    /*public void processSpace(){
         //read spaces
         readRoomPool();
         readSpacePlus();
@@ -522,7 +523,7 @@ public class WiFi {
             //write2IDB(spaceTuples.get(i).getList(), spaceIDB);
             write2Quip(spaceTuples.get(i).getList(), spaceQuip);
         }
-    }
+    }*/
 
     public void readPresence(){
         String fileSpace = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/presence.csv";//raw dirty
@@ -538,8 +539,11 @@ public class WiFi {
                 String[] data = row.split(",");
                 String st = data[0];
                 String et = data[1];
-                String room = data[2];
-                wifiTuple tuple = new wifiTuple(rehash(transformTime(st)), rehash(transformTime(et)), MISSING_INTEGER, Integer.valueOf(room), MISSING_INTEGER);
+                //String room = data[2];
+                int stINT = rehash(transformTime(st));
+                int etINT = rehash(transformTime(et));
+                int duration = Math.abs(etINT - stINT);
+                wifiTuple tuple = new wifiTuple(stINT, etINT, MISSING_INTEGER, MISSING_INTEGER, duration);
                 wifiTuples.add(tuple);
             }
             csvReader.close();
@@ -599,19 +603,19 @@ public class WiFi {
         }
     }
 
-    public void setRoom(){
+    public void setLocation(){
         double missingRate = 0.7;
         Random rand = new Random();
-
         for(int i=0;i<wifiTuples.size();i++){
             int n = rand.nextInt(100);
-            if(n < missingRate*100.0){
-                wifiTuples.get(i).setRoom(MISSING_INTEGER);
+            if(n > missingRate*100.0){//ihe:tt
+                int room = ThreadLocalRandom.current().nextInt(locationMIN, locationMAX);
+                wifiTuples.get(i).setLid(room);
             }
         }
     }
 
-    public void setRegion(){
+    /*public void setRegion(){
         //get region pool
         readSpacePlus();
         double missingRate = 0.2;
@@ -625,17 +629,16 @@ public class WiFi {
                 wifiTuples.get(i).setRegion(rehash(region));
             }
         }
-    }
+    }*/
 
     public void processWiFi(){
+        //set st,et,duration
         readPresence();
         //set Mac
         setMac();
-        setRoom();
-        setRegion();
+        setLocation();
         //write to files
         for(int i=0;i<wifiTuples.size();i++){
-            //write2IDB(wifiTuples.get(i).getList(), wifiIDB);
             write2Quip(wifiTuples.get(i).getList(), wifiQuip);
         }
     }
@@ -707,5 +710,9 @@ public class WiFi {
             //write2IDB(userTuples.get(i).getList(), userIDB);
             write2Quip(userTuples.get(i).getList(), userQuip);
         }
+    }
+
+    public void processOccupancy(){
+
     }
 }

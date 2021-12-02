@@ -27,7 +27,6 @@ AND weight >= 10000;
 attributes candidate:
 
 labs
-
 white_blood_cell_ct: 500-1200 (13%)
 blood_lead: 50-300 (47%)
 triglyceride: 50-500 (68%)
@@ -35,7 +34,6 @@ albumin: 100-40000, (500-2000) (18%)
 creatine: 50-200(13%)
 
 exams
-
 body_mass_index: 1000-4000 (8%)
 blood_pressure_secs: 400-2000 (3%)
 waist_circumference: 4000-16000 (12%)
@@ -45,12 +43,23 @@ blood_pressure_systolic: 80-200 (27%)
 weight: 1000-10000 (1%)
 head_circumference: 3000-5000 (98%)
 
-
 demo
-
 income: most in 4-20, 20-99 (1.31%)
 age_yrs: 0-100 (0%)
 years_edu: 3-15 (72%)
+
+SELECT gender, AVG(triglyceride)
+FROM demo, exams, labs
+WHERE demo.id = exams.id AND exams.id = labs.id AND
+waist_circumference <= 5000 AND 
+albumin >= 2000 
+GROUP BY gender;
+
+SELECT income, MAX(blood_pressure_systolic)
+FROM demo, exams, labs
+WHERE demo.id = exams.id AND exams.id = labs.id AND
+blood_lead >= 100 AND height <= 10000 
+GROUP BY income;
 
 SELECT max(income)
 FROM demo, exams, labs
