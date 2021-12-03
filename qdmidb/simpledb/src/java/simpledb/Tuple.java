@@ -18,6 +18,7 @@ public class Tuple implements Serializable {
     private List<String> outerAttribute = new ArrayList<>();//size > 0 -> this tuple is outer join tuple due to the attributes in outerAttribute
     private int TID, imputedTID;//TID is the ID of this tuple in buffer pool
     //imputedTID is the TID maintained for raw tuples in each relation, starting from 0
+    //cannot use imputedTID to getTuple, it is used to update bufferedValues
     private TupleDesc schema;
     private RecordId rid;
     private List<Integer> PAfield;//store the fields of attributes in predicate

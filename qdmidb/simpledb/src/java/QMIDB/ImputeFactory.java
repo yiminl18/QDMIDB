@@ -42,24 +42,26 @@ public class ImputeFactory {
 
     public static Field Impute(Attribute attribute, Tuple tuple){
         Field imputedValue = new IntField(1);
-        imputationTimes ++;
-        //System.out.println("print in Impute: "+attribute.getAttribute());
-        Statistics.getAttribute(attribute.getAttribute()).incrementNumOfImputed();
-        tuple.addImputedField(attribute.getAttribute());//ihe: check if changes
-        if(imputationMethod == "REGRESSION_TREE"){
-            imputedValue = RegressionTree(attribute, tuple);
-        }else if(imputationMethod == "Manual"){
-            imputedValue = ImputeWiFi(attribute, tuple);//replace manual
-        }else if(imputationMethod == "HOTDECK"){
-            imputedValue = HotDeck(attribute, tuple);
-        }else if(imputationMethod == "MEAN"){
-            imputedValue = Mean(attribute, tuple);
-        }
-        //update buffered columns
         int tid = tuple.findTID(attribute.getAttribute());//raw tuple
         int ImputedTID = Buffer.getTuple(tid).getImputedTID();//get imputedTID
-        //System.out.println(tuple + " " + tuple.getTID() + " " + tid + " " + ImputedTID);
-        Buffer.updateBufferCDCValue(attribute.getAttribute(), imputeValue, ImputedTID);
+        int value = Buffer.getBufferValues(attribute.getAttribute()).get(ImputedTID);
+        if(value == MISSING_INTEGER){
+            imputationTimes ++;
+            Statistics.getAttribute(attribute.getAttribute()).incrementNumOfImputed();
+            tuple.addImputedField(attribute.getAttribute());//ihe: check if changes
+            if(imputationMethod == "REGRESSION_TREE"){
+                imputedValue = RegressionTree(attribute, tuple);
+            }else if(imputationMethod == "Manual"){
+                imputedValue = ImputeWiFi(attribute, tuple);//replace manual
+            }else if(imputationMethod == "HOTDECK"){
+                imputedValue = HotDeck(attribute, tuple);
+            }else if(imputationMethod == "MEAN"){
+                imputedValue = Mean(attribute, tuple);
+            }
+        }else{
+            imputedValue = new IntField(value);
+        }
+        Buffer.updateBufferValue(attribute.getAttribute(), imputeValue, ImputedTID);
         return imputedValue;
     }
 

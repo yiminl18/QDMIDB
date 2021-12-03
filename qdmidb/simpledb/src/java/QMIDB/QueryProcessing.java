@@ -16,31 +16,33 @@ public class QueryProcessing {
         PredicateSet.initPredicateSet(predicates);
         AggregateOptimization.init();
         RelationshipGraph.initGraph(schema, predicates);
-//        System.out.println("Print right attributes:");
+        ImputeFactory.setImputationMethod("HOTDECK");
+
+        //load buffered values in CDC dataset to compute stats
+        if(dataset.equals("CDC")){
+            Buffer.bufferCDCValues(schema);
+        }else if(dataset.equals("WiFi")){
+            Buffer.bufferWiFiValues(schema);
+        } else{
+
+        }
+
+        //        System.out.println("Print right attributes:");
 //        for(int i=0;i<RelationshipGraph.getRightAttributes().size();i++){
 //            System.out.println(RelationshipGraph.getRightAttributes().get(i));
 //        }
         //testing
-//        System.out.println("nodes in RG");
-//        for(int i=0;i<RelationshipGraph.getNodes().size();i++){
-//            System.out.println(RelationshipGraph.getNodes().get(i).getAttribute());
-//        }
+        System.out.println("nodes in RG");
+        for(int i=0;i<RelationshipGraph.getNodes().size();i++){
+            System.out.println(RelationshipGraph.getNodes().get(i).getAttribute());
+        }
 //        System.out.println("all attributes");
 //        for(int i=0;i<Statistics.getAttributes().size();i++){
 //            System.out.println(Statistics.getAttributes().get(i).getAttribute());
 //        }
 //        PredicateSet.print();//correct
-        Schema.print();//correct
+        //Schema.print();//correct
         //Statistics.print();
-//        ImputeFactory.setImputationMethod("HOTDECK");
-//        //load buffered values in CDC dataset to compute stats
-//        if(dataset.equals("CDC")){
-//            Buffer.bufferCDCValues(schema);
-//        }else if(dataset.equals("WiFi")){
-//            Buffer.bufferWiFiValues(schema);
-//        } else{
-//
-//        }
     }
 
     public List<PredicateUnit> ManualPredicates(){//for testing purpose

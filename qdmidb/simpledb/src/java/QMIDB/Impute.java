@@ -66,6 +66,12 @@ public class Impute extends Operator {
             if(value.isMissing()){
                 value = ImputeFactory.Impute(this.attribute, t);
                 t.setField(fieldIndex, value);
+                if(RelationshipGraph.getNode(attribute.getAttribute()) != null){
+                    //if imputed values happen to be in join, update it
+                    //otherwise, no need to update this stats
+                    RelationshipGraph.getNode(attribute.getAttribute()).NumOfNullValuesMinusOne();
+                }
+                Buffer.updateCompoundTuple(t, attribute.getAttribute());
             }
             return t;
         }

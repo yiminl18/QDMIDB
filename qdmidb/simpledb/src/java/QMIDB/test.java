@@ -107,17 +107,23 @@ public class test {
         String method = "ImputeDB";//Quip, ImputeDB
         Operator o = QP.getQueryPlan(queryID, tid, dataset, method);
         Statistics.setStartTime(System.currentTimeMillis());
+        int missingNum = 0;
         try {
             o.open();
             while (o.hasNext()) {
                 Tuple tup = o.next();
-                System.out.println(tup);
+                if(tup.hasMissingFields()){
+                    missingNum ++;
+                    System.out.println(tup);
+                }
+
             }
             o.close();
             Database.getBufferPool().transactionComplete(tid);
         } catch (Exception e) {
             e.printStackTrace();
         }
+        System.out.println(missingNum);
         System.out.println("Total number of missing values in datasets: "+ Schema.getTotalNumberOfMissingValues());
         if(method.equals("ImputeDB")){
             System.out.println("Total number of imputation times -- imputedDB cleaning: " + ImputeFactory.getImputationTimes());

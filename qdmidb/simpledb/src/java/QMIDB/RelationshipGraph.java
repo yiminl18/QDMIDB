@@ -191,7 +191,12 @@ public class RelationshipGraph {
     }
 
     public static GraphNode getNode(String attribute){
-        return nodeMap.get(attribute);
+        if(nodeMap.containsKey(attribute)){
+            return nodeMap.get(attribute);
+        }
+        else{
+            return null;
+        }
     }
 
     public static List<String> getRightAttributes(){

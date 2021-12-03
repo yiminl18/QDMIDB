@@ -16,7 +16,7 @@ public class Buffer {
     public static final int MISSING_INTEGER = Integer.MIN_VALUE;
     private static Integer TID = 0;//latest tid of tuple to be inserted
     private static HashMap<String, List<Integer>> bufferedValues = new HashMap<>();//buffered column values for imputation if needed
-    private static HashMap<String, Integer> ImputedTIDs = new HashMap<>();
+    private static HashMap<String, Integer> ImputedTIDs = new HashMap<>();//from relation to its current ImputedTID
 
     public static void initBuffer(){
         //set up ImputedTIDs
@@ -41,10 +41,17 @@ public class Buffer {
     }
 
     public static void updateTuple(Tuple t){
+        //used for right join attr and filter because they took raw tuple as input
         int tid = t.getTID();
         if(buffers.containsKey(tid)){
             buffers.put(tid,t);
         }
+    }
+
+    public static void updateCompoundTuple(Tuple t, String attr){
+        //used to impute which might take compound tuples as input
+        int tid = t.findTID(attr);//raw tuple
+        updateTupleByTID(t, tid);
     }
 
     public static void updateTupleByTID(Tuple t, int tid){
@@ -78,7 +85,9 @@ public class Buffer {
         return bufferedValues.get(attribute);
     }
 
-    public static void updateBufferCDCValue(String attribute, int value, int tid){
+    public static void updateBufferValue(String attribute, int value, int tid){
+//        System.out.println("Print in updateBufferedValue:" + bufferedValues.get(attribute).get(tid));
+//        System.out.println("----");
         if(bufferedValues.get(attribute).get(tid) == MISSING_INTEGER){
             bufferedValues.get(attribute).set(tid, value);
         }
@@ -95,9 +104,9 @@ public class Buffer {
         String demoFile = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/cdcdataset/demoDirty.txt";
         String examsFile = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/cdcdataset/examsDirty.txt";
         String labsFile = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/cdcdataset/labsDirty.txt";
-        bufferCDCRelation(schema, demoFile, "demo");
-        bufferCDCRelation(schema, examsFile, "exams");
-        bufferCDCRelation(schema, labsFile, "labs");
+        bufferRelation(schema, demoFile, "demo");
+        bufferRelation(schema, examsFile, "exams");
+        bufferRelation(schema, labsFile, "labs");
     }
 
     public static void bufferWiFiValues(List<Attribute> schema){
@@ -108,12 +117,16 @@ public class Buffer {
         String wifiFile = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/wifi.txt";
         String usersFile = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/users.txt";
         String occupancyFile = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/occupancy.txt";
-        bufferCDCRelation(schema, wifiFile, "wifi");
-        bufferCDCRelation(schema, usersFile, "users");
-        bufferCDCRelation(schema, occupancyFile, "occupancy");
+        bufferRelation(schema, wifiFile, "wifi");
+        bufferRelation(schema, usersFile, "users");
+        bufferRelation(schema, occupancyFile, "occupancy");
+        //check buffered values: correct
+//        for(int i=0;i<50;i++){
+//            System.out.println(bufferedValues.get("occupancy.occupancy").get(i));
+//        }
     }
 
-    public static void bufferCDCRelation(List<Attribute> schema, String path, String relation){//buffer for one relation
+    public static void bufferRelation(List<Attribute> schema, String path, String relation){//buffer for one relation
         int start = 0;
         for(int i=0;i<schema.size();i++){
             if(schema.get(i).getRelation().equals(relation)){

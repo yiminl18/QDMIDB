@@ -901,7 +901,7 @@ public class QueryPlan {
         Type[] types = new Type[]{Type.INT_TYPE,Type.INT_TYPE};
         SmartProject sp1 = new SmartProject(attributes, types, imp3occupancy);
         SmartAggregate sp = new SmartAggregate(sp1, "wifi.duration", "occupancy.type", Aggregator.Op.AVG);
-        return sp;
+        return join1occupancy;
     }
 
     public Operator getWifiQ2Quip(TransactionId tid) throws Exception{
