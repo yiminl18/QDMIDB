@@ -8,9 +8,9 @@ import simpledb.*;
 public class QueryProcessing {
     public QueryProcessing(int queryID, String dataset) {
         fileHandles fH = new fileHandles();
-        List<Attribute> schema = fH.readSchema();
-        //predicates: must put Filter first
-        List<PredicateUnit> predicates = fH.readPredicatesForGivenQuery(queryID);
+        List<Attribute> schema = fH.readSchema(dataset);
+        List<PredicateUnit> predicates = fH.readPredicates(queryID, dataset);
+
         Schema.setSchema(schema, predicates);
         Buffer.initBuffer();
         PredicateSet.initPredicateSet(predicates);
@@ -30,19 +30,17 @@ public class QueryProcessing {
 //            System.out.println(Statistics.getAttributes().get(i).getAttribute());
 //        }
 //        PredicateSet.print();//correct
-        //Schema.print();//correct
+        Schema.print();//correct
         //Statistics.print();
-        ImputeFactory.setImputationMethod("HOTDECK");
-        //load buffered values in CDC dataset to compute stats
-        if(dataset.equals("CDC")){
-            Buffer.bufferCDCValues(schema);
-        }else if(dataset.equals("WiFi")){
-            Buffer.bufferWiFiValues(schema);
-        } else{
-
-        }
-
-
+//        ImputeFactory.setImputationMethod("HOTDECK");
+//        //load buffered values in CDC dataset to compute stats
+//        if(dataset.equals("CDC")){
+//            Buffer.bufferCDCValues(schema);
+//        }else if(dataset.equals("WiFi")){
+//            Buffer.bufferWiFiValues(schema);
+//        } else{
+//
+//        }
     }
 
     public List<PredicateUnit> ManualPredicates(){//for testing purpose

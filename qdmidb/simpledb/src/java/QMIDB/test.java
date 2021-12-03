@@ -360,14 +360,4 @@ public class test {
         }
         System.out.println("");
     }
-
-    public static void testPredicate(){
-        fileHandles fH = new fileHandles();
-        List<PredicateUnit> predicates = fH.readPredicatesForGivenQuery(1);
-        for(int i=0;i<predicates.size();i++){
-            predicates.get(i).print();
-        }
-        String a = "DBH";
-        System.out.println(a.hashCode());
-    }
 }

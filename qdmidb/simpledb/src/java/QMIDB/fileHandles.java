@@ -14,18 +14,21 @@ import java.util.Vector;
     this class reads metadata from file to initialize the data structures
  */
 public class fileHandles {
-    private final String schemaFilePath = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/metadata/schema.txt";
     private final String WifISchemaFilePath = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/schema.txt";
     private final String CDCSchemaFilePath = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/cdcdataset/schema.txt";
-    private final String predicateFilePath = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/metadata/predicate.txt";
     private final String WiFiPredicatesFilePath = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/predicates.txt";
     private final String CDCPredicatesFilePath = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/cdcdataset/predicates.txt";
-    private final String CDCPredicatesMAXMINFilePath = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/cdcdataset/predicatesMINMAX.txt";
 
-    public List<Attribute> readSchema(){
+    public List<Attribute> readSchema(String dataset){
         int N,n;
+        String schemaPath = "";
+        if(dataset.equals("CDC")){
+            schemaPath = CDCSchemaFilePath;
+        }else if(dataset.equals("WiFi")){
+            schemaPath = WifISchemaFilePath;
+        }
         List<Attribute> attributes = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(CDCSchemaFilePath)))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(schemaPath)))) {
 
             String line = br.readLine();
             N = Integer.valueOf(line);
@@ -48,17 +51,17 @@ public class fileHandles {
         return attributes;
     }
 
-    public List<PredicateUnit> readPredicatesForGivenQuery(int queryID){
+    public List<PredicateUnit> readPredicates(int queryID, String dataset){
         //read predicates for query with given queryID
         List<PredicateUnit> predicateUnits = new ArrayList<>();
-        //Vector<PredicateUnit> js = new ArrayList<>();
-        //String lin = "bad pig";
-        //lin.equals("always");
         int n, queryNum, QID;
-
-        int room;
-        room = 0;
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(CDCPredicatesFilePath)))) {
+        String predicatePath = "";
+        if(dataset.equals("CDC")){
+            predicatePath = CDCPredicatesFilePath;
+        }else if(dataset.equals("WiFi")){
+            predicatePath = WiFiPredicatesFilePath;
+        }
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(predicatePath)))) {
             String line = br.readLine();
             queryNum = Integer.valueOf(line);
             for(int i=0;i<queryNum;i++){//iterative each query
@@ -94,36 +97,6 @@ public class fileHandles {
                                 break;
                         }
                     }
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return predicateUnits;
-    }
-
-    public List<PredicateUnit> readPredicatesOneQuery(){
-        List<PredicateUnit> predicateUnits = new ArrayList<>();
-        int n;
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(predicateFilePath)))) {
-            String line = br.readLine();
-            n = Integer.valueOf(line);
-            for(int i=0;i<n;i++){
-                String type = br.readLine();
-                String predicate[] = br.readLine().split(" ");
-                switch (type){
-                    case "F":
-                        predicateUnits.add(new PredicateUnit(new Attribute(predicate[0]),getOp(predicate[1]),new IntField(Integer.valueOf(predicate[2]))));//ihe only support int for now
-                        break;
-                    case "J":
-                        predicateUnits.add(new PredicateUnit(new Attribute(predicate[0]),getOp(predicate[1]),new Attribute(predicate[2])));
-                        break;
-                    case "A":
-                        predicateUnits.add(new PredicateUnit(new Attribute(predicate[0]),getAop(predicate[1])));
-                        break;
-                    case "O":
-                        predicateUnits.add(new PredicateUnit(new Attribute(predicate[0]),predicate[1]));
-                        break;
                 }
             }
         } catch (IOException e) {
@@ -170,46 +143,5 @@ public class fileHandles {
                 System.out.println("predicate aop is invalid");
                 return null;
         }
-    }
-
-    public void loadWiFiImputations(){
-        String fileUserImputed = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/userImputedValues.txt";
-        String fileSpaceImputed = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/spaceImputedValues.txt";
-        String fileWiFiImputed = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/wifiImputedValues.txt";
-        loadImputedValues("users", fileUserImputed);
-        loadImputedValues("space",fileSpaceImputed);
-        loadImputedValues("wifi", fileWiFiImputed);
-    }
-
-    public void loadImputedValues(String relation, String filePath){
-        //first key is tid, starting from 0 for each relation
-        //second key is field index to its imputed value
-        HashMap<Integer, HashMap<Integer, Integer>> imputedValues = new HashMap<>();
-        try {
-            BufferedReader csvReader = new BufferedReader(new FileReader(filePath));
-            String row;
-            while (true) {
-                row = csvReader.readLine();
-                if(row == null){
-                    break;
-                }
-                int tid = Integer.valueOf(row);
-                row = csvReader.readLine();
-                int numOfImputedValues = Integer.valueOf(row);
-                HashMap<Integer, Integer> mp = new HashMap<>();
-                for(int i=0;i<numOfImputedValues;i++){
-                    row = csvReader.readLine();
-                    String[] data = row.split(",");
-                    int fieldIndex = Integer.valueOf(data[0]);
-                    int value = Integer.valueOf(data[1]);
-                    mp.put(fieldIndex, value);
-                }
-                imputedValues.put(tid, mp);
-            }
-            csvReader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        ImputeFactory.loadImputations(relation,imputedValues);
     }
 }
