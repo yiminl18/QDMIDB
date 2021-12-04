@@ -370,6 +370,7 @@ public class SmartProject extends Operator {
                         for(int q=0;q<temporalMatch.size();q++){//iterate all the matching tuples
                             Tuple tt = new Tuple(tupleMatching.get(k).getTupleDesc(), tupleMatching.get(k).getFields());//tt is a copy of tupleMatching.get(k)
                             tt.copyTidSource(tupleMatching.get(k).getTidSource());
+                            tt.setAttribute2TID(tupleMatching.get(k).getAttribute2TID());
                             Tuple tTemp = Buffer.getTuple(temporalMatch.get(q));
                             if(!tt.isTidSource(temporalMatch.get(q))){//tTemp has not been merged to tt before
                                 //merged part is NULL, can be imputed
@@ -378,6 +379,7 @@ public class SmartProject extends Operator {
                                         tt.setField(firstFieldIndex+kk, tTemp.getField(kk));
                                     }
                                     tt.mergeTidSource(tt.getTidSource(), tTemp.getTidSource());
+                                    tt.mergeAttribute2TID(tt.getAttribute2TID(),tTemp.getAttribute2TID());
                                     tupleMatching.add(tt);
                                 }else{
                                     break;//try another activeRightAttribute to merge

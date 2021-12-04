@@ -40,7 +40,7 @@ public class QueryProcessing {
 //        for(int i=0;i<Statistics.getAttributes().size();i++){
 //            System.out.println(Statistics.getAttributes().get(i).getAttribute());
 //        }
-//        PredicateSet.print();//correct
+        PredicateSet.print();//correct
         //Schema.print();//correct
         //Statistics.print();
     }

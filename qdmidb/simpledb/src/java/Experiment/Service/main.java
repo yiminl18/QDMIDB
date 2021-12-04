@@ -9,5 +9,6 @@ public class main {
     public static void main(String args[])throws IOException {
         Metadata md = new Metadata();
         md.getSchema();
+        //WiFi wifi = new WiFi("occupancy");
     }
 }

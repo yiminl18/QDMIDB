@@ -1,6 +1,48 @@
-SELECT MAX(user.name)
-FROM user, wifi, space
-WHERE user.macaddr = wifi.macaddr
-AND wifi.region = space.region 
-AND user.ugroup = 4
-AND space.capacity > 20;
+SELECT occupancy.type, AVG(wifi.duration)
+FROM occupancy, wifi
+WHERE occupancy.lid = wifi.lid 
+AND occupancy.occupancy > 10
+AND wifi.st > 3500 
+AND wifi.et < 5500
+GROUP BY occupancy.type;
+
+SELECT occupancy.type, AVG(occupancy.occupancy) 
+FROM wifi, occupancy
+WHERE occupancy.lid = wifi.lid 
+AND wifi.duration < 500 
+AND wifi.st > 10000 
+AND wifi.et < 15000
+GROUP BY occupancy.type;
+
+SELECT users.ugroup, AVG(wifi.duration) 
+FROM wifi, users
+WHERE users.mac = wifi.mac
+AND wifi.st > 500 
+AND wifi.et < 2000
+GROUP BY users.ugroup;
+
+SELECT users.ugroup, AVG(occupancy.occupancy)
+FROM occupancy, wifi, users
+WHERE occupancy.lid = wifi.lid 
+AND users.mac = wifi.mac 
+AND occupancy.type = 1
+AND wifi.st > 5000
+AND wifi.et < 10000
+GROUP BY users.ugroup;
+
+SELECT MAX(occupancy.occupancy)
+FROM occupancy, wifi
+WHERE wifi.st > 500
+AND wifi.et < 10000
+AND wifi.lid = occupancy.lid
+AND occupancy.type = 2;
+
+SELECT occupancy.type, MAX(occupancy.occupancy)
+FROM occupancy, wifi, users
+WHERE wifi.st > 800
+AND wifi.et < 2000
+AND wifi.lid = occupancy.lid
+AND users.mac = wifi.mac 
+AND users.ugroup = 2
+GROUP BY occupancy.type;
+

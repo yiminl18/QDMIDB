@@ -134,10 +134,8 @@ public class QueryPlan {
                     if(method.equalsIgnoreCase("ImputeDB")){
                         AggregateOptimization.setApplied_flag(false);
                         Decision.flipApplied_bit();
-                        //return getQueryTest1(tid);
                         return getWifiQ1IDB(tid);
                     }else{
-                        //return getCDCQ1Quip(tid);
                         return getWifiQ1Quip(tid);
                     }
                 case 2:
@@ -146,7 +144,6 @@ public class QueryPlan {
                         Decision.flipApplied_bit();
                         return getWifiQ2IDB(tid);
                     }else{
-                        //return getCDCQ1Quip(tid);
                         return getWifiQ2Quip(tid);
                     }
                 case 3:
@@ -155,7 +152,6 @@ public class QueryPlan {
                         Decision.flipApplied_bit();
                         return getWifiQ3IDB(tid);
                     }else{
-                        //return getCDCQ1Quip(tid);
                         return getWifiQ3Quip(tid);
                     }
                 case 4:
@@ -164,7 +160,6 @@ public class QueryPlan {
                         Decision.flipApplied_bit();
                         return getWifiQ4IDB(tid);
                     }else{
-                        //return getCDCQ1Quip(tid);
                         return getWifiQ4Quip(tid);
                     }
                 case 5:
@@ -173,7 +168,6 @@ public class QueryPlan {
                         Decision.flipApplied_bit();
                         return getWifiQ5IDB(tid);
                     }else{
-                        //return getCDCQ1Quip(tid);
                         return getWifiQ5Quip(tid);
                     }
                 case 6:
@@ -182,7 +176,6 @@ public class QueryPlan {
                         Decision.flipApplied_bit();
                         return getWifiQ6IDB(tid);
                     }else{
-                        //return getCDCQ1Quip(tid);
                         return getWifiQ6Quip(tid);
                     }
                 case 7:
@@ -191,7 +184,6 @@ public class QueryPlan {
                         Decision.flipApplied_bit();
                         return getWifiQ7IDB(tid);
                     }else{
-                        //return getCDCQ1Quip(tid);
                         return getWifiQ7Quip(tid);
                     }
                 case 8:
@@ -200,7 +192,6 @@ public class QueryPlan {
                         Decision.flipApplied_bit();
                         return getWifiQ8IDB(tid);
                     }else{
-                        //return getCDCQ1Quip(tid);
                         return getWifiQ8Quip(tid);
                     }
                 case 9:
@@ -209,7 +200,6 @@ public class QueryPlan {
                         Decision.flipApplied_bit();
                         return getWifiQ9IDB(tid);
                     }else{
-                        //return getCDCQ1Quip(tid);
                         return getWifiQ9Quip(tid);
                     }
                 case 10:
@@ -218,7 +208,6 @@ public class QueryPlan {
                         Decision.flipApplied_bit();
                         return getWifiQ10IDB(tid);
                     }else{
-                        //return getCDCQ1Quip(tid);
                         return getWifiQ10Quip(tid);
                     }
                 default:
@@ -231,7 +220,6 @@ public class QueryPlan {
                     if(method.equalsIgnoreCase("ImputeDB")){
                         AggregateOptimization.setApplied_flag(false);
                         Decision.flipApplied_bit();
-                        //return getQueryTest1(tid);
                         return getCDCQ1IDB(tid);
                     }else{
                         return getCDCQ1Quip(tid);
@@ -261,7 +249,6 @@ public class QueryPlan {
                         return getCDCQ4Quip(tid);
                     }
                 case 5:
-                    //return getCDCQ5IDB(tid);
                     if(method.equalsIgnoreCase("ImputeDB")){
                         AggregateOptimization.setApplied_flag(false);
                         Decision.flipApplied_bit();
@@ -269,8 +256,7 @@ public class QueryPlan {
                     }else{
                         return getCDCQ5Quip(tid);
                     }
-                case 6://MAX/MIN query
-                    //return getCDCQ5IDB(tid);
+                case 6:
                     if(method.equalsIgnoreCase("ImputeDB")){
                         AggregateOptimization.setApplied_flag(false);
                         Decision.flipApplied_bit();
@@ -875,8 +861,10 @@ public class QueryPlan {
         SeqScan s1occupancy= new SeqScan(tid, WiFioccupancy.getId(), "occupancy");
         SmartFilter sel1occupancy = new SmartFilter(new Predicate("occupancy.occupancy", Predicate.Op.GREATER_THAN, new IntField(10)), s1occupancy);
         SeqScan s2wifi= new SeqScan(tid, WiFiwifi.getId(), "wifi");
+        SmartFilter sel2wifi = new SmartFilter(new Predicate("wifi.et", Predicate.Op.LESS_THAN, new IntField(5500)), s2wifi);
+        SmartFilter sel3wifi = new SmartFilter(new Predicate("wifi.st", Predicate.Op.GREATER_THAN, new IntField(3500)), sel2wifi);
         JoinPredicate predName1 = new JoinPredicate("occupancy.lid", Predicate.Op.EQUALS, "wifi.lid");
-        SmartJoin join1occupancy = new SmartJoin(predName1, sel1occupancy, s2wifi);
+        SmartJoin join1occupancy = new SmartJoin(predName1, sel1occupancy, sel3wifi);
         List<Attribute> attributes = new ArrayList<>();
         attributes.add(new Attribute("occupancy.type"));
         attributes.add(new Attribute("wifi.duration"));
@@ -892,8 +880,10 @@ public class QueryPlan {
         SmartFilter sel1occupancy = new SmartFilter(new Predicate("occupancy.occupancy", Predicate.Op.GREATER_THAN, new IntField(10)), imp1occupancy);
         SeqScan s2wifi= new SeqScan(tid, WiFiwifi.getId(), "wifi");
         Impute imp2wifi = new Impute(new Attribute("wifi.lid"),s2wifi);
+        SmartFilter sel2wifi = new SmartFilter(new Predicate("wifi.et", Predicate.Op.LESS_THAN, new IntField(5500)), imp2wifi);
+        SmartFilter sel3wifi = new SmartFilter(new Predicate("wifi.st", Predicate.Op.GREATER_THAN, new IntField(3500)), sel2wifi);
         JoinPredicate predName1 = new JoinPredicate("occupancy.lid", Predicate.Op.EQUALS, "wifi.lid");
-        SmartJoin join1occupancy = new SmartJoin(predName1, sel1occupancy, imp2wifi);
+        SmartJoin join1occupancy = new SmartJoin(predName1, sel1occupancy, sel3wifi);
         Impute imp3occupancy = new Impute(new Attribute("occupancy.type"),join1occupancy);
         List<Attribute> attributes = new ArrayList<>();
         attributes.add(new Attribute("occupancy.type"));
@@ -901,47 +891,203 @@ public class QueryPlan {
         Type[] types = new Type[]{Type.INT_TYPE,Type.INT_TYPE};
         SmartProject sp1 = new SmartProject(attributes, types, imp3occupancy);
         SmartAggregate sp = new SmartAggregate(sp1, "wifi.duration", "occupancy.type", Aggregator.Op.AVG);
-        return join1occupancy;
+        return sp;
     }
 
     public Operator getWifiQ2Quip(TransactionId tid) throws Exception{
-        return null;
+        SeqScan s1occupancy= new SeqScan(tid, WiFioccupancy.getId(), "occupancy");
+        SeqScan s2wifi= new SeqScan(tid, WiFiwifi.getId(), "wifi");
+        SmartFilter sel1wifi = new SmartFilter(new Predicate("wifi.duration", Predicate.Op.LESS_THAN, new IntField(500)), s2wifi);
+        SmartFilter sel2wifi = new SmartFilter(new Predicate("wifi.et", Predicate.Op.LESS_THAN, new IntField(15000)), sel1wifi);
+        SmartFilter sel3wifi = new SmartFilter(new Predicate("wifi.st", Predicate.Op.GREATER_THAN, new IntField(10000)), sel2wifi);
+        JoinPredicate predName1 = new JoinPredicate("occupancy.lid", Predicate.Op.EQUALS, "wifi.lid");
+        SmartJoin join1occupancy = new SmartJoin(predName1, s1occupancy, sel3wifi);
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("occupancy.type"));
+        attributes.add(new Attribute("occupancy.occupancy"));
+        Type[] types = new Type[]{Type.INT_TYPE,Type.INT_TYPE};
+        SmartProject sp1 = new SmartProject(attributes, types, join1occupancy);
+        SmartAggregate sp = new SmartAggregate(sp1, "occupancy.occupancy", "occupancy.type", Aggregator.Op.AVG);
+        return sp;
     }
 
     public Operator getWifiQ2IDB(TransactionId tid) throws Exception{
-        return null;
+        SeqScan s1occupancy= new SeqScan(tid, WiFioccupancy.getId(), "occupancy");
+        SeqScan s2wifi= new SeqScan(tid, WiFiwifi.getId(), "wifi");
+        Impute imp1wifi = new Impute(new Attribute("wifi.lid"),s2wifi);
+        SmartFilter sel1wifi = new SmartFilter(new Predicate("wifi.duration", Predicate.Op.LESS_THAN, new IntField(500)), imp1wifi);
+        SmartFilter sel2wifi = new SmartFilter(new Predicate("wifi.et", Predicate.Op.LESS_THAN, new IntField(15000)), sel1wifi);
+        SmartFilter sel3wifi = new SmartFilter(new Predicate("wifi.st", Predicate.Op.GREATER_THAN, new IntField(10000)), sel2wifi);
+        JoinPredicate predName1 = new JoinPredicate("occupancy.lid", Predicate.Op.EQUALS, "wifi.lid");
+        SmartJoin join1occupancy = new SmartJoin(predName1, s1occupancy, sel3wifi);
+        Impute imp2occupancy = new Impute(new Attribute("occupancy.type"),join1occupancy);
+        Impute imp3occupancy = new Impute(new Attribute("occupancy.occupancy"),imp2occupancy);
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("occupancy.type"));
+        attributes.add(new Attribute("occupancy.occupancy"));
+        Type[] types = new Type[]{Type.INT_TYPE,Type.INT_TYPE};
+        SmartProject sp1 = new SmartProject(attributes, types, imp3occupancy);
+        SmartAggregate sp = new SmartAggregate(sp1, "occupancy.occupancy", "occupancy.type", Aggregator.Op.AVG);
+        return sp;
     }
 
     public Operator getWifiQ3Quip(TransactionId tid) throws Exception{
-        return null;
+        SeqScan s1users= new SeqScan(tid, WiFiusers.getId(), "users");
+        SeqScan s2wifi= new SeqScan(tid, WiFiwifi.getId(), "wifi");
+        SmartFilter sel1wifi = new SmartFilter(new Predicate("wifi.et", Predicate.Op.LESS_THAN, new IntField(2000)), s2wifi);
+        SmartFilter sel2wifi = new SmartFilter(new Predicate("wifi.st", Predicate.Op.GREATER_THAN, new IntField(500)), sel1wifi);
+        JoinPredicate predName1 = new JoinPredicate("users.mac", Predicate.Op.EQUALS, "wifi.mac");
+        SmartJoin join1users = new SmartJoin(predName1, s1users, sel2wifi);
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("users.ugroup"));
+        attributes.add(new Attribute("wifi.duration"));
+        Type[] types = new Type[]{Type.INT_TYPE,Type.INT_TYPE};
+        SmartProject sp1 = new SmartProject(attributes, types, join1users);
+        SmartAggregate sp = new SmartAggregate(sp1, "wifi.duration", "users.ugroup", Aggregator.Op.AVG);
+        return sp;
     }
 
     public Operator getWifiQ3IDB(TransactionId tid) throws Exception{
-        return null;
+        SeqScan s1users= new SeqScan(tid, WiFiusers.getId(), "users");
+        Impute imp1users = new Impute(new Attribute("users.mac"),s1users);
+        SeqScan s2wifi= new SeqScan(tid, WiFiwifi.getId(), "wifi");
+        SmartFilter sel1wifi = new SmartFilter(new Predicate("wifi.et", Predicate.Op.LESS_THAN, new IntField(2000)), s2wifi);
+        SmartFilter sel2wifi = new SmartFilter(new Predicate("wifi.st", Predicate.Op.GREATER_THAN, new IntField(500)), sel1wifi);
+        JoinPredicate predName1 = new JoinPredicate("users.mac", Predicate.Op.EQUALS, "wifi.mac");
+        SmartJoin join1users = new SmartJoin(predName1, imp1users, sel2wifi);
+        Impute imp2users = new Impute(new Attribute("users.ugroup"),join1users);
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("users.ugroup"));
+        attributes.add(new Attribute("wifi.duration"));
+        Type[] types = new Type[]{Type.INT_TYPE,Type.INT_TYPE};
+        SmartProject sp1 = new SmartProject(attributes, types, imp2users);
+        SmartAggregate sp = new SmartAggregate(sp1, "wifi.duration", "users.ugroup", Aggregator.Op.AVG);
+        return sp;
     }
 
     public Operator getWifiQ4Quip(TransactionId tid) throws Exception{
-        return null;
+        SeqScan s1occupancy= new SeqScan(tid, WiFioccupancy.getId(), "occupancy");
+        SmartFilter sel1occupancy = new SmartFilter(new Predicate("occupancy.type", Predicate.Op.EQUALS, new IntField(1)), s1occupancy);
+        SeqScan s2wifi= new SeqScan(tid, WiFiwifi.getId(), "wifi");
+        SmartFilter sel2wifi = new SmartFilter(new Predicate("wifi.et", Predicate.Op.LESS_THAN, new IntField(10000)), s2wifi);
+        SmartFilter sel3wifi = new SmartFilter(new Predicate("wifi.st", Predicate.Op.GREATER_THAN, new IntField(5000)), sel2wifi);
+        JoinPredicate predName1 = new JoinPredicate("occupancy.lid", Predicate.Op.EQUALS, "wifi.lid");
+        SmartJoin join1occupancy = new SmartJoin(predName1, sel1occupancy, sel3wifi);
+        SeqScan s3users= new SeqScan(tid, WiFiusers.getId(), "users");
+        JoinPredicate predName2 = new JoinPredicate("wifi.mac", Predicate.Op.EQUALS, "users.mac");
+        SmartJoin join2wifi = new SmartJoin(predName2, join1occupancy, s3users);
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("users.ugroup"));
+        attributes.add(new Attribute("occupancy.occupancy"));
+        Type[] types = new Type[]{Type.INT_TYPE,Type.INT_TYPE};
+        SmartProject sp1 = new SmartProject(attributes, types, join2wifi);
+        SmartAggregate sp = new SmartAggregate(sp1, "occupancy.occupancy", "users.ugroup", Aggregator.Op.AVG);
+        return sp;
     }
 
     public Operator getWifiQ4IDB(TransactionId tid) throws Exception{
-        return null;
+        SeqScan s1occupancy= new SeqScan(tid, WiFioccupancy.getId(), "occupancy");
+        Impute imp1occupancy = new Impute(new Attribute("occupancy.type"),s1occupancy);
+        SmartFilter sel1occupancy = new SmartFilter(new Predicate("occupancy.type", Predicate.Op.EQUALS, new IntField(1)), imp1occupancy);
+        SeqScan s2wifi= new SeqScan(tid, WiFiwifi.getId(), "wifi");
+        Impute imp2wifi = new Impute(new Attribute("wifi.lid"),s2wifi);
+        SmartFilter sel2wifi = new SmartFilter(new Predicate("wifi.et", Predicate.Op.LESS_THAN, new IntField(10000)), imp2wifi);
+        SmartFilter sel3wifi = new SmartFilter(new Predicate("wifi.st", Predicate.Op.GREATER_THAN, new IntField(5000)), sel2wifi);
+        JoinPredicate predName1 = new JoinPredicate("occupancy.lid", Predicate.Op.EQUALS, "wifi.lid");
+        SmartJoin join1occupancy = new SmartJoin(predName1, sel1occupancy, sel3wifi);
+        Impute imp3occupancy = new Impute(new Attribute("occupancy.occupancy"),join1occupancy);
+        SeqScan s3users= new SeqScan(tid, WiFiusers.getId(), "users");
+        Impute imp4users = new Impute(new Attribute("users.mac"),s3users);
+        JoinPredicate predName2 = new JoinPredicate("wifi.mac", Predicate.Op.EQUALS, "users.mac");
+        SmartJoin join2wifi = new SmartJoin(predName2, imp3occupancy, imp4users);
+        Impute imp5users = new Impute(new Attribute("users.ugroup"),join2wifi);
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("users.ugroup"));
+        attributes.add(new Attribute("occupancy.occupancy"));
+        Type[] types = new Type[]{Type.INT_TYPE,Type.INT_TYPE};
+        SmartProject sp1 = new SmartProject(attributes, types, imp5users);
+        SmartAggregate sp = new SmartAggregate(sp1, "occupancy.occupancy", "users.ugroup", Aggregator.Op.AVG);
+        return sp;
     }
 
     public Operator getWifiQ5Quip(TransactionId tid) throws Exception{
-        return null;
+        SeqScan s1wifi= new SeqScan(tid, WiFiwifi.getId(), "wifi");
+        SmartFilter sel1wifi = new SmartFilter(new Predicate("wifi.et", Predicate.Op.LESS_THAN, new IntField(10000)), s1wifi);
+        SmartFilter sel2wifi = new SmartFilter(new Predicate("wifi.st", Predicate.Op.GREATER_THAN, new IntField(500)), sel1wifi);
+        SeqScan s2occupancy= new SeqScan(tid, WiFioccupancy.getId(), "occupancy");
+        SmartFilter sel3occupancy = new SmartFilter(new Predicate("occupancy.type", Predicate.Op.EQUALS, new IntField(2)), s2occupancy);
+        JoinPredicate predName1 = new JoinPredicate("wifi.lid", Predicate.Op.EQUALS, "occupancy.lid");
+        SmartJoin join1wifi = new SmartJoin(predName1, sel2wifi, sel3occupancy);
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("occupancy.occupancy"));
+        Type[] types = new Type[]{Type.INT_TYPE};
+        SmartProject sp1 = new SmartProject(attributes, types, join1wifi);
+        SmartAggregate sp = new SmartAggregate(sp1, "occupancy.occupancy", "", Aggregator.Op.MAX);
+        return sp;
     }
 
     public Operator getWifiQ5IDB(TransactionId tid) throws Exception{
-        return null;
+        SeqScan s1wifi= new SeqScan(tid, WiFiwifi.getId(), "wifi");
+        Impute imp1wifi = new Impute(new Attribute("wifi.lid"),s1wifi);
+        SmartFilter sel1wifi = new SmartFilter(new Predicate("wifi.et", Predicate.Op.LESS_THAN, new IntField(10000)), imp1wifi);
+        SmartFilter sel2wifi = new SmartFilter(new Predicate("wifi.st", Predicate.Op.GREATER_THAN, new IntField(500)), sel1wifi);
+        SeqScan s2occupancy= new SeqScan(tid, WiFioccupancy.getId(), "occupancy");
+        Impute imp2occupancy = new Impute(new Attribute("occupancy.type"),s2occupancy);
+        Impute imp3occupancy = new Impute(new Attribute("occupancy.occupancy"),imp2occupancy);
+        SmartFilter sel3occupancy = new SmartFilter(new Predicate("occupancy.type", Predicate.Op.EQUALS, new IntField(2)), imp3occupancy);
+        JoinPredicate predName1 = new JoinPredicate("wifi.lid", Predicate.Op.EQUALS, "occupancy.lid");
+        SmartJoin join1wifi = new SmartJoin(predName1, sel2wifi, sel3occupancy);
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("occupancy.occupancy"));
+        Type[] types = new Type[]{Type.INT_TYPE};
+        SmartProject sp1 = new SmartProject(attributes, types, join1wifi);
+        SmartAggregate sp = new SmartAggregate(sp1, "occupancy.occupancy", "", Aggregator.Op.MAX);
+        return sp;
     }
 
     public Operator getWifiQ6Quip(TransactionId tid) throws Exception{
-        return null;
+        SeqScan s1users= new SeqScan(tid, WiFiusers.getId(), "users");
+        SmartFilter sel1users = new SmartFilter(new Predicate("users.ugroup", Predicate.Op.EQUALS, new IntField(2)), s1users);
+        SeqScan s2wifi= new SeqScan(tid, WiFiwifi.getId(), "wifi");
+        SmartFilter sel2wifi = new SmartFilter(new Predicate("wifi.st", Predicate.Op.GREATER_THAN, new IntField(800)), s2wifi);
+        SmartFilter sel3wifi = new SmartFilter(new Predicate("wifi.et", Predicate.Op.LESS_THAN, new IntField(2000)), sel2wifi);
+        JoinPredicate predName1 = new JoinPredicate("users.mac", Predicate.Op.EQUALS, "wifi.mac");
+        SmartJoin join1users = new SmartJoin(predName1, sel1users, sel3wifi);
+        SeqScan s3occupancy= new SeqScan(tid, WiFioccupancy.getId(), "occupancy");
+        JoinPredicate predName2 = new JoinPredicate("wifi.lid", Predicate.Op.EQUALS, "occupancy.lid");
+        SmartJoin join2wifi = new SmartJoin(predName2, join1users, s3occupancy);
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("occupancy.type"));
+        attributes.add(new Attribute("occupancy.occupancy"));
+        Type[] types = new Type[]{Type.INT_TYPE,Type.INT_TYPE};
+        SmartProject sp1 = new SmartProject(attributes, types, join2wifi);
+        SmartAggregate sp = new SmartAggregate(sp1, "occupancy.occupancy", "occupancy.type", Aggregator.Op.MAX);
+        return sp;
     }
 
     public Operator getWifiQ6IDB(TransactionId tid) throws Exception{
-        return null;
+        SeqScan s1users= new SeqScan(tid, WiFiusers.getId(), "users");
+        Impute imp1users = new Impute(new Attribute("users.ugroup"),s1users);
+        Impute imp2users = new Impute(new Attribute("users.mac"),imp1users);
+        SmartFilter sel1users = new SmartFilter(new Predicate("users.ugroup", Predicate.Op.EQUALS, new IntField(2)), imp2users);
+        SeqScan s2wifi= new SeqScan(tid, WiFiwifi.getId(), "wifi");
+        Impute imp3wifi = new Impute(new Attribute("wifi.lid"),s2wifi);
+        SmartFilter sel2wifi = new SmartFilter(new Predicate("wifi.st", Predicate.Op.GREATER_THAN, new IntField(800)), imp3wifi);
+        SmartFilter sel3wifi = new SmartFilter(new Predicate("wifi.et", Predicate.Op.LESS_THAN, new IntField(2000)), sel2wifi);
+        JoinPredicate predName1 = new JoinPredicate("users.mac", Predicate.Op.EQUALS, "wifi.mac");
+        SmartJoin join1users = new SmartJoin(predName1, sel1users, sel3wifi);
+        SeqScan s3occupancy= new SeqScan(tid, WiFioccupancy.getId(), "occupancy");
+        JoinPredicate predName2 = new JoinPredicate("wifi.lid", Predicate.Op.EQUALS, "occupancy.lid");
+        SmartJoin join2wifi = new SmartJoin(predName2, join1users, s3occupancy);
+        Impute imp4occupancy = new Impute(new Attribute("occupancy.type"),join2wifi);
+        Impute imp5occupancy = new Impute(new Attribute("occupancy.occupancy"),imp4occupancy);
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("occupancy.type"));
+        attributes.add(new Attribute("occupancy.occupancy"));
+        Type[] types = new Type[]{Type.INT_TYPE,Type.INT_TYPE};
+        SmartProject sp1 = new SmartProject(attributes, types, imp5occupancy);
+        SmartAggregate sp = new SmartAggregate(sp1, "occupancy.occupancy", "occupancy.type", Aggregator.Op.MAX);
+        return sp;
     }
 
     public Operator getWifiQ7Quip(TransactionId tid) throws Exception{

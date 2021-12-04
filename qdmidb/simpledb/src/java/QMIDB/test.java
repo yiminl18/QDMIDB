@@ -99,31 +99,24 @@ public class test {
         System.out.println(a.compare(Predicate.Op.GREATER_THAN_OR_EQ,b));
     }
 
-    public static void runCDC(int queryID, String dataset)throws Exception{
+    public static void runCDC(int queryID, String dataset, String method)throws Exception{
         QueryPlan QP = new QueryPlan();
         //QP.setupCDCHeapFiles();
         QP.setupWiFiHeapFiles();
         TransactionId tid = new TransactionId();
-        String method = "ImputeDB";//Quip, ImputeDB
         Operator o = QP.getQueryPlan(queryID, tid, dataset, method);
         Statistics.setStartTime(System.currentTimeMillis());
-        int missingNum = 0;
         try {
             o.open();
             while (o.hasNext()) {
                 Tuple tup = o.next();
-                if(tup.hasMissingFields()){
-                    missingNum ++;
-                    System.out.println(tup);
-                }
-
+                System.out.println(tup);
             }
             o.close();
             Database.getBufferPool().transactionComplete(tid);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println(missingNum);
         System.out.println("Total number of missing values in datasets: "+ Schema.getTotalNumberOfMissingValues());
         if(method.equals("ImputeDB")){
             System.out.println("Total number of imputation times -- imputedDB cleaning: " + ImputeFactory.getImputationTimes());

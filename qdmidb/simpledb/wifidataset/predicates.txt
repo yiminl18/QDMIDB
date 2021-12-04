@@ -1,11 +1,107 @@
+6
 1
-1
-3
+5
 occupancy.occupancy
 wifi.lid
 occupancy.type
-2
+wifi.et
+wifi.st
+4
 F
 occupancy.occupancy > 10
+F
+wifi.et < 5500
+F
+wifi.st > 3500
 J
 occupancy.lid = wifi.lid
+2
+6
+wifi.lid
+occupancy.occupancy
+occupancy.type
+occupancy.lid
+wifi.st
+wifi.et
+4
+F
+wifi.duration < 500
+F
+wifi.st > 10000
+F 
+wifi.et < 15000
+J
+occupancy.lid = wifi.lid
+3
+5
+users.ugroup
+users.mac
+wifi.st
+wifi.et
+wifi.mac
+3
+F
+wifi.et < 2000
+F
+wifi.st > 500
+J
+users.mac = wifi.mac
+4
+5
+occupancy.occupancy
+users.mac
+users.ugroup
+occupancy.type
+wifi.lid
+5
+F
+occupancy.type = 1
+F
+wifi.et < 10000
+F
+wifi.st > 5000
+J
+occupancy.lid = wifi.lid
+J
+wifi.mac = users.mac
+5
+6
+occupancy.type
+occupancy.occupancy
+wifi.lid
+wifi.et
+wifi.st
+occupancy.lid
+5
+F
+wifi.et < 10000
+F
+wifi.st > 500
+F
+occupancy.type = 2
+J
+wifi.lid = occupancy.lid
+A
+occupancy.occupancy MAX
+6
+7
+users.ugroup
+users.mac
+wifi.mac
+occupancy.occupancy
+occupancy.type
+wifi.lid
+occupancy.lid
+5
+F
+wifi.st > 800
+F
+wifi.et < 2000
+F
+users.ugroup = 2
+J
+users.mac = wifi.mac
+J
+wifi.lid = occupancy.lid
+
+

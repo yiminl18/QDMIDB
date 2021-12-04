@@ -58,10 +58,10 @@ public class ImputeFactory {
             }else if(imputationMethod == "MEAN"){
                 imputedValue = Mean(attribute, tuple);
             }
+            Buffer.updateBufferValue(attribute.getAttribute(), imputeValue, ImputedTID);
         }else{
             imputedValue = new IntField(value);
         }
-        Buffer.updateBufferValue(attribute.getAttribute(), imputeValue, ImputedTID);
         return imputedValue;
     }
 

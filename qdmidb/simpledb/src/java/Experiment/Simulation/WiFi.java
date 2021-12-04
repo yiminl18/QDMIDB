@@ -670,7 +670,7 @@ public class WiFi {
     }
 
     public void setLocation(){
-        double missingRate = 0.7;
+        double missingRate = 0.5;
         Random rand = new Random();
         for(int i=0;i<wifiTuples.size();i++){
             int n = rand.nextInt(100);
@@ -827,7 +827,7 @@ public class WiFi {
 
     public void setType(){
         Random rand = new Random();
-        double missingrate = 0.2;
+        double missingrate = 0.6;
         for(int i=0;i<occupancyTuples.size();i++){
             int n = rand.nextInt(100);
             if(n > missingrate*100.0){

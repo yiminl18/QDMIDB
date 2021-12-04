@@ -10,7 +10,7 @@ import java.util.Map;
 public class AP2Room {
     public static List<String> aps;
     public static Map<String, List<String>> apMapRoom;
-    static final String path = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/ap2room.dat";
+    static final String path = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/ap2room.dat";
     private static String serverDatabase = "tippersdb_restored";
 
     public static List<String> getRooms(String ap){

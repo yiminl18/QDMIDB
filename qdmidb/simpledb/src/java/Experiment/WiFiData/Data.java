@@ -332,10 +332,10 @@ public class Data {
         //read raw wifi data and generate the hash codes of dataset
         //note that hotdeck uses random function inside, so running this function needs to reload dataset to database
         AP2Room.load();
-        String fileWiFi = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/wifi.csv";//raw dirty
-        String fileWiFiOut = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/wifiClean.txt";//raw clean
-        String fileWiFiHash = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/wifiHash.txt";//hash dirty
-        String fileWiFiImputed = "/Users/linyiming/eclipse-workspace/QDMIDB/qdmidb/simpledb/wifidataset/wifiImputedValues.txt";//hash of imputed values
+        String fileWiFi = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/wifi.csv";//raw dirty
+        String fileWiFiOut = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/wifiClean.txt";//raw clean
+        String fileWiFiHash = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/wifiHash.txt";//hash dirty
+        String fileWiFiImputed = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/wifiImputedValues.txt";//hash of imputed values
         try {
             File f = new File(fileWiFiOut);
             if(f.exists()){
