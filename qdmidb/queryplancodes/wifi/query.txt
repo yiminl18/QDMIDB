@@ -1,8 +1,7 @@
-SELECT occupancy.type, MAX(occupancy.occupancy)
-FROM occupancy, wifi, users
-WHERE wifi.st > 800
-AND wifi.et < 2000
+SELECT users.ugroup, SUM(wifi.duration)
+FROM users, wifi, occupancy
+WHERE users.mac = wifi.mac 
 AND wifi.lid = occupancy.lid
-AND users.mac = wifi.mac 
-AND users.ugroup = 2
-GROUP BY occupancy.type;
+AND wifi.st > 2000
+AND wifi.et < 5000
+GROUP BY users.ugroup;

@@ -1,4 +1,4 @@
-6
+10
 1
 5
 occupancy.occupancy
@@ -103,5 +103,88 @@ J
 users.mac = wifi.mac
 J
 wifi.lid = occupancy.lid
-
-
+7
+9
+occupancy.type
+users.mac
+wifi.mac
+users.ugroup
+occupancy.lid
+users.name
+wifi.lid
+wifi.st
+wifi.et
+6
+F
+wifi.et < 8000
+F
+wifi.st > 1000
+F
+users.ugroup = 1
+F
+occupancy.type = 2
+J
+wifi.mac = users.mac
+J
+wifi.lid = occupancy.lid
+8
+9
+wifi.lid
+occupancy.lid
+users.mac
+wifi.mac
+occupancy.type
+wifi.st
+wifi.et
+wifi.duration
+users.name
+5
+F
+wifi.st > 200
+F
+wifi.et < 1000
+F
+users.name = 9298
+J
+wifi.lid = occupancy.lid
+J
+wifi.mac = users.mac
+9
+7
+wifi.lid
+occupancy.lid
+occupancy.type
+users.mac
+wifi.mac
+wifi.st
+wifi.et
+5
+F
+occupancy.type = 1
+F
+wifi.et < 6000
+F
+wifi.st > 2500
+J
+wifi.mac = users.mac
+J
+wifi.lid = occupancy.lid
+10
+8
+wifi.duration
+users.mac
+wifi.mac
+wifi.lid
+occupancy.lid
+users.ugroup
+wifi.st
+wifi.et
+4
+F
+wifi.et < 5000
+F
+wifi.st > 2000
+J
+users.mac = wifi.mac
+J
+wifi.lid = occupancy.lid

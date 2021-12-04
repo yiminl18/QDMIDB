@@ -1,9 +1,8 @@
-users.ugroup,users.mac
-users.ugroup=2
+users.mac
 wifi.lid
-wifi.st>800
-wifi.et<2000
+wifi.et<5000
+wifi.st>2000
 users.mac=wifi.mac
+users.ugroup
 wifi.lid=occupancy.lid
-occupancy.type,occupancy.occupancy
-occupancy.type
+users.ugroup

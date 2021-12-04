@@ -1,13 +1,12 @@
 scan(users):
-μ(users.ugroup,users.mac):[|]
-σ(users.ugroup=2):[μ(users.ugroup,users.mac)]
+μ(users.mac):[|]
 scan(wifi):
 μ(wifi.lid):[scan(wifi)]
-σ(wifi.st>800):[μ(wifi.lid)]
-σ(wifi.et<2000):[σ(wifi.st>800)]
-⨝(users.mac=wifi.mac):[σ(users.ugroup=2)],[σ(wifi.et<2000)]
+σ(wifi.et<5000):[μ(wifi.lid)]
+σ(wifi.st>2000):[σ(wifi.et<5000)]
+⨝(users.mac=wifi.mac):[μ(users.mac)],[σ(wifi.st>2000)]
+μ(users.ugroup):[⨝(users.mac=wifi.mac)]
 scan(occupancy):
-⨝(wifi.lid=occupancy.lid):[⨝(users.mac=wifi.mac)],[|]
-μ(occupancy.type,occupancy.occupancy):[⨝(wifi.lid=occupancy.lid)]
-g(occupancy.type), max(occupancy.occupancy):[μ(occupancy.type,occupancy.occupancy)]
-π(null,null):[g(occupancy.type), max(occupancy.occupancy)]
+⨝(wifi.lid=occupancy.lid):[μ(users.ugroup)],[|]
+g(users.ugroup), sum(wifi.duration):[⨝(wifi.lid=occupancy.lid)]
+π(null,null):[g(users.ugroup), sum(wifi.duration)]

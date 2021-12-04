@@ -46,3 +46,36 @@ AND users.mac = wifi.mac
 AND users.ugroup = 2
 GROUP BY occupancy.type;
 
+SELECT users.name, wifi.lid, wifi.st, wifi.et
+FROM users, wifi, occupancy
+WHERE users.mac = wifi.mac 
+AND wifi.lid = occupancy.lid
+AND wifi.st > 1000
+AND wifi.et < 8000
+AND users.ugroup = 1
+AND occupancy.type = 2;
+
+SELECT occupancy.type, AVG(wifi.duration)
+FROM users, wifi, occupancy
+WHERE users.mac = wifi.mac 
+AND wifi.lid = occupancy.lid
+AND wifi.st > 200
+AND wifi.et < 1000
+AND users.name = 9298
+GROUP BY occupancy.type;
+
+SELECT COUNT(users.mac)
+FROM users, wifi, occupancy
+WHERE users.mac = wifi.mac 
+AND wifi.lid = occupancy.lid
+AND wifi.st > 2500
+AND wifi.et < 6000
+AND occupancy.type = 1;
+
+SELECT users.ugroup, SUM(wifi.duration)
+FROM users, wifi, occupancy
+WHERE users.mac = wifi.mac 
+AND wifi.lid = occupancy.lid
+AND wifi.st > 2000
+AND wifi.et < 5000
+GROUP BY users.ugroup;
