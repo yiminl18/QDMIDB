@@ -5,6 +5,7 @@ import org.apache.commons.lang3.jmh_generated.HashSetvBitSetTest_testHashSet_jmh
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.*;
@@ -20,9 +21,11 @@ public class PUMS {
     BufferedWriter ACSWriter, ACSSchemaWriter, ACSCatalogWriter;
     private List<List<Integer>> attrValues = new ArrayList<>();
     private HashMap<String, List<Integer>> completeACS = new HashMap<>();
+    private List<String> cleanAttrs;
 
 
     public PUMS(){
+        cleanAttrs = Arrays.asList("c0","c15");
         getCompleteCleanTable();
         openSchemaWriters();
         int relationNum = 5;
@@ -118,10 +121,14 @@ public class PUMS {
             int poolSize = ThreadLocalRandom.current().nextInt(5000,20000);
             int missingRate = ThreadLocalRandom.current().nextInt(10, 60);
             String columnName = "c" + i;
+            if(cleanAttrs.indexOf(columnName) != -1){
+                //this column is clean
+                missingRate = 0;
+            }
             List<Integer> attrs = new ArrayList<>();
             for(int j=0;j<cardinality;j++){
                 int n = rand.nextInt(100);
-                if(n > missingRate){
+                if(n >= missingRate){
                     attrs.add(ThreadLocalRandom.current().nextInt(0,poolSize));
                 }
                 else{
