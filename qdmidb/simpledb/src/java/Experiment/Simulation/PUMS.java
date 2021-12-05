@@ -34,20 +34,25 @@ public class PUMS {
         }
         //split tables
         for(int i=0;i<relationNum;i++){
-            String tableName = "t" + i + ".txt";
-            String RelativePath = ACSPath + tableName;
+            String tableName = "t" + i;
+            String RelativePath = ACSPath + tableName + ".txt";
             openACSWriters(RelativePath);
             switch (i){
                 case 0:
                     getTable(tableName, splitTable(0,5,0));
+                    break;
                 case 1:
                     getTable(tableName, splitTable(6,9,0));
+                    break;
                 case 2:
                     getTable(tableName, splitTable(10,17,9));
+                    break;
                 case 3:
                     getTable(tableName, splitTable(18,25,15));
+                    break;
                 case 4:
-                    getTable(tableName, splitTable(26,columnSize,20));
+                    getTable(tableName, splitTable(26,columnSize-1,20));
+                    break;
             }
             closeWriters();
         }
@@ -111,7 +116,7 @@ public class PUMS {
         Random rand = new Random();
         for(int i=0;i<columnSize;i++){
             int poolSize = ThreadLocalRandom.current().nextInt(5000,20000);
-            int missingRate = ThreadLocalRandom.current().nextInt(20, 60);
+            int missingRate = ThreadLocalRandom.current().nextInt(10, 60);
             String columnName = "c" + i;
             List<Integer> attrs = new ArrayList<>();
             for(int j=0;j<cardinality;j++){
@@ -158,6 +163,7 @@ public class PUMS {
                 ACSSchemaWriter.write(attrName);
                 ACSSchemaWriter.newLine();
                 int missing = 0;
+                //System.out.println(tableName + " " + columnNames.get(i));
                 for(int j=0;j<completeACS.get(columnNames.get(i)).size();j++){
                     if(completeACS.get(columnNames.get(i)).get(j) == WiFi.MISSING_INTEGER){
                         missing ++;
