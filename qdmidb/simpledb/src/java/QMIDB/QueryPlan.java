@@ -1412,11 +1412,32 @@ public class QueryPlan {
     }
 
     public Operator getACSQ2IDB(TransactionId tid) throws Exception{
-        return null;
+        SeqScan s1t3= new SeqScan(tid, ACSt3.getId(), "t3");
+        Impute imp1t3 = new Impute(new Attribute("t3.c23"),s1t3);
+        Impute imp2t3 = new Impute(new Attribute("t3.c21"),imp1t3);
+        Impute imp3t3 = new Impute(new Attribute("t3.c18"),imp2t3);
+        SmartFilter sel1t3 = new SmartFilter(new Predicate("t3.c18", Predicate.Op.LESS_THAN_OR_EQ, new IntField(4000)), imp3t3);
+        SmartFilter sel2t3 = new SmartFilter(new Predicate("t3.c21", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(1500)), sel1t3);
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("t3.c15"));
+        attributes.add(new Attribute("t3.c23"));
+        Type[] types = new Type[]{Type.INT_TYPE,Type.INT_TYPE};
+        SmartProject sp1 = new SmartProject(attributes, types, sel2t3);
+        SmartAggregate sp = new SmartAggregate(sp1, "t3.c23", "t3.c15", Aggregator.Op.AVG);
+        return sp;
     }
 
     public Operator getACSQ2Quip(TransactionId tid) throws Exception{
-        return null;
+        SeqScan s1t3= new SeqScan(tid, ACSt3.getId(), "t3");
+        SmartFilter sel1t3 = new SmartFilter(new Predicate("t3.c18", Predicate.Op.LESS_THAN_OR_EQ, new IntField(4000)), s1t3);
+        SmartFilter sel2t3 = new SmartFilter(new Predicate("t3.c21", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(1500)), sel1t3);
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("t3.c15"));
+        attributes.add(new Attribute("t3.c23"));
+        Type[] types = new Type[]{Type.INT_TYPE,Type.INT_TYPE};
+        SmartProject sp1 = new SmartProject(attributes, types, sel2t3);
+        SmartAggregate sp = new SmartAggregate(sp1, "t3.c23", "t3.c15", Aggregator.Op.AVG);
+        return sp;
     }
 
     public Operator getACSQ3IDB(TransactionId tid) throws Exception{
