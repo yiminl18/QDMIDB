@@ -23,8 +23,10 @@ public class QueryProcessing {
             Buffer.bufferCDCValues(schema);
         }else if(dataset.equals("WiFi")){
             Buffer.bufferWiFiValues(schema);
-        } else{
-
+        } else if(dataset.equals("ACS")){
+            Buffer.bufferACSValues(schema);
+        }else{
+            System.out.println("Relation name incorrect!");
         }
 
         //        System.out.println("Print right attributes:");

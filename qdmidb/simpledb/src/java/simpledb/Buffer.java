@@ -7,6 +7,7 @@ import QMIDB.Statistics;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -96,6 +97,20 @@ public class Buffer {
         }
     }
 
+    public static void bufferACSValues(List<Attribute> schema){
+        for(int i=0;i<schema.size();i++){
+            List<Integer> list = new ArrayList<>();
+            bufferedValues.put(schema.get(i).getAttribute(), list);
+        }
+        int ACSColumnSize = 5;
+        String RootPath = "../QDMIDB/QDMIDB/qdmidb/simpledb/acsdataset/";
+        for(int i=0;i<ACSColumnSize;i++){
+            String tableName = "t" + i;
+            String path = Paths.get(RootPath + tableName + ".txt").toAbsolutePath().toString();
+            bufferRelation(schema, path, tableName);
+        }
+    }
+
     public static void bufferCDCValues(List<Attribute> schema){
         for(int i=0;i<schema.size();i++){
             List<Integer> list = new ArrayList<>();
@@ -120,10 +135,6 @@ public class Buffer {
         bufferRelation(schema, wifiFile, "wifi");
         bufferRelation(schema, usersFile, "users");
         bufferRelation(schema, occupancyFile, "occupancy");
-        //check buffered values: correct
-//        for(int i=0;i<50;i++){
-//            System.out.println(bufferedValues.get("occupancy.occupancy").get(i));
-//        }
     }
 
     public static void bufferRelation(List<Attribute> schema, String path, String relation){//buffer for one relation
