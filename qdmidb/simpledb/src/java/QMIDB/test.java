@@ -13,7 +13,6 @@ import java.util.*;
 
 public class test {
 
-
     public static void testPath()throws IOException{
         String catalog = "../cdc/queries.txt";
         String queries = "../queryplancodes/queries.txt";
@@ -21,13 +20,6 @@ public class test {
         String queriesPath = Paths.get(queries).toAbsolutePath().toString();
         System.out.println(catalogPath);
         System.out.println(queriesPath);
-    }
-
-    public static void testMap(){
-        Map<String, Integer> m = new HashMap<>();
-        m.put("a",1);
-        m.put("a",2);
-        System.out.println(m.get("a"));
     }
 
     public static void testSplit(){
@@ -71,38 +63,20 @@ public class test {
         }
     }
 
-    public static void runWiFi()throws Exception{
-        QueryPlan QP = new QueryPlan();
-        QP.setupWiFiHeapFiles();
-        TransactionId tid = new TransactionId();
-        Operator o = QP.getQueryPlan(1, tid,"WiFi", "ImputeDB");//ihe:modify query plan interface
-        Statistics.setStartTime(System.currentTimeMillis());
-        try {
-            o.open();
-            while (o.hasNext()) {
-                Tuple tup = o.next();
-                //System.out.println(tup);
-            }
-            o.close();
-            Database.getBufferPool().transactionComplete(tid);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        System.out.println("Total number of missing values in datasets: "+ Schema.getTotalNumberOfMissingValues());
-        System.out.println("Total number of imputation times -- lazy cleaning: " + ImputeFactory.getImputationTimes());
-        System.out.println("Total number of removed tuples: " + Statistics.getNumOfRemovedTuples());
-    }
-
-    public static void testCompare(){
-        Field a = new IntField(5);
-        Field b = new IntField(4);
-        System.out.println(a.compare(Predicate.Op.GREATER_THAN_OR_EQ,b));
-    }
-
     public static void runCDC(int queryID, String dataset, String method)throws Exception{
         QueryPlan QP = new QueryPlan();
-        //QP.setupCDCHeapFiles();
-        QP.setupWiFiHeapFiles();
+        //set up heap files
+        switch (dataset){
+            case "CDC":
+                QP.setupCDCHeapFiles();
+                break;
+            case "WiFi":
+                QP.setupWiFiHeapFiles();
+                break;
+            case "ACS":
+                QP.setupACSHeapFiles();
+                break;
+        }
         TransactionId tid = new TransactionId();
         Operator o = QP.getQueryPlan(queryID, tid, dataset, method);
         Statistics.setStartTime(System.currentTimeMillis());
@@ -207,156 +181,4 @@ public class test {
         //HashTables.print();
     }
 
-    public static void testHashMap(){
-        /*HashMap<String, HashMap<Integer, Integer>> hashmap = new HashMap<>();
-        HashMap<Integer, Integer> subhash = new HashMap<>();
-        subhash.put(1,1);
-        subhash.put(2,4);
-        hashmap.put("a",subhash);
-
-        //print hashmap
-        for(Map.Entry<String, HashMap<Integer, Integer>> iter : hashmap.entrySet()){
-            System.out.println("key: " + iter.getKey());
-            for(Map.Entry<Integer, Integer> iter1: iter.getValue().entrySet()){
-                System.out.println(iter1.getKey() + " " + iter1.getValue());
-            }
-        }
-
-        subhash = new HashMap<>();
-        subhash.put(3,6);
-        subhash.put(4,8);
-        hashmap.put("b",subhash);
-
-        //print hashmap
-        for(Map.Entry<String, HashMap<Integer, Integer>> iter : hashmap.entrySet()){
-            System.out.println("key: " + iter.getKey());
-            for(Map.Entry<Integer, Integer> iter1: iter.getValue().entrySet()){
-                System.out.println(iter1.getKey() + " " + iter1.getValue());
-            }
-        }*/
-
-        HashMap<String, Integer> hmap = new HashMap<>();
-        hmap.put("a",1);
-        hmap.put("a",2);
-        System.out.println(hmap.get("a"));
-
-    }
-
-    public static void testList(){
-        List<Tuple> matching = new ArrayList<>();
-        List<Tuple> matching1 = new ArrayList<>();
-
-        Type types[] = new Type[]{Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE};
-        String names[] = new String[]{"field0", "field1", "field2"};
-        TupleDesc descriptor = new TupleDesc(types, names);
-        Field fields[] = new Field[]{new IntField(1),new IntField(2),new IntField(3)};
-        Tuple t1 = new Tuple(descriptor, fields);
-        Field fields1[] = new Field[]{new IntField(2),new IntField(4),new IntField(-1)};
-        Tuple t2 = new Tuple(descriptor, fields1);
-        Tuple t3 = new Tuple(t1,t2);
-
-
-        matching.add(t1);
-        t1.setTID(0);
-        matching.add(t2);
-        t2.setTID(1);
-
-        System.out.println(t1.getTID());
-
-        /*List<Integer> l = new ArrayList<>();
-        l.add(10);
-        l.add(2);
-        l.add(5);
-        l.remove(new Integer(10));
-        for(int i =0;i<l.size();i++){
-            System.out.println(l.get(i));
-        }*/
-    }
-
-    public static void testScan(){
-        Type types[] = new Type[]{Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE};
-        String names[] = new String[]{"field0", "field1", "field2"};
-        TupleDesc descriptor = new TupleDesc(types, names);
-
-        // create the table, associate it with some_data_file.dat
-        // and tell the catalog about the schema of this table.
-        File file = new File("simpledb/testdata/table_3_col.dat");
-        HeapFile table1 = new HeapFile(file, descriptor);
-        Database.getCatalog().addTable(table1, "test");
-
-        // construct the query: we use a simple SeqScan, which spoonfeeds // tuples via its iterator.
-        TransactionId tid = new TransactionId();
-        SeqScan f = new SeqScan(tid, table1.getId(), "test");
-        try {// and run it
-            f.open();
-            while (f.hasNext()) {
-                Tuple tup = f.next();
-                System.out.println(tup);
-            }
-            f.close();
-            Database.getBufferPool().transactionComplete(tid);
-        } catch (Exception e) {
-            System.out.println("Exception : " + e);
-        }
-    }
-
-    public static void testTuple(){
-        Type types[] = new Type[]{Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE};
-        String names[] = new String[]{"field0", "field1", "field2"};
-        TupleDesc descriptor = new TupleDesc(types, names);
-        Field fields[] = new Field[]{new IntField(1),new IntField(2),new IntField(3)};
-        Tuple t1 = new Tuple(descriptor, fields);
-        Field fields1[] = new Field[]{new IntField(-1),new IntField(-1),new IntField(-1)};
-        Tuple t2 = new Tuple(descriptor, fields1);
-        Tuple t3 = new Tuple(t1,t2);
-        System.out.println(t1.getTupleDesc().getFieldName(0));
-    }
-
-    public static void testField(){
-        Field[] fields = new Field[5];
-        fields[0]=new IntField(1);
-        fields[1] = new IntField(2);
-        System.out.println(fields[1]);
-    }
-
-    public static void testSubDesc(){
-        Type types[] = new Type[]{Type.INT_TYPE, Type.INT_TYPE, Type.INT_TYPE};
-        String names[] = new String[]{"field0", "field1", "field2"};
-        TupleDesc descriptor = new TupleDesc(types, names);
-        System.out.println(descriptor.SubTupleDesc(2,1));
-    }
-
-    public static void testArray(String s, char a){
-        List<String> str = new ArrayList<>();
-        int pre = 0;
-        boolean flag = false;
-        for(int i=0;i<s.length();i++){
-            char c = s.charAt(i);
-            if(c == a){
-                if(i==0){//first char is missing
-                    str.add("*");
-                }else{
-                    if(!flag){
-                        flag = true;
-                        str.add(s.substring(pre,i));
-                        pre = i;
-                        continue;
-                    }
-                    if(i == pre+1){//missing
-                        str.add("*");
-                    }else{
-                        str.add(s.substring(pre+1,i));
-                    }
-                    if(i == s.length()-1){
-                        str.add("*");
-                    }
-                }
-                pre = i;
-            }
-        }
-        for(int i=0;i<str.size();i++){
-            System.out.print(str.get(i) + " ");
-        }
-        System.out.println("");
-    }
 }

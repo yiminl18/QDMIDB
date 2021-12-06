@@ -16,8 +16,10 @@ import java.util.Vector;
 public class fileHandles {
     private final String WifISchemaFilePath = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/schema.txt";
     private final String CDCSchemaFilePath = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/cdcdataset/schema.txt";
+    private final String ACSSchemaFilePath = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/acsdataset/schema.txt";
     private final String WiFiPredicatesFilePath = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/predicates.txt";
     private final String CDCPredicatesFilePath = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/cdcdataset/predicates.txt";
+    private final String ACSPredicatesFilePath = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/acsdataset/predicates.txt";
 
     public List<Attribute> readSchema(String dataset){
         int N,n;
@@ -26,6 +28,8 @@ public class fileHandles {
             schemaPath = CDCSchemaFilePath;
         }else if(dataset.equals("WiFi")){
             schemaPath = WifISchemaFilePath;
+        }else if(dataset.equals("ACS")){
+            schemaPath = ACSSchemaFilePath;
         }
         List<Attribute> attributes = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(schemaPath)))) {
@@ -60,6 +64,8 @@ public class fileHandles {
             predicatePath = CDCPredicatesFilePath;
         }else if(dataset.equals("WiFi")){
             predicatePath = WiFiPredicatesFilePath;
+        }else if(dataset.equals("ACS")){
+            predicatePath = ACSPredicatesFilePath;
         }
         try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(predicatePath)))) {
             String line = br.readLine();

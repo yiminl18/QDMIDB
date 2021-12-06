@@ -3,7 +3,10 @@ package QMIDB;
 import simpledb.*;
 
 import java.io.File;
+import java.lang.reflect.Array;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /*
@@ -12,14 +15,14 @@ import java.util.List;
  */
 
 public class QueryPlan {
-    private static String CDC;//{R1,R2,S1,S2}
-    private static int queryID;
     private static DbIterator iter = null;
     private HeapFile WiFioccupancy, WiFiusers, WiFiwifi;
     private HeapFile CDCdemo, CDClabs, CDCexams;
-    private List<String> CDCrelations = new ArrayList<>(), WiFiRelations = new ArrayList<>();
-    private List<String> CDCpahts = new ArrayList<>(), WiFiPaths = new ArrayList<>();
+    private HeapFile ACSt0, ACSt1, ACSt2, ACSt3, ACSt4;
+    private List<String> CDCrelations = new ArrayList<>(), WiFiRelations = new ArrayList<>(), ACSRelations = new ArrayList<>();
+    private List<String> CDCpahts = new ArrayList<>(), WiFiPaths = new ArrayList<>(), ACSPaths = new ArrayList<>();
     private List<Attribute> attrs = Schema.getSchema();
+    private int ACSRelationSize = 5;
 
     public QueryPlan(){
         this.CDCrelations.add("demo");
@@ -35,6 +38,66 @@ public class QueryPlan {
         this.WiFiPaths.add("/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/occupancy.dat");
         this.WiFiPaths.add("/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/users.dat");
         this.WiFiPaths.add("/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/wifi.dat");
+
+        String path = "../QDMIDB/QDMIDB/qdmidb/simpledb/acsdataset/";
+        for(int i=0;i<ACSRelationSize;i++){
+            String tableName = "t" + i;
+            this.ACSRelations.add(tableName);
+            String RPath = Paths.get(path + tableName + ".dat").toAbsolutePath().toString();
+            this.ACSPaths.add(RPath);
+        }
+    }
+
+    public void setupACSHeapFiles(){
+        for(int i=0;i<ACSRelations.size();i++){
+            String relation = ACSRelations.get(i);
+            String path = ACSPaths.get(i);
+            boolean flag = false;
+            int pos = 0;
+            Type types[] = null;
+            String names[] = null;
+            for(int j=0;j<attrs.size();j++){
+                if(attrs.get(j).getRelation().equals(relation)){
+                    if(!flag){//first time, initialize arrays
+                        flag = true;
+                        int length = attrs.get(j).getSchemaWidth();
+                        types = new Type[length];
+                        for(int k=0;k<length;k++){
+                            types[k] = Type.INT_TYPE;
+                        }
+                        names = new String[length];
+                        pos = j;
+                    }
+                    names[j-pos] = attrs.get(j).getAttribute();
+                }
+            }
+            TupleDesc td = new TupleDesc(types, names);
+            switch (relation){
+                case "t0":
+                    ACSt0 = new HeapFile(new File(path),td);;
+                    Database.getCatalog().addTable(ACSt0, "t0");
+                    break;
+                case "t1":
+                    ACSt1 = new HeapFile(new File(path),td);;
+                    Database.getCatalog().addTable(ACSt1, "t1");
+                    break;
+                case "t2":
+                    ACSt2 = new HeapFile(new File(path),td);;
+                    Database.getCatalog().addTable(ACSt2, "t2");
+                    break;
+                case "t3":
+                    ACSt3 = new HeapFile(new File(path),td);;
+                    Database.getCatalog().addTable(ACSt3, "t3");
+                    break;
+                case "t4":
+                    ACSt4 = new HeapFile(new File(path),td);;
+                    Database.getCatalog().addTable(ACSt4, "t4");
+                    break;
+                default:
+                    System.out.println("Relation is incorrect!");
+                    break;
+            }
+        }
     }
 
     public void setupWiFiHeapFiles()
@@ -295,6 +358,59 @@ public class QueryPlan {
                         return getCDCQ10IDB(tid);
                     }else{
                         return getCDCQ10Quip(tid);
+                    }
+                default:
+                    return null;
+            }
+        }else if(dataset.equals("ACS")){
+            switch (queryID){
+                case 1:
+                    if(method.equalsIgnoreCase("ImputeDB")){
+                        AggregateOptimization.setApplied_flag(false);
+                        Decision.flipApplied_bit();
+                        return getACSQ1IDB(tid);
+                    }else{
+                        return getACSQ1Quip(tid);
+                    }
+                case 2:
+                    if(method.equalsIgnoreCase("ImputeDB")){
+                        AggregateOptimization.setApplied_flag(false);
+                        Decision.flipApplied_bit();
+                        return getACSQ2IDB(tid);
+                    }else{
+                        return getACSQ2Quip(tid);
+                    }
+                case 3:
+                    if(method.equalsIgnoreCase("ImputeDB")){
+                        AggregateOptimization.setApplied_flag(false);
+                        Decision.flipApplied_bit();
+                        return getACSQ3IDB(tid);
+                    }else{
+                        return getACSQ3Quip(tid);
+                    }
+                case 4:
+                    if(method.equalsIgnoreCase("ImputeDB")){
+                        AggregateOptimization.setApplied_flag(false);
+                        Decision.flipApplied_bit();
+                        return getACSQ4IDB(tid);
+                    }else{
+                        return getACSQ4Quip(tid);
+                    }
+                case 5:
+                    if(method.equalsIgnoreCase("ImputeDB")){
+                        AggregateOptimization.setApplied_flag(false);
+                        Decision.flipApplied_bit();
+                        return getACSQ5IDB(tid);
+                    }else{
+                        return getACSQ5Quip(tid);
+                    }
+                case 6:
+                    if(method.equalsIgnoreCase("ImputeDB")){
+                        AggregateOptimization.setApplied_flag(false);
+                        Decision.flipApplied_bit();
+                        return getACSQ6IDB(tid);
+                    }else{
+                        return getACSQ6Quip(tid);
                     }
                 default:
                     return null;
@@ -1265,5 +1381,73 @@ public class QueryPlan {
         return sp;
     }
 
+    public Operator getACSQ1IDB(TransactionId tid) throws Exception{
+        SeqScan s1t0= new SeqScan(tid, ACSt0.getId(), "t0");
+        Impute imp1t0 = new Impute(new Attribute("t0.c2"),s1t0);
+        Impute imp2t0 = new Impute(new Attribute("t0.c1"),imp1t0);
+        Impute imp3t0 = new Impute(new Attribute("t0.c4"),imp2t0);
+        Impute imp4t0 = new Impute(new Attribute("t0.c3"),imp3t0);
+        SmartFilter sel1t0 = new SmartFilter(new Predicate("t0.c3", Predicate.Op.LESS_THAN_OR_EQ, new IntField(1000)), imp4t0);
+        SmartFilter sel2t0 = new SmartFilter(new Predicate("t0.c4", Predicate.Op.LESS_THAN_OR_EQ, new IntField(4500)), sel1t0);
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("t0.c2"));
+        attributes.add(new Attribute("t0.c1"));
+        Type[] types = new Type[]{Type.INT_TYPE,Type.INT_TYPE};
+        SmartProject sp1 = new SmartProject(attributes, types, sel2t0);
+        SmartAggregate sp = new SmartAggregate(sp1, "t0.c1", "t0.c2", Aggregator.Op.AVG);
+        return sp;
+    }
 
+    public Operator getACSQ1Quip(TransactionId tid) throws Exception{
+        SeqScan s1t0= new SeqScan(tid, ACSt0.getId(), "t0");
+        SmartFilter sel1t0 = new SmartFilter(new Predicate("t0.c3", Predicate.Op.LESS_THAN_OR_EQ, new IntField(1000)), s1t0);
+        SmartFilter sel2t0 = new SmartFilter(new Predicate("t0.c4", Predicate.Op.LESS_THAN_OR_EQ, new IntField(4500)), sel1t0);
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("t0.c2"));
+        attributes.add(new Attribute("t0.c1"));
+        Type[] types = new Type[]{Type.INT_TYPE,Type.INT_TYPE};
+        SmartProject sp1 = new SmartProject(attributes, types, sel2t0);
+        SmartAggregate sp = new SmartAggregate(sp1, "t0.c1", "t0.c2", Aggregator.Op.AVG);
+        return sp;
+    }
+
+    public Operator getACSQ2IDB(TransactionId tid) throws Exception{
+        return null;
+    }
+
+    public Operator getACSQ2Quip(TransactionId tid) throws Exception{
+        return null;
+    }
+
+    public Operator getACSQ3IDB(TransactionId tid) throws Exception{
+        return null;
+    }
+
+    public Operator getACSQ3Quip(TransactionId tid) throws Exception{
+        return null;
+    }
+
+    public Operator getACSQ4IDB(TransactionId tid) throws Exception{
+        return null;
+    }
+
+    public Operator getACSQ4Quip(TransactionId tid) throws Exception{
+        return null;
+    }
+
+    public Operator getACSQ5IDB(TransactionId tid) throws Exception{
+        return null;
+    }
+
+    public Operator getACSQ5Quip(TransactionId tid) throws Exception{
+        return null;
+    }
+
+    public Operator getACSQ6IDB(TransactionId tid) throws Exception{
+        return null;
+    }
+
+    public Operator getACSQ6Quip(TransactionId tid) throws Exception{
+        return null;
+    }
 }

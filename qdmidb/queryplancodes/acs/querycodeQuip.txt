@@ -1,0 +1,10 @@
+SeqScan s1t0= new SeqScan(tid, ACSt0.getId(), "t0");
+SmartFilter sel1t0 = new SmartFilter(new Predicate("t0.c3", Predicate.Op.LESS_THAN_OR_EQ, new IntField(1000)), s1t0);
+SmartFilter sel2t0 = new SmartFilter(new Predicate("t0.c4", Predicate.Op.LESS_THAN_OR_EQ, new IntField(4500)), sel1t0);
+List<Attribute> attributes = new ArrayList<>();
+attributes.add(new Attribute("t0.c2"));
+attributes.add(new Attribute("t0.c1"));
+Type[] types = new Type[]{Type.INT_TYPE,Type.INT_TYPE};
+SmartProject sp1 = new SmartProject(attributes, types, sel2t0);
+SmartAggregate sp = new SmartAggregate(sp1, "t0.c1", "t0.c2", Aggregator.Op.AVG);
+return sp;

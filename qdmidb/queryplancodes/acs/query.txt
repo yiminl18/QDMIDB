@@ -1,0 +1,5 @@
+SELECT c2, AVG(c1)
+FROM t0
+WHERE c3 <= 1000
+AND c4 <= 4500
+GROUP BY c2;
