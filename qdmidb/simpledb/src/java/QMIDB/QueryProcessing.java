@@ -29,10 +29,10 @@ public class QueryProcessing {
             System.out.println("Relation name incorrect!");
         }
 
-        //        System.out.println("Print right attributes:");
-//        for(int i=0;i<RelationshipGraph.getRightAttributes().size();i++){
-//            System.out.println(RelationshipGraph.getRightAttributes().get(i));
-//        }
+                System.out.println("Print right attributes:");
+        for(int i=0;i<RelationshipGraph.getRightAttributes().size();i++){
+            System.out.println(RelationshipGraph.getRightAttributes().get(i));
+        }
         //testing
         System.out.println("nodes in RG");
         for(int i=0;i<RelationshipGraph.getNodes().size();i++){

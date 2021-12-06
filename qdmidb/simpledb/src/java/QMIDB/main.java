@@ -13,6 +13,6 @@ public class main {
         QueryProcessing QP = new QueryProcessing(Qid, dataset);
 
         test t = new test();
-        //t.runCDC(Qid, dataset, method);
+        t.runCDC(Qid, dataset, method);
     }
 }

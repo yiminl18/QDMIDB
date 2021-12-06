@@ -224,6 +224,12 @@ public class SmartProject extends Operator {
     public void selfJoin(Tuple t) throws Exception{//t must be in the left relation
         matching.clear();
 
+        if(pickedColumn == null){
+            //this query does not have join operator, just return this tuple
+            candidateMatching.add(t);
+            return ;
+        }
+
         //check all current active predicates to see if t can be removed
         List<String> activeLeftAttributes = RelationshipGraph.getActiveLeftAttribute();
 
@@ -273,6 +279,9 @@ public class SmartProject extends Operator {
     public void getNextFromCandidateMatching(){
         while(true){
             String nextColumn = RelationshipGraph.getNextColumn();
+            if(pickedColumn == null){
+                break;
+            }
             for(int i=0;i<candidateMatching.size();i++){
                 if(candidateMatchingBits.get(i)) continue;//if this tuple has already been filter away, do not consider anymore
                 //use pickedColumn to do self-Join
@@ -317,38 +326,27 @@ public class SmartProject extends Operator {
                 }
             }
             //debugging
-            int IT = ImputeFactory.getImputationTimes();
-            int RN = Statistics.getNumOfRemovedTuples();
-            System.out.println(pickedColumn + " " + nextColumn + " " + IT + " " + RN);
+            //int IT = ImputeFactory.getImputationTimes();
+            //int RN = Statistics.getNumOfRemovedTuples();
+            //System.out.println(pickedColumn + " " + nextColumn + " " + IT + " " + RN);
             if(nextColumn == null) break;
             //complete this iteration
             pickedColumn = nextColumn;
-
         }
-
-        //System.out.println("HashTables after self join but before filter:");
-        //HashTables.print();//the result is correct
-
-        //System.out.println("after all self joins but before filter!!!");//this is correct now
-        for(int i=0;i<candidateMatching.size();i++){
-            if(candidateMatchingBits.get(i)) continue;
-            //System.out.println(candidateMatching.get(i));
-        }
-        //System.out.println("end!!!");
 
 
         //if the codes are here, merge and update tuples
-        for(int i=0;i<candidateMatching.size();i++){
-            if(candidateMatchingBits.get(i)) continue;
+        for(int i=0;i<candidateMatching.size();i++) {
+            if (candidateMatchingBits.get(i)) continue;
             Tuple t = candidateMatching.get(i);
             List<Tuple> tupleMatching = new ArrayList<>();
             tupleMatching.add(t);
             int k = 0;//cursor to current tuple in tupleMatching
-            for(int j=0;j<leftJoinAttributes.size();j++){
+            for (int j = 0; j < leftJoinAttributes.size(); j++) {
                 String leftJoinAttribute = leftJoinAttributes.get(j);
-                while(k < tupleMatching.size()){
+                while (k < tupleMatching.size()) {
                     Field leftValue = tupleMatching.get(k).getField(tupleMatching.get(k).getTupleDesc().fieldNameToIndex(leftJoinAttribute));
-                    if(leftValue.isNull()){
+                    if (leftValue.isNull()) {
                         k++;
                         continue;
                     }
@@ -358,30 +356,30 @@ public class SmartProject extends Operator {
                     Statistics.addJoins(activeRightAttributes.size());
                     t.countImputedJoinBy(activeRightAttributes.size());
                     t.countOuterTupleBy(activeRightAttributes.size());
-                    for(int p=0;p<activeRightAttributes.size();p++){//iterate right join attributes corresponding to current leftJoinAttribute
+                    for (int p = 0; p < activeRightAttributes.size(); p++) {//iterate right join attributes corresponding to current leftJoinAttribute
                         String rightAttribute = activeRightAttributes.get(p);
                         temporalMatch = HashTables.getHashTable(rightAttribute).getHashMap().get(leftValue);
                         int tupleSize = Buffer.getTuple(temporalMatch.get(0)).getTupleDesc().numFields();
                         String firstFieldName = Buffer.getTuple(temporalMatch.get(0)).getTupleDesc().getFieldName(0);
                         int firstFieldIndex = t.getTupleDesc().fieldNameToIndex(firstFieldName);
-                        if(firstFieldIndex == -1){//attributes of right tuple is not included in left tuple
+                        if (firstFieldIndex == -1) {//attributes of right tuple is not included in left tuple
                             continue;//jump to next predicate
                         }
-                        for(int q=0;q<temporalMatch.size();q++){//iterate all the matching tuples
+                        for (int q = 0; q < temporalMatch.size(); q++) {//iterate all the matching tuples
                             Tuple tt = new Tuple(tupleMatching.get(k).getTupleDesc(), tupleMatching.get(k).getFields());//tt is a copy of tupleMatching.get(k)
                             tt.copyTidSource(tupleMatching.get(k).getTidSource());
                             tt.setAttribute2TID(tupleMatching.get(k).getAttribute2TID());
                             Tuple tTemp = Buffer.getTuple(temporalMatch.get(q));
-                            if(!tt.isTidSource(temporalMatch.get(q))){//tTemp has not been merged to tt before
+                            if (!tt.isTidSource(temporalMatch.get(q))) {//tTemp has not been merged to tt before
                                 //merged part is NULL, can be imputed
-                                if(tt.getField(firstFieldIndex).isNull()){
-                                    for(int kk=0;kk<tupleSize;kk++){
-                                        tt.setField(firstFieldIndex+kk, tTemp.getField(kk));
+                                if (tt.getField(firstFieldIndex).isNull()) {
+                                    for (int kk = 0; kk < tupleSize; kk++) {
+                                        tt.setField(firstFieldIndex + kk, tTemp.getField(kk));
                                     }
                                     tt.mergeTidSource(tt.getTidSource(), tTemp.getTidSource());
-                                    tt.mergeAttribute2TID(tt.getAttribute2TID(),tTemp.getAttribute2TID());
+                                    tt.mergeAttribute2TID(tt.getAttribute2TID(), tTemp.getAttribute2TID());
                                     tupleMatching.add(tt);
-                                }else{
+                                } else {
                                     break;//try another activeRightAttribute to merge
                                 }
                             }
@@ -391,6 +389,7 @@ public class SmartProject extends Operator {
                     break;//one join attribute is done, jump to next
                 }
             }
+
             //System.out.println("final tuples in this round!");
             //add final results to MatchedTuples
             for(int j=0;j<tupleMatching.size();j++){
