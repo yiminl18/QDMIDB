@@ -14,7 +14,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class PUMS {
 
     int columnSize = 33;
-    int cardinality = 743659;
+    int cardinality = 543659;//743659
     private String ACSSchemaPath = "../QDMIDB/QDMIDB/qdmidb/simpledb/acsdataset/schema.txt";
     private String ACSCatalogPath = "../QDMIDB/QDMIDB/qdmidb/simpledb/acsdataset/catalog.txt";
     private String ACSPath = "../QDMIDB/QDMIDB/qdmidb/simpledb/acsdataset/";
@@ -25,7 +25,7 @@ public class PUMS {
 
 
     public PUMS(){
-        cleanAttrs = Arrays.asList("c0","c15");
+        cleanAttrs = Arrays.asList("c0","c9","c15","c20");
         getCompleteCleanTable();
         openSchemaWriters();
         int relationNum = 5;
@@ -124,6 +124,7 @@ public class PUMS {
             if(cleanAttrs.indexOf(columnName) != -1){
                 //this column is clean
                 missingRate = 0;
+                poolSize = ThreadLocalRandom.current().nextInt(cardinality/2,cardinality);
             }
             List<Integer> attrs = new ArrayList<>();
             for(int j=0;j<cardinality;j++){

@@ -1,6 +1,7 @@
-SELECT t1.c7, AVG(t0.c3)
-FROM t0,t1
+SELECT MIN(t2.c11)
+FROM t0,t1,t2,t3
 WHERE t0.c0 = t1.c0
-AND t1.c9 <= 2000
-AND t0.c2 >= 800
-AND 
+AND t1.c9 = t2.c9
+AND t2.c15 = t3.c15
+AND t1.c6 <= 6000
+AND t3.c21 >= 5500;

@@ -31,6 +31,6 @@ public class Decision {
             return true;
         }
         //return attr.getDecision();
-        return false;
+        return true;
     }
 }

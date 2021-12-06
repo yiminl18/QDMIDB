@@ -7,7 +7,7 @@ import simpledb.*;
 
 public class main {
     public static void main(String args[]) throws IOException,Exception {
-        int Qid = 2;
+        int Qid = 5;
         String dataset = "ACS";//CDC, ACS
         String method = "Quip";//Quip, ImputeDB
         QueryProcessing QP = new QueryProcessing(Qid, dataset);

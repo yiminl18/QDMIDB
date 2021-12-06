@@ -1441,27 +1441,126 @@ public class QueryPlan {
     }
 
     public Operator getACSQ3IDB(TransactionId tid) throws Exception{
-        return null;
+        SeqScan s1t0= new SeqScan(tid, ACSt0.getId(), "t0");
+        Impute imp1t0 = new Impute(new Attribute("t0.c2"),s1t0);
+        SmartFilter sel1t0 = new SmartFilter(new Predicate("t0.c2", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(800)), imp1t0);
+        Impute imp2t0 = new Impute(new Attribute("t0.c3"),sel1t0);
+        SeqScan s2t1= new SeqScan(tid, ACSt1.getId(), "t1");
+        Impute imp3t1 = new Impute(new Attribute("t1.c7"),s2t1);
+        Impute imp4t1 = new Impute(new Attribute("t1.c9"),imp3t1);
+        SmartFilter sel2t1 = new SmartFilter(new Predicate("t1.c9", Predicate.Op.LESS_THAN_OR_EQ, new IntField(2000)), imp4t1);
+        JoinPredicate predName1 = new JoinPredicate("t0.c0", Predicate.Op.EQUALS, "t1.c0");
+        SmartJoin join1t0 = new SmartJoin(predName1, imp2t0, sel2t1);
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("t1.c7"));
+        attributes.add(new Attribute("t0.c3"));
+        Type[] types = new Type[]{Type.INT_TYPE,Type.INT_TYPE};
+        SmartProject sp1 = new SmartProject(attributes, types, join1t0);
+        SmartAggregate sp = new SmartAggregate(sp1, "t0.c3", "t1.c7", Aggregator.Op.AVG);
+        return sp;
     }
 
     public Operator getACSQ3Quip(TransactionId tid) throws Exception{
-        return null;
+        SeqScan s1t0= new SeqScan(tid, ACSt0.getId(), "t0");
+        SmartFilter sel1t0 = new SmartFilter(new Predicate("t0.c2", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(800)), s1t0);
+        SeqScan s2t1= new SeqScan(tid, ACSt1.getId(), "t1");
+        SmartFilter sel2t1 = new SmartFilter(new Predicate("t1.c9", Predicate.Op.LESS_THAN_OR_EQ, new IntField(2000)), s2t1);
+        JoinPredicate predName1 = new JoinPredicate("t0.c0", Predicate.Op.EQUALS, "t1.c0");
+        SmartJoin join1t0 = new SmartJoin(predName1, sel1t0, sel2t1);
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("t1.c7"));
+        attributes.add(new Attribute("t0.c3"));
+        Type[] types = new Type[]{Type.INT_TYPE,Type.INT_TYPE};
+        SmartProject sp1 = new SmartProject(attributes, types, join1t0);
+        SmartAggregate sp = new SmartAggregate(sp1, "t0.c3", "t1.c7", Aggregator.Op.AVG);
+        return sp;
     }
 
     public Operator getACSQ4IDB(TransactionId tid) throws Exception{
-        return null;
+        SeqScan s1t3= new SeqScan(tid, ACSt3.getId(), "t3");
+        Impute imp1t3 = new Impute(new Attribute("t3.c21"),s1t3);
+        SmartFilter sel1t3 = new SmartFilter(new Predicate("t3.c21", Predicate.Op.LESS_THAN_OR_EQ, new IntField(4000)), imp1t3);
+        SeqScan s2t4= new SeqScan(tid, ACSt4.getId(), "t4");
+        Impute imp2t4 = new Impute(new Attribute("t4.c32"),s2t4);
+        Impute imp3t4 = new Impute(new Attribute("t4.c31"),imp2t4);
+        SmartFilter sel2t4 = new SmartFilter(new Predicate("t4.c32", Predicate.Op.LESS_THAN_OR_EQ, new IntField(7500)), imp3t4);
+        JoinPredicate predName1 = new JoinPredicate("t3.c20", Predicate.Op.EQUALS, "t4.c20");
+        SmartJoin join1t3 = new SmartJoin(predName1, sel1t3, sel2t4);
+        SeqScan s3t2= new SeqScan(tid, ACSt2.getId(), "t2");
+        Impute imp4t2 = new Impute(new Attribute("t2.c11"),s3t2);
+        JoinPredicate predName2 = new JoinPredicate("t3.c15", Predicate.Op.EQUALS, "t2.c15");
+        SmartJoin join2t3 = new SmartJoin(predName2, join1t3, imp4t2);
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("t4.c31"));
+        attributes.add(new Attribute("t2.c11"));
+        Type[] types = new Type[]{Type.INT_TYPE,Type.INT_TYPE};
+        SmartProject sp1 = new SmartProject(attributes, types, join2t3);
+        SmartAggregate sp = new SmartAggregate(sp1, "t2.c11", "t4.c31", Aggregator.Op.MAX);
+        return sp;
     }
 
     public Operator getACSQ4Quip(TransactionId tid) throws Exception{
-        return null;
+        SeqScan s1t3= new SeqScan(tid, ACSt3.getId(), "t3");
+        SmartFilter sel1t3 = new SmartFilter(new Predicate("t3.c21", Predicate.Op.LESS_THAN_OR_EQ, new IntField(4000)), s1t3);
+        SeqScan s2t4= new SeqScan(tid, ACSt4.getId(), "t4");
+        SmartFilter sel2t4 = new SmartFilter(new Predicate("t4.c32", Predicate.Op.LESS_THAN_OR_EQ, new IntField(7500)), s2t4);
+        JoinPredicate predName1 = new JoinPredicate("t3.c20", Predicate.Op.EQUALS, "t4.c20");
+        SmartJoin join1t3 = new SmartJoin(predName1, sel1t3, sel2t4);
+        SeqScan s3t2= new SeqScan(tid, ACSt2.getId(), "t2");
+        JoinPredicate predName2 = new JoinPredicate("t3.c15", Predicate.Op.EQUALS, "t2.c15");
+        SmartJoin join2t3 = new SmartJoin(predName2, join1t3, s3t2);
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("t4.c31"));
+        attributes.add(new Attribute("t2.c11"));
+        Type[] types = new Type[]{Type.INT_TYPE,Type.INT_TYPE};
+        SmartProject sp1 = new SmartProject(attributes, types, join2t3);
+        SmartAggregate sp = new SmartAggregate(sp1, "t2.c11", "t4.c31", Aggregator.Op.MAX);
+        return sp;
     }
 
     public Operator getACSQ5IDB(TransactionId tid) throws Exception{
-        return null;
+        SeqScan s1t1= new SeqScan(tid, ACSt1.getId(), "t1");
+        Impute imp1t1 = new Impute(new Attribute("t1.c6"),s1t1);
+        SmartFilter sel1t1 = new SmartFilter(new Predicate("t1.c6", Predicate.Op.LESS_THAN_OR_EQ, new IntField(2000)), imp1t1);
+        SeqScan s2t2= new SeqScan(tid, ACSt2.getId(), "t2");
+        Impute imp2t2 = new Impute(new Attribute("t2.c11"),s2t2);
+        JoinPredicate predName1 = new JoinPredicate("t1.c9", Predicate.Op.EQUALS, "t2.c9");
+        SmartJoin join1t1 = new SmartJoin(predName1, sel1t1, imp2t2);
+        SeqScan s3t0= new SeqScan(tid, ACSt0.getId(), "t0");
+        JoinPredicate predName2 = new JoinPredicate("t1.c0", Predicate.Op.EQUALS, "t0.c0");
+        SmartJoin join2t1 = new SmartJoin(predName2, join1t1, s3t0);
+        SeqScan s4t3= new SeqScan(tid, ACSt3.getId(), "t3");
+        Impute imp3t3 = new Impute(new Attribute("t3.c21"),s4t3);
+        SmartFilter sel2t3 = new SmartFilter(new Predicate("t3.c21", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(5500)), imp3t3);
+        JoinPredicate predName3 = new JoinPredicate("t2.c15", Predicate.Op.EQUALS, "t3.c15");
+        SmartJoin join3t2 = new SmartJoin(predName3, join2t1, sel2t3);
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("t2.c11"));
+        Type[] types = new Type[]{Type.INT_TYPE};
+        SmartProject sp1 = new SmartProject(attributes, types, join3t2);
+        SmartAggregate sp = new SmartAggregate(sp1, "t2.c11", "", Aggregator.Op.MIN);
+        return sp;
     }
 
     public Operator getACSQ5Quip(TransactionId tid) throws Exception{
-        return null;
+        SeqScan s1t1= new SeqScan(tid, ACSt1.getId(), "t1");
+        SmartFilter sel1t1 = new SmartFilter(new Predicate("t1.c6", Predicate.Op.LESS_THAN_OR_EQ, new IntField(800)), s1t1);
+        SeqScan s2t2= new SeqScan(tid, ACSt2.getId(), "t2");
+        JoinPredicate predName1 = new JoinPredicate("t1.c9", Predicate.Op.EQUALS, "t2.c9");
+        SmartJoin join1t1 = new SmartJoin(predName1, sel1t1, s2t2);
+        SeqScan s3t0= new SeqScan(tid, ACSt0.getId(), "t0");
+        JoinPredicate predName2 = new JoinPredicate("t1.c0", Predicate.Op.EQUALS, "t0.c0");
+        SmartJoin join2t1 = new SmartJoin(predName2, join1t1, s3t0);
+        SeqScan s4t3= new SeqScan(tid, ACSt3.getId(), "t3");
+        SmartFilter sel2t3 = new SmartFilter(new Predicate("t3.c21", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(12000)), s4t3);
+        JoinPredicate predName3 = new JoinPredicate("t2.c15", Predicate.Op.EQUALS, "t3.c15");
+        SmartJoin join3t2 = new SmartJoin(predName3, join2t1, sel2t3);
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("t2.c11"));
+        Type[] types = new Type[]{Type.INT_TYPE};
+        SmartProject sp1 = new SmartProject(attributes, types, join3t2);
+        SmartAggregate sp = new SmartAggregate(sp1, "t2.c11", "", Aggregator.Op.MIN);
+        return sp;
     }
 
     public Operator getACSQ6IDB(TransactionId tid) throws Exception{

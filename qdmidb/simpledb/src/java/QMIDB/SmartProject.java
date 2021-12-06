@@ -302,7 +302,7 @@ public class SmartProject extends Operator {
                     t.countOuterTupleBy(1);
 //                    System.out.println("Print in project, hash tables");
 //                    HashTables.print();
-//                    System.out.println("print in Project: " + pickedColumn);
+                    //System.out.println("print in Project: " + pickedColumn);
                     if(!HashTables.getHashTable(pickedColumn).getHashMap().containsKey(value)){
                         //remove this tuple
                         flag = true;
