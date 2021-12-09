@@ -1,24 +1,16 @@
 package QMIDB;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import simpledb.*;
 
 
 public class QueryProcessing {
-    public QueryProcessing(int queryID, String dataset) {
+    public void init(String dataset) {
         fileHandles fH = new fileHandles();
         List<Attribute> schema = fH.readSchema(dataset);
-        List<PredicateUnit> predicates = fH.readPredicates(queryID, dataset);
-
-        Schema.setSchema(schema, predicates);
-        Buffer.initBuffer();
-        PredicateSet.initPredicateSet(predicates);
-        AggregateOptimization.init();
-        RelationshipGraph.initGraph(schema, predicates);
-        ImputeFactory.setImputationMethod("HOTDECK");
-
-        //load buffered values in CDC dataset to compute stats
+        //load buffered values to compute stats
         if(dataset.equals("CDC")){
             Buffer.bufferCDCValues(schema);
         }else if(dataset.equals("WiFi")){
@@ -29,22 +21,52 @@ public class QueryProcessing {
             System.out.println("Relation name incorrect!");
         }
 
-                System.out.println("Print right attributes:");
-        for(int i=0;i<RelationshipGraph.getRightAttributes().size();i++){
-            System.out.println(RelationshipGraph.getRightAttributes().get(i));
-        }
+//                System.out.println("Print right attributes:");
+//        for(int i=0;i<RelationshipGraph.getRightAttributes().size();i++){
+//            System.out.println(RelationshipGraph.getRightAttributes().get(i));
+//        }
         //testing
-        System.out.println("nodes in RG");
-        for(int i=0;i<RelationshipGraph.getNodes().size();i++){
-            System.out.println(RelationshipGraph.getNodes().get(i).getAttribute());
-        }
+//        System.out.println("nodes in RG");
+//        for(int i=0;i<RelationshipGraph.getNodes().size();i++){
+//            System.out.println(RelationshipGraph.getNodes().get(i).getAttribute());
+//        }
 //        System.out.println("all attributes");
 //        for(int i=0;i<Statistics.getAttributes().size();i++){
 //            System.out.println(Statistics.getAttributes().get(i).getAttribute());
 //        }
-        PredicateSet.print();//correct
+        //PredicateSet.print();//correct
         //Schema.print();//correct
         //Statistics.print();
+    }
+
+    public void ExperimentRunner()throws IOException,Exception{
+        QueryProcessing QP = new QueryProcessing();
+        String dataset = "ACS";//WiFi, CDC, ACS
+        String algorithm = "Quip";//Quip, ImputeDB
+        String imputation = "HOTDECK";//REGRESSION_TREE,HOTDECK
+        int queryID = 5;
+
+        System.out.println("Computing stats for " + dataset + "...");
+        QP.init(dataset);
+        System.out.println("Stats computation is done!");
+
+        run(queryID,algorithm,imputation,dataset);
+    }
+
+    public void run(int queryID, String algorithm, String imputation, String dataset)throws IOException,Exception {
+        fileHandles fH = new fileHandles();
+        List<Attribute> schema = fH.readSchema(dataset);
+        List<PredicateUnit> predicates = fH.readPredicates(queryID, dataset);
+        PredicateSet.initPredicateSet(predicates);
+        RelationshipGraph.initGraph(schema, predicates);
+        Schema.setSchema(schema, predicates);
+
+        ImputeFactory.setImputationMethod(imputation);
+        Buffer.initBuffer();
+        AggregateOptimization.init();
+
+        test t = new test();
+        t.runCDC(queryID, dataset, algorithm);
     }
 
     public List<PredicateUnit> ManualPredicates(){//for testing purpose

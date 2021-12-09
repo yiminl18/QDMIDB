@@ -15,6 +15,7 @@ import java.util.HashMap;
 public class ImputeFactory {
     private static String imputationMethod;
     private static int imputationTimes;
+    private static double imputationCost;
     public static final int MISSING_INTEGER = Integer.MIN_VALUE;
 
     //first key is tid, starting from 0 for each relation
@@ -38,6 +39,11 @@ public class ImputeFactory {
     public static void setImputationMethod(String ImputationMethod){
         imputationMethod = ImputationMethod;
         imputationTimes = 0;
+        imputationCost = 0;
+    }
+
+    public static double getImputationCost() {
+        return imputationCost;
     }
 
     public static Field Impute(Attribute attribute, Tuple tuple){
@@ -47,10 +53,12 @@ public class ImputeFactory {
         int value = Buffer.getBufferValues(attribute.getAttribute()).get(ImputedTID);
         if(value == MISSING_INTEGER){
             imputationTimes ++;
+            imputationCost += getEstimateTime(attribute);
             Statistics.getAttribute(attribute.getAttribute()).incrementNumOfImputed();
             tuple.addImputedField(attribute.getAttribute());//ihe: check if changes
-            if(imputationMethod == "REGRESSION_TREE"){
-                imputedValue = RegressionTree(attribute, tuple);
+            if(imputationMethod == "REGRESSION_TREE"){//ihe:update later
+                //imputedValue = RegressionTree(attribute, tuple);
+                imputedValue = HotDeck(attribute, tuple);
             }else if(imputationMethod == "Manual"){
                 imputedValue = ImputeWiFi(attribute, tuple);//replace manual
             }else if(imputationMethod == "HOTDECK"){
@@ -69,17 +77,55 @@ public class ImputeFactory {
         return imputationTimes;
     }
 
-    public static double getEstimateTime(){
+    public static double getEstimateTime(Attribute attribute){
+
         //this function estimate the time of each imputation method
-        double time = 10;//ms
+        double time = 0;//ms
         if(imputationMethod == "REGRESSION_TREE"){
-
+            String relation = attribute.getRelation();
+            String attr = attribute.getAttribute();
+            //System.out.println("here1 " + relation + " " + attr);
+            switch (relation){
+                case "labs":
+                    time = 0.0785;
+                    break;
+                case "exams":
+                    time = 0.1219;
+                    break;
+                case "demo":
+                    time = 0.0655;
+                    break;
+                case "users":
+                    time = 0.06;
+                    break;
+                case "wifi":
+                    //200 rooms, 800 region and building
+                    //time = 0.08;
+                    if(attr.equals("wifi.lid")){
+                        time = 26.14;
+                        //System.out.println("here");
+                    }
+                    break;
+                case "occupancy":
+                    //time = 0.07;
+                    if(attr.equals("occupancy.occupancy")){
+                        time = 1.775;
+                        //time = 0.06;
+                    }
+                    else{
+                        time = 0.0785;
+                    }
+                    break;
+                default:
+                    time = 0.063;
+                    break;
+            }
         }else if(imputationMethod == "HOTDECK"){
-
+            time = 0.0001;
         }else if(imputationMethod == "MEAN"){
-
+            time = 0.0001;
         }else if(imputationMethod == "RANDOM"){
-
+            time = 0.0001;
         }else{
 
         }

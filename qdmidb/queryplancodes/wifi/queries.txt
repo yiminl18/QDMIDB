@@ -61,7 +61,7 @@ WHERE users.mac = wifi.mac
 AND wifi.lid = occupancy.lid
 AND wifi.st > 200
 AND wifi.et < 1000
-AND users.name = 9298
+AND users.ugroup = 2
 GROUP BY occupancy.type;
 
 SELECT COUNT(users.mac)

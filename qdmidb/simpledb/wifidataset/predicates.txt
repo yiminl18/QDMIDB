@@ -1,8 +1,9 @@
 10
 1
-5
+6
 occupancy.occupancy
 wifi.lid
+occupancy.lid
 occupancy.type
 wifi.et
 wifi.st
@@ -137,14 +138,14 @@ occupancy.type
 wifi.st
 wifi.et
 wifi.duration
-users.name
+users.ugroup
 5
 F
 wifi.st > 200
 F
 wifi.et < 1000
 F
-users.name = 9298
+users.ugroup = 2
 J
 wifi.lid = occupancy.lid
 J

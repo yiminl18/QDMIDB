@@ -1264,7 +1264,7 @@ public class QueryPlan {
         JoinPredicate predName1 = new JoinPredicate("wifi.lid", Predicate.Op.EQUALS, "occupancy.lid");
         SmartJoin join1wifi = new SmartJoin(predName1, sel2wifi, s2occupancy);
         SeqScan s3users= new SeqScan(tid, WiFiusers.getId(), "users");
-        SmartFilter sel3users = new SmartFilter(new Predicate("users.name", Predicate.Op.EQUALS, new IntField(9298)), s3users);
+        SmartFilter sel3users = new SmartFilter(new Predicate("users.ugroup", Predicate.Op.EQUALS, new IntField(2)), s3users);
         JoinPredicate predName2 = new JoinPredicate("wifi.mac", Predicate.Op.EQUALS, "users.mac");
         SmartJoin join2wifi = new SmartJoin(predName2, join1wifi, sel3users);
         List<Attribute> attributes = new ArrayList<>();
@@ -1287,7 +1287,7 @@ public class QueryPlan {
         Impute imp2occupancy = new Impute(new Attribute("occupancy.type"),join1wifi);
         SeqScan s3users= new SeqScan(tid, WiFiusers.getId(), "users");
         Impute imp3users = new Impute(new Attribute("users.mac"),s3users);
-        SmartFilter sel3users = new SmartFilter(new Predicate("users.name", Predicate.Op.EQUALS, new IntField(9298)), imp3users);
+        SmartFilter sel3users = new SmartFilter(new Predicate("users.ugroup", Predicate.Op.EQUALS, new IntField(2)), imp3users);
         JoinPredicate predName2 = new JoinPredicate("wifi.mac", Predicate.Op.EQUALS, "users.mac");
         SmartJoin join2wifi = new SmartJoin(predName2, imp2occupancy, sel3users);
         List<Attribute> attributes = new ArrayList<>();

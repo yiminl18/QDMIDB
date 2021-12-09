@@ -89,7 +89,7 @@ public class Attribute {
         this.Prob = getProb();
         this.evaluateVd = getEvaluateVd();
         this.evaluateVc = getEvaluateVc();
-        double imputeCost = ImputeFactory.getEstimateTime();
+        double imputeCost = ImputeFactory.getEstimateTime(new Attribute(attribute));
 
         //when statistics is not enough to make decision, always delay
         if(this.Prob == -1 || this.evaluateVd == -1 || this.evaluateVc == -1){

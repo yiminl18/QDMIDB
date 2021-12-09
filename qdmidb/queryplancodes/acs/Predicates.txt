@@ -1,9 +1,2 @@
-t1.c6
-t1.c6<=6000
-t2.c11
-t1.c9=t2.c9
-t1.c0=t0.c0
-t3.c21
-t3.c21>=5500
-t2.c15=t3.c15
-t2.c11
+occupancy.type
+occupancy.type
