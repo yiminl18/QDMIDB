@@ -56,3 +56,8 @@ WHERE demo.id = exams.id AND exams.id = labs.id AND
 waist_circumference <= 5000 AND 
 albumin >= 2000 
 GROUP BY gender;
+
+SELECT MAX(demo.income)
+FROM demo
+WHERE demo.years_edu > 1
+AND demo.time_in_us < 20;

@@ -94,7 +94,6 @@ public class SmartProject extends Operator {
         //filter all tuple t using current active predicates in selfJoin, and add tuples to candidateMatching
         while (child.hasNext()) {
             Tuple t = child.next();
-            //System.out.println("Project: " + t);
             selfJoin(t);
         }
         //getNext from CandidateMatching
@@ -118,6 +117,7 @@ public class SmartProject extends Operator {
                 while(candidateMatchIterator.hasNext()){
                     Tuple finalResult = Project(candidateMatchIterator.next());
                     if(finalResult == null) continue;
+                    //System.out.println("in project: " + finalResult);
                     return finalResult;
                 }
                 return null;
@@ -226,6 +226,8 @@ public class SmartProject extends Operator {
 
         if(pickedColumn == null){
             //this query does not have join operator, just return this tuple
+            //ihe: update temporal value --  this should be put after final project, which needs to be improved later for full pipelineing
+            AggregateOptimization.setTemporalValue(t);
             candidateMatching.add(t);
             return ;
         }
@@ -259,6 +261,10 @@ public class SmartProject extends Operator {
             }
             return ;
         }
+
+        //ihe: update temporal value --  this should be put after final project, which needs to be improved later for full pipelineing
+        AggregateOptimization.setTemporalValue(t);
+        //System.out.println("print in project: " + AggregateOptimization.temporalMax);
 
         //if codes go here, t passes the test of all current active predicates
         //pickedColumn is right join attribute

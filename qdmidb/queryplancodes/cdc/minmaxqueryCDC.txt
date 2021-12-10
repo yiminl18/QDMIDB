@@ -1,2 +1,4 @@
-SELECT exams.blood_pressure_systolic
-FROM exams
+SELECT MAX(demo.income)
+FROM demo
+WHERE demo.years_edu > 1
+AND demo.time_in_us < 20

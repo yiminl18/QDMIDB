@@ -78,6 +78,7 @@ public class SmartFilter extends Operator{
             //System.out.println("print in smartFilter for operand: " + attribute.getAttribute() + " " + pred.getOperand());
 
             Tuple t = child.next();
+            //System.out.println("filter: " + t);
             if(pred.isMissing(t)){
                 isClean = this.decideNode.Decide(this.attribute.getAttribute());
                 if(isClean){
@@ -88,6 +89,7 @@ public class SmartFilter extends Operator{
                     return t;
                 }
             }
+            //System.out.println("temporal max in smart filter: " + AggregateOptimization.temporalMax);
             if (!pred.filter(t) || !AggregateOptimization.passVirtualFilter(t)) {
                 //t failed predicate test
                 Buffer.removeTuple(t);

@@ -1,4 +1,4 @@
-10
+11
 1
 5
 demo.income
@@ -161,7 +161,18 @@ J
 exams.id = labs.id
 J
 exams.id = demo.id
-
+11
+3
+demo.income
+demo.time_in_us
+demo.years_edu
+3
+F
+demo.years_edu > 1
+F
+demo.time_in_us < 20
+A
+demo.income MAX
 
 
 

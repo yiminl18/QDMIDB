@@ -33,6 +33,8 @@ public class AggregateOptimization {
     }
 
     public static boolean passVirtualFilter(Tuple t){
+        //System.out.println("print in aggregateoptimization: " + applied_flag + " " + aggregatePred.getAggregateAttribute().getAttribute() + " " + aggregatePred.getAop());
+        //System.out.println(temporalMax);
         if(!applied_flag){//does not apply this optimization
             return true;
         }
@@ -58,6 +60,26 @@ public class AggregateOptimization {
 
     public static Field getTemporalMax() {
         return temporalMax;
+    }
+
+    public static void setTemporalValue(Tuple t){
+        //System.out.println("applied_flag:" + applied_flag);
+        if(!applied_flag || aggregatePred == null){//does not apply this optimization
+            return ;
+        }
+        Attribute attr = aggregatePred.getAggregateAttribute();
+        int fieldIndex = t.getTupleDesc().fieldNameToIndex(attr.getAttribute());
+        if(fieldIndex == -1){
+            //t does not contain values to be filter
+            return ;
+        }
+        Field value = t.getField(fieldIndex);
+        if(aggregatePred.getAop().equals(Aggregator.Op.MAX) && value.compare(Predicate.Op.GREATER_THAN_OR_EQ, temporalMax)){
+            temporalMax = value;
+        }
+        if(aggregatePred.getAop().equals(Aggregator.Op.MIN) && value.compare(Predicate.Op.LESS_THAN_OR_EQ, temporalMin)){
+            temporalMin = value;
+        }
     }
 
     public static void setTemporalMax(Field temporalMaxValue) {

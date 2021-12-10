@@ -384,9 +384,6 @@ public class SmartJoin extends Operator{
         if(t.getApplied_bit(leftAttribute)){//if leftAttribute has been applied before, skip
             return false;
         }
-        if(!AggregateOptimization.passVirtualFilter(t)){
-            return false;
-        }
         Field leftValue = t.getField(t.getTupleDesc().fieldNameToIndex(leftAttribute));
         List<String> activeRightAttributes = RelationshipGraph.findRelatedActiveRightAttributes(leftAttribute);
 
@@ -419,7 +416,9 @@ public class SmartJoin extends Operator{
     */
 
     public List<Tuple> selfJoin(Tuple t) throws Exception{//t must be in the left relation
-
+        if(!AggregateOptimization.passVirtualFilter(t)){
+            return null;
+        }
         //check all current active predicates to see if t can be removed
         List<String> activeLeftAttributes = RelationshipGraph.getActiveLeftAttribute();
 

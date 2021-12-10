@@ -325,6 +325,7 @@ public class QueryPlan {
                         Decision.flipApplied_bit();
                         return getCDCQ6IDB(tid);
                     }else{
+                        //AggregateOptimization.setApplied_flag(false);
                         return getCDCQ6Quip(tid);
                     }
                 case 7:
@@ -333,6 +334,7 @@ public class QueryPlan {
                         Decision.flipApplied_bit();
                         return getCDCQ7IDB(tid);
                     }else{
+                        //AggregateOptimization.setApplied_flag(false);
                         return getCDCQ7Quip(tid);
                     }
                 case 8:
@@ -358,6 +360,15 @@ public class QueryPlan {
                         return getCDCQ10IDB(tid);
                     }else{
                         return getCDCQ10Quip(tid);
+                    }
+                case 11:
+                    if(method.equalsIgnoreCase("ImputeDB")){
+                        AggregateOptimization.setApplied_flag(false);
+                        Decision.flipApplied_bit();
+                        return getCDCQ11IDB(tid);
+                    }else{
+                        //AggregateOptimization.setApplied_flag(false);
+                        return getCDCQ11Quip(tid);
                     }
                 default:
                     return null;
@@ -823,7 +834,7 @@ public class QueryPlan {
         Impute imp1exams = new Impute(new Attribute("exams.head_circumference"),s1exams);
         SeqScan s2labs= new SeqScan(tid, CDClabs.getId(), "labs");
         Impute imp2labs = new Impute(new Attribute("labs.triglyceride"),s2labs);
-        SmartFilter sel1labs = new SmartFilter(new Predicate("labs.triglyceride", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(300)), imp2labs);
+        SmartFilter sel1labs = new SmartFilter(new Predicate("labs.triglyceride", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(1000)), imp2labs);
         JoinPredicate predName1 = new JoinPredicate("exams.id", Predicate.Op.EQUALS, "labs.id");
         SmartJoin join1exams = new SmartJoin(predName1, imp1exams, sel1labs);
         SeqScan s3demo= new SeqScan(tid, CDCdemo.getId(), "demo");
@@ -970,6 +981,33 @@ public class QueryPlan {
         Type[] types = new Type[]{Type.INT_TYPE,Type.INT_TYPE};
         SmartProject sp1 = new SmartProject(attributes, types, join2exams);
         SmartAggregate sp = new SmartAggregate(sp1, "labs.triglyceride", "demo.gender", Aggregator.Op.AVG);
+        return sp;
+    }
+
+    public Operator getCDCQ11IDB(TransactionId tid) throws Exception{
+        SeqScan s1demo= new SeqScan(tid, CDCdemo.getId(), "demo");
+        Impute imp1demo = new Impute(new Attribute("demo.time_in_us"),s1demo);
+        Impute imp2demo = new Impute(new Attribute("demo.years_edu"),imp1demo);
+        SmartFilter sel1demo = new SmartFilter(new Predicate("demo.years_edu", Predicate.Op.GREATER_THAN, new IntField(1)), imp2demo);
+        SmartFilter sel2demo = new SmartFilter(new Predicate("demo.time_in_us", Predicate.Op.LESS_THAN, new IntField(20)), sel1demo);
+        Impute imp3demo = new Impute(new Attribute("demo.income"),sel2demo);
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("demo.income"));
+        Type[] types = new Type[]{Type.INT_TYPE};
+        SmartProject sp1 = new SmartProject(attributes, types, imp3demo);
+        SmartAggregate sp = new SmartAggregate(sp1, "demo.income", "", Aggregator.Op.MAX);
+        return sp;
+    }
+
+    public Operator getCDCQ11Quip(TransactionId tid) throws Exception{
+        SeqScan s1demo= new SeqScan(tid, CDCdemo.getId(), "demo");
+        SmartFilter sel1demo = new SmartFilter(new Predicate("demo.years_edu", Predicate.Op.GREATER_THAN, new IntField(1)), s1demo);
+        SmartFilter sel2demo = new SmartFilter(new Predicate("demo.time_in_us", Predicate.Op.LESS_THAN, new IntField(20)), sel1demo);
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("demo.income"));
+        Type[] types = new Type[]{Type.INT_TYPE};
+        SmartProject sp1 = new SmartProject(attributes, types, sel2demo);
+        SmartAggregate sp = new SmartAggregate(sp1, "demo.income", "", Aggregator.Op.MAX);
         return sp;
     }
 

@@ -140,6 +140,7 @@ public class SmartAggregate extends Operator {
     @Override
     protected Tuple fetchNext() throws TransactionAbortedException, DbException, Exception {
         if (aggIterator.hasNext()) {
+            //System.out.println("aggregate: " + aggIterator.next());
             return aggIterator.next();
         }
         return null;
