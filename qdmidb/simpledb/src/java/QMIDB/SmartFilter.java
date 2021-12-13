@@ -90,7 +90,7 @@ public class SmartFilter extends Operator{
                 }
             }
             //System.out.println("temporal max in smart filter: " + AggregateOptimization.temporalMax);
-            if (!pred.filter(t) || !AggregateOptimization.passVirtualFilter(t)) {
+            if (!AggregateOptimization.passVirtualFilter(t) || !pred.filter(t)) {
                 //t failed predicate test
                 Buffer.removeTuple(t);
                 continue;

@@ -231,6 +231,7 @@ public class QueryPlan {
                         Decision.flipApplied_bit();
                         return getWifiQ5IDB(tid);
                     }else{
+                        //AggregateOptimization.setApplied_flag(false);
                         return getWifiQ5Quip(tid);
                     }
                 case 6:
@@ -405,6 +406,7 @@ public class QueryPlan {
                         Decision.flipApplied_bit();
                         return getACSQ4IDB(tid);
                     }else{
+                        //AggregateOptimization.setApplied_flag(false);
                         return getACSQ4Quip(tid);
                     }
                 case 5:
@@ -413,6 +415,7 @@ public class QueryPlan {
                         Decision.flipApplied_bit();
                         return getACSQ5IDB(tid);
                     }else{
+                        //AggregateOptimization.setApplied_flag(false);
                         return getACSQ5Quip(tid);
                     }
                 case 6:
@@ -421,6 +424,7 @@ public class QueryPlan {
                         Decision.flipApplied_bit();
                         return getACSQ6IDB(tid);
                     }else{
+                        //AggregateOptimization.setApplied_flag(false);
                         return getACSQ6Quip(tid);
                     }
                 default:
@@ -793,7 +797,7 @@ public class QueryPlan {
     public Operator getCDCQ6IDB(TransactionId tid) throws Exception{
         SeqScan s1exams= new SeqScan(tid, CDCexams.getId(), "exams");
         Impute imp1exams = new Impute(new Attribute("exams.weight"),s1exams);
-        SmartFilter sel1exams = new SmartFilter(new Predicate("exams.weight", Predicate.Op.LESS_THAN_OR_EQ, new IntField(100)), imp1exams);
+        SmartFilter sel1exams = new SmartFilter(new Predicate("exams.weight", Predicate.Op.LESS_THAN_OR_EQ, new IntField(1000)), imp1exams);
         SeqScan s2labs= new SeqScan(tid, CDClabs.getId(), "labs");
         Impute imp2labs = new Impute(new Attribute("labs.blood_lead"),s2labs);
         SmartFilter sel2labs = new SmartFilter(new Predicate("labs.blood_lead", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(40)), imp2labs);
@@ -813,7 +817,7 @@ public class QueryPlan {
 
     public Operator getCDCQ6Quip(TransactionId tid) throws Exception{
         SeqScan s1exams= new SeqScan(tid, CDCexams.getId(), "exams");
-        SmartFilter sel1exams = new SmartFilter(new Predicate("exams.weight", Predicate.Op.LESS_THAN_OR_EQ, new IntField(100)), s1exams);
+        SmartFilter sel1exams = new SmartFilter(new Predicate("exams.weight", Predicate.Op.LESS_THAN_OR_EQ, new IntField(1000)), s1exams);
         SeqScan s2labs= new SeqScan(tid, CDClabs.getId(), "labs");
         SmartFilter sel2labs = new SmartFilter(new Predicate("labs.blood_lead", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(40)), s2labs);
         JoinPredicate predName1 = new JoinPredicate("exams.id", Predicate.Op.EQUALS, "labs.id");
@@ -1602,10 +1606,41 @@ public class QueryPlan {
     }
 
     public Operator getACSQ6IDB(TransactionId tid) throws Exception{
-        return null;
+        SeqScan s1t0= new SeqScan(tid, ACSt0.getId(), "t0");
+        Impute imp1t0 = new Impute(new Attribute("t0.c1"),s1t0);
+        Impute imp2t0 = new Impute(new Attribute("t0.c4"),imp1t0);
+        SmartFilter sel1t0 = new SmartFilter(new Predicate("t0.c4", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(3500)), imp2t0);
+        SeqScan s2t1= new SeqScan(tid, ACSt1.getId(), "t1");
+        Impute imp3t1 = new Impute(new Attribute("t1.c6"),s2t1);
+        SmartFilter sel2t1 = new SmartFilter(new Predicate("t1.c6", Predicate.Op.LESS_THAN_OR_EQ, new IntField(2000)), imp3t1);
+        JoinPredicate predName1 = new JoinPredicate("t0.c0", Predicate.Op.EQUALS, "t1.c0");
+        SmartJoin join1t0 = new SmartJoin(predName1, sel1t0, sel2t1);
+        SeqScan s3t2= new SeqScan(tid, ACSt2.getId(), "t2");
+        JoinPredicate predName2 = new JoinPredicate("t1.c9", Predicate.Op.EQUALS, "t2.c9");
+        SmartJoin join2t1 = new SmartJoin(predName2, join1t0, s3t2);
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("t0.c1"));
+        Type[] types = new Type[]{Type.INT_TYPE};
+        SmartProject sp1 = new SmartProject(attributes, types, join2t1);
+        SmartAggregate sp = new SmartAggregate(sp1, "t0.c1", "", Aggregator.Op.MIN);
+        return sp;
     }
 
     public Operator getACSQ6Quip(TransactionId tid) throws Exception{
-        return null;
+        SeqScan s1t0= new SeqScan(tid, ACSt0.getId(), "t0");
+        SmartFilter sel1t0 = new SmartFilter(new Predicate("t0.c4", Predicate.Op.GREATER_THAN_OR_EQ, new IntField(3500)), s1t0);
+        SeqScan s2t1= new SeqScan(tid, ACSt1.getId(), "t1");
+        SmartFilter sel2t1 = new SmartFilter(new Predicate("t1.c6", Predicate.Op.LESS_THAN_OR_EQ, new IntField(2000)), s2t1);
+        JoinPredicate predName1 = new JoinPredicate("t0.c0", Predicate.Op.EQUALS, "t1.c0");
+        SmartJoin join1t0 = new SmartJoin(predName1, sel1t0, sel2t1);
+        SeqScan s3t2= new SeqScan(tid, ACSt2.getId(), "t2");
+        JoinPredicate predName2 = new JoinPredicate("t1.c9", Predicate.Op.EQUALS, "t2.c9");
+        SmartJoin join2t1 = new SmartJoin(predName2, join1t0, s3t2);
+        List<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("t0.c1"));
+        Type[] types = new Type[]{Type.INT_TYPE};
+        SmartProject sp1 = new SmartProject(attributes, types, join2t1);
+        SmartAggregate sp = new SmartAggregate(sp1, "t0.c1", "", Aggregator.Op.MIN);
+        return sp;
     }
 }

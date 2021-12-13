@@ -164,4 +164,19 @@ public class Buffer {
             e.printStackTrace();
         }
     }
+
+    public static int getQuerySelectivity(Attribute attr, double selectivity, Predicate.Op op){
+        int operand = -1;
+        List<Integer> values = bufferedValues.get(attr.getAttribute());
+        //sort in aesc order
+        int index = (int) (Double.valueOf(values.size())*selectivity);
+        if(op.equals(Predicate.Op.GREATER_THAN) || op.equals(Predicate.Op.GREATER_THAN_OR_EQ)){
+            operand = values.get(values.size() - index);
+        }else if(op.equals(Predicate.Op.LESS_THAN) || op.equals(Predicate.Op.LESS_THAN_OR_EQ)){
+            operand = values.get(index);
+        }else{
+            System.out.println("Invalid Op for selectivity!");
+        }
+        return operand;
+    }
 }

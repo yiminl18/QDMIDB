@@ -8,6 +8,7 @@ public class AggregateOptimization {
     public static Field temporalMax = new IntField(Integer.MIN_VALUE+1), temporalMin = new IntField(Integer.MAX_VALUE);
     private static PredicateUnit aggregatePred = null;
     private static boolean applied_flag = true;
+    private static int NumOfFilteredTuples;
 
     public static void setApplied_flag(boolean flag){
         applied_flag = flag;
@@ -18,6 +19,7 @@ public class AggregateOptimization {
     }
 
     public static void init(){
+        NumOfFilteredTuples = 0;
         if(PredicateSet.getPredicateSet().size() == 0){
             System.out.println("Read predicates first!");
             return ;
@@ -30,6 +32,10 @@ public class AggregateOptimization {
                 break;
             }
         }
+    }
+
+    public static int getNumOfFilteredTuples() {
+        return NumOfFilteredTuples;
     }
 
     public static boolean passVirtualFilter(Tuple t){
@@ -49,13 +55,18 @@ public class AggregateOptimization {
             return true;
         }
         Field value = t.getField(fieldIndex);
+        //System.out.println("income: " + value.toString() + " " + temporalMax);
+        boolean comp = true;
         if(aggregatePred != null && aggregatePred.getAop().equals(Aggregator.Op.MAX)){
-            return value.compare(Predicate.Op.GREATER_THAN_OR_EQ, temporalMax);
+            comp = value.compare(Predicate.Op.GREATER_THAN_OR_EQ, temporalMax);
         }
         if(aggregatePred != null && aggregatePred.getAop().equals(Aggregator.Op.MIN)){
-            return value.compare(Predicate.Op.LESS_THAN_OR_EQ, temporalMin);
+            comp = value.compare(Predicate.Op.LESS_THAN_OR_EQ, temporalMin);
         }
-        return true;
+        if(!comp){
+            NumOfFilteredTuples ++;
+        }
+        return comp;
     }
 
     public static Field getTemporalMax() {

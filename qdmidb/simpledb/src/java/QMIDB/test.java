@@ -4,6 +4,7 @@ import org.w3c.dom.Attr;
 import simpledb.*;
 
 import javax.annotation.processing.SupportedSourceVersion;
+import javax.rmi.ssl.SslRMIClientSocketFactory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -63,6 +64,32 @@ public class test {
         }
     }
 
+    public static void getQueriesBySelectivity(double selectivity){
+        System.out.println(PredicateSet.getPredicateSet().size());
+        for(int i=0;i<PredicateSet.getPredicateSet().size();i++){
+            PredicateUnit pred = PredicateSet.getPredicateSet().get(i);
+            String type = pred.getType();
+            switch (type){
+                case "Filter":
+                    System.out.println("F");
+                    Attribute attr = pred.getFilterAttribute();
+                    Predicate.Op op = pred.getOp();
+                    int operand = Buffer.getQuerySelectivity(attr, selectivity, op);
+                    System.out.println(attr.getAttribute() + " " + op + " " + operand);
+                    break;
+                case "Join":
+                    System.out.println("J");
+                    System.out.println(pred.getLeft().getAttribute() + " " + pred.getOp() + " " + pred.getRight().getAttribute());
+                    break;
+                case "Aggregate":
+                    System.out.println("A");
+                    System.out.println(pred.getAggregateAttribute() + " " + pred.getAop());
+                    break;
+            }
+
+        }
+    }
+
     public static void runCDC(int queryID, String dataset, String method)throws Exception{
         QueryPlan QP = new QueryPlan();
         //set up heap files
@@ -99,6 +126,7 @@ public class test {
             System.out.println("Q" + queryID +  ": Total number of imputation times -- Quip cleaning: " + ImputeFactory.getImputationTimes());
         }
         System.out.println("Running Time:" + (Statistics.getDuration() + ImputeFactory.getImputationCost()));
+        System.out.println("Number of tuples filtered by MAX/MIN optimization: " + AggregateOptimization.getNumOfFilteredTuples());
     }
 
     public static void testComplexQuery() throws Exception{

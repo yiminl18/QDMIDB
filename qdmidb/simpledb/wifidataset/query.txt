@@ -1,4 +1,0 @@
-Q1
-SELECT Users.name, WiFi.timestamp, WiFi.room
-FROM WiFi, Space, Users  
-WHERE WiFi.mac = Users.mac AND  WiFi.room = Space.room AND Space.building ='DBH'

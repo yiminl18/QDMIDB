@@ -41,10 +41,10 @@ public class QueryProcessing {
 
     public void ExperimentRunner()throws IOException,Exception{
         QueryProcessing QP = new QueryProcessing();
-        String dataset = "CDC";//WiFi, CDC, ACS
-        String algorithm = "Quip";//Quip, ImputeDB
+        String dataset = "ACS";//WiFi, CDC, ACS
+        String algorithm = "ImputeDB";//Quip, ImputeDB
         String imputation = "HOTDECK";//REGRESSION_TREE,HOTDECK
-        int queryID = 11;
+        int queryID = 6;
 
         System.out.println("Computing stats for " + dataset + "...");
         QP.init(dataset);

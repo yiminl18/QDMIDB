@@ -81,7 +81,7 @@ labs.blood_lead
 exams.weight
 5
 F
-exams.weight <= 5000
+exams.weight <= 1000
 F
 labs.blood_lead >= 100
 J

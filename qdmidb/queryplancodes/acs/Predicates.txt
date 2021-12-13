@@ -1,5 +1,7 @@
-demo.time_in_us,demo.years_edu
-demo.years_edu>1
-demo.time_in_us<20
-demo.income
-demo.income
+t0.c1,t0.c4
+t0.c4>=3500
+t1.c6
+t1.c6<=2000
+t0.c0=t1.c0
+t1.c9=t2.c9
+t0.c1

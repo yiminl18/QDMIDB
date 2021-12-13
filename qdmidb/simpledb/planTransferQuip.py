@@ -1,7 +1,7 @@
 DATASET = 'ACS'
 
-path = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/queryplancodes/cdc/QueryPlans.txt"
-output_path = '/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/queryplancodes/cdc/querycodeQuip.txt'
+path = "/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/queryplancodes/acs/QueryPlans.txt"
+output_path = '/Users/yiminglin/Documents/Codebase/QDMIDB/QDMIDB/qdmidb/queryplancodes/acs/querycodeQuip.txt'
 
 
 f = open(path).readlines()

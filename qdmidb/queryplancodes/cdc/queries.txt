@@ -34,7 +34,7 @@ blood_lead >= 40;
 
 SELECT MIN(head_circumference)
 FROM demo, exams, labs
-WHERE demo.id = exams.id AND exams.id = labs.id AND
+WHERE demo.id = exams.id AND exams.id = labs.id ANDs
 triglyceride >= 500 AND
 years_edu >= 10;
 

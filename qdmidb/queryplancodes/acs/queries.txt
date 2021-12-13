@@ -32,3 +32,10 @@ AND t2.c15 = t3.c15
 AND t1.c6 <= 2000
 AND t3.c21 >= 5500;
 
+SELECT MIN(t0.c1)
+FROM t0,t1,t2
+WHERE t0.c0 = t1.c0
+AND t1.c9 = t2.c9
+AND t1.c6 <= 2000
+AND t0.c4 >= 3500
+

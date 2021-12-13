@@ -416,7 +416,9 @@ public class SmartJoin extends Operator{
     */
 
     public List<Tuple> selfJoin(Tuple t) throws Exception{//t must be in the left relation
+        //System.out.println("in join: " + AggregateOptimization.temporalMax);
         if(!AggregateOptimization.passVirtualFilter(t)){
+            //System.out.println("in join: " + AggregateOptimization.temporalMax);
             return null;
         }
         //check all current active predicates to see if t can be removed
