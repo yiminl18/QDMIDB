@@ -10,7 +10,8 @@ import java.util.concurrent.ThreadLocalRandom;
 public class WiFi {
     public static final int MISSING_INTEGER = Integer.MIN_VALUE;
     public static final int hashPrime = 98371;
-    public static final int locationMIN = 1, locationMAX = 1000;
+    public static final int occupancyCard = 194400;//11480
+    public static final int locationMIN = 1, locationMAX = 1000;//1000,3000
     List<Integer> roomPool = new ArrayList<>();
     List<Integer> macPool = new ArrayList<>();
     List<Integer> userMacPool = new ArrayList<>();
@@ -245,9 +246,11 @@ public class WiFi {
     List<occupancyTuple> occupancyTuples = new ArrayList<>();
     List<wifiTuple> wifiTuples = new ArrayList<>();
     List<userTuple> userTuples = new ArrayList<>();
-    private final String occupancyPathQuip = "../QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/occupancyQuip.txt";
+    private final String occupancyPathQuip = "../QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/occupancyQuipLarge.txt";
+    private final String occupancyPathQuipLarge = "../QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/occupancyQuipLarge.txt";
     private final String occupancyPathIDB = "../QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/occupancyIDB.txt";
     private final String wifiPathQuip = "../QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/wifiQuip.txt";
+    private final String wifiPathQuipLarge = "../QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/wifiQuipLarge.txt";
     private final String wifiPathIDB = "../QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/wifiIDB.txt";
     private final String userPathQuip = "../QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/userQuip.txt";
     private final String userPathIDB = "../QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/userIDB.txt";
@@ -590,7 +593,8 @@ public class WiFi {
     }*/
 
     public void readPresence(){
-        String fileSpace = "../QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/presence.csv";//raw dirty
+        //ihe: modify here to get different versions of wifi data
+        String fileSpace = "../QDMIDB/QDMIDB/qdmidb/simpledb/wifidataset/presence-big.csv";//raw dirty
         String filePath = Paths.get(fileSpace).toAbsolutePath().toString();
         //startTimestamp,endTimestamp,room
         try{
@@ -779,7 +783,6 @@ public class WiFi {
     }
 
     public void setOccuLocation(){
-        int occupancyCard = 11480;
         for(int i=0;i<occupancyCard;i++){
             int lid = ThreadLocalRandom.current().nextInt(locationMIN, locationMAX);
             occupancyTuples.add(new occupancyTuple(lid, MISSING_INTEGER, MISSING_INTEGER, MISSING_INTEGER,MISSING_INTEGER));
@@ -788,7 +791,6 @@ public class WiFi {
 
     public void setTime(){
         //from 0-hashPrime
-        int occupancyCard = 11480;
         int interval = (int)(Double.valueOf(hashPrime)/Double.valueOf(occupancyCard));
         int st = 0, et = st + interval;
         for(int i=0;i<occupancyTuples.size();i++){

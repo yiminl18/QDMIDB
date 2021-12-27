@@ -1,0 +1,13 @@
+scan(users):
+μ(users.ugroup,users.mac):[|]
+σ(users.ugroup=2):[μ(users.ugroup,users.mac)]
+scan(wifi):
+μ(wifi.lid):[scan(wifi)]
+σ(wifi.et<2000):[μ(wifi.lid)]
+σ(wifi.st>800):[σ(wifi.et<2000)]
+⨝(users.mac=wifi.mac):[σ(users.ugroup=2)],[σ(wifi.st>800)]
+scan(occupancy):
+⨝(wifi.lid=occupancy.lid):[⨝(users.mac=wifi.mac)],[|]
+μ(occupancy.type,occupancy.occupancy):[⨝(wifi.lid=occupancy.lid)]
+g(occupancy.type), max(occupancy.occupancy):[μ(occupancy.type,occupancy.occupancy)]
+π(null,null):[g(occupancy.type), max(occupancy.occupancy)]

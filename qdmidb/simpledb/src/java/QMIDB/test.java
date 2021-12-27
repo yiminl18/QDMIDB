@@ -107,10 +107,12 @@ public class test {
         TransactionId tid = new TransactionId();
         Operator o = QP.getQueryPlan(queryID, tid, dataset, method);
         Statistics.setStartTime(System.currentTimeMillis());
+        int NumTemporal = 0;
         try {
             o.open();
             while (o.hasNext()) {
                 Tuple tup = o.next();
+                NumTemporal++;
                 //System.out.println(tup);
             }
             o.close();
@@ -118,6 +120,8 @@ public class test {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        System.out.println("number of tuples in temporal results is : " + NumTemporal);
 
         System.out.println("Total number of missing values in datasets: "+ Schema.getTotalNumberOfMissingValues());
         if(method.equals("ImputeDB")){

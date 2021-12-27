@@ -49,13 +49,25 @@ public class Buffer {
         }
     }
 
-    public static void updateCompoundTuple(Tuple t, String attr){
-        //used to impute which might take compound tuples as input
+    public static void updateCompoundTuple(Tuple t, String attr, Field value){
+        //used to impute tuples which might take several small tuples as input
+        if(!t.isMergeBit()) return ;
         int tid = t.findTID(attr);//raw tuple
-        updateTupleByTID(t, tid);
+        if(tid != -1){
+            updateTupleByValue(tid, attr, value);
+        }
     }
 
     public static void updateTupleByTID(Tuple t, int tid){
+        if(buffers.containsKey(tid)){
+            buffers.put(tid,t);
+        }
+    }
+
+    public static void updateTupleByValue(int tid, String attr, Field value){
+        Tuple t = getTuple(tid);
+        int fieldIndex = t.getTupleDesc().fieldNameToIndex(attr);
+        t.setField(fieldIndex, value);
         if(buffers.containsKey(tid)){
             buffers.put(tid,t);
         }

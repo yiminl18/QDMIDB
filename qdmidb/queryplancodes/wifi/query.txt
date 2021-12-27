@@ -1,2 +1,8 @@
-SELECT occupancy.type
-FROM occupancy;
+SELECT occupancy.type, MAX(occupancy.occupancy)
+FROM occupancy, wifi, users
+WHERE wifi.st > 800
+AND wifi.et < 2000
+AND wifi.lid = occupancy.lid
+AND users.mac = wifi.mac 
+AND users.ugroup = 2
+GROUP BY occupancy.type;

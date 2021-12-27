@@ -1,0 +1,9 @@
+users.ugroup,users.mac
+users.ugroup=2
+wifi.lid
+wifi.et<2000
+wifi.st>800
+users.mac=wifi.mac
+wifi.lid=occupancy.lid
+occupancy.type,occupancy.occupancy
+occupancy.type

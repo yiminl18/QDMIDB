@@ -13,11 +13,14 @@ public class Impute extends Operator {
 
     private Attribute attribute;
     private DbIterator child;
+    private int fieldIndex;
+
 
 
     public Impute(Attribute attribute, DbIterator child) {
         this.attribute = attribute;
         this.child = child;
+        this.fieldIndex = child.getTupleDesc().fieldNameToIndex(attribute.getAttribute());
     }
 
     public Attribute getAttribute() {
@@ -61,8 +64,8 @@ public class Impute extends Operator {
             TransactionAbortedException, DbException, Exception {
         while (child.hasNext()) {
             Tuple t = child.next();
-            int fieldIndex = t.getTupleDesc().fieldNameToIndex(this.attribute.getAttribute());
             Field value = t.getField(fieldIndex);
+
             if(value.isMissing()){
                 value = ImputeFactory.Impute(this.attribute, t);
                 t.setField(fieldIndex, value);
@@ -71,8 +74,9 @@ public class Impute extends Operator {
                     //otherwise, no need to update this stats
                     RelationshipGraph.getNode(attribute.getAttribute()).NumOfNullValuesMinusOne();
                 }
-                Buffer.updateCompoundTuple(t, attribute.getAttribute());
+                Buffer.updateCompoundTuple(t, attribute.getAttribute(), value);
             }
+            //System.out.println(missingNUM);
             return t;
         }
         return null;

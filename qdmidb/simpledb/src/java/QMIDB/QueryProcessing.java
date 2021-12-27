@@ -41,7 +41,7 @@ public class QueryProcessing {
 
     public void ExperimentRunner()throws IOException,Exception{
         QueryProcessing QP = new QueryProcessing();
-        String dataset = "ACS";//WiFi, CDC, ACS
+        String dataset = "WiFi";//WiFi, CDC, ACS
         String algorithm = "ImputeDB";//Quip, ImputeDB
         String imputation = "HOTDECK";//REGRESSION_TREE,HOTDECK
         int queryID = 6;
